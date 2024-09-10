@@ -151,5 +151,3 @@ def game_loop():
         pygame.display.update()
         clock.tick(FPS)
 
-game_loop()
-
