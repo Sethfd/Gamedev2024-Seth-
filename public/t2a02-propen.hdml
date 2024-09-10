@@ -1,153 +1,112 @@
-<hdml>
+<html>
 </head>
-import pygame
-import random
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #000; }
+        canvas { border: 1px solid #fff; }
+        #score { color: #fff; font-size: 20px; position: absolute; top: 10px; left: 10px; }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script src="snake.js"></script>
+</body>
+</html>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
 
-# Initialize Pygame
-pygame.init()
+let snake = [{ x: 200, y: 200 }];
+let direction = { x: 10, y: 0 };
+let food = { x: 300, y: 300 };
+let score = 0;
+let aiEnemies = [{ x: 100, y: 100, direction: { x: 10, y: 0 } }];
 
-# Screen dimensions
-WIDTH, HEIGHT = 600, 400
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Snake Game with AI Enemy")
+function drawSnake() {
+    ctx.fillStyle = 'green';
+    snake.forEach(part => ctx.fillRect(part.x, part.y, 10, 10));
+}
 
-# Colors
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
+function moveSnake() {
+    const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+    snake.unshift(head);
+    if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        scoreElement.textContent = `Score: ${score}`;
+        generateFood();
+    } else {
+        snake.pop();
+    }
+}
 
-# Clock
-clock = pygame.time.Clock()
-FPS = 15
+function drawFood() {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(food.x, food.y, 10, 10);
+}
 
-# Snake settings
-SNAKE_SIZE = 10
-snake_pos = [100, 50]
-snake_body = [[100, 50], [90, 50], [80, 50]]
-snake_direction = 'RIGHT'
-change_to = snake_direction
+function generateFood() {
+    food = {
+        x: Math.floor(Math.random() * 40) * 10,
+        y: Math.floor(Math.random() * 40) * 10
+    };
+}
 
-# Enemy AI settings
-enemy_pos = [300, 50]
-enemy_body = [[300, 50], [290, 50], [280, 50]]
-enemy_direction = 'LEFT'
-enemy_change_to = enemy_direction
+function drawAIEnemies() {
+    ctx.fillStyle = 'blue';
+    aiEnemies.forEach(enemy => ctx.fillRect(enemy.x, enemy.y, 10, 10));
+}
 
-# Food settings
-food_pos = [random.randrange(1, (WIDTH // SNAKE_SIZE)) * SNAKE_SIZE,
-            random.randrange(1, (HEIGHT // SNAKE_SIZE)) * SNAKE_SIZE]
-food_spawn = True
+function moveAIEnemies() {
+    aiEnemies.forEach(enemy => {
+        enemy.x += enemy.direction.x;
+        enemy.y += enemy.direction.y;
+        if (enemy.x < 0 || enemy.x >= canvas.width || enemy.y < 0 || enemy.y >= canvas.height) {
+            enemy.direction.x = -enemy.direction.x;
+            enemy.direction.y = -enemy.direction.y;
+        }
+    });
+}
 
-# Score
-score = 0
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    moveSnake();
+    drawSnake();
+    drawFood();
+    drawAIEnemies();
+    moveAIEnemies();
+    if (checkCollision()) {
+        alert('Game Over');
+        document.location.reload();
+    }
+    setTimeout(gameLoop, 100);
+}
 
-# Game Over function
-def game_over():
-    pygame.quit()
-    quit()
+function checkCollision() {
+    const head = snake[0];
+    for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) return true;
+    }
+    for (let enemy of aiEnemies) {
+        if (head.x === enemy.x && head.y === enemy.y) return true;
+    }
+    return false;
+}
 
-# Main function
-def game_loop():
-    global change_to, snake_direction, enemy_change_to, enemy_direction, food_spawn, score
+document.addEventListener('keydown', event => {
+    if (event.key === 'ArrowUp' && direction.y === 0) direction = { x: 0, y: -10 };
+    if (event.key === 'ArrowDown' && direction.y === 0) direction = { x: 0, y: 10 };
+    if (event.key === 'ArrowLeft' && direction.x === 0) direction = { x: -10, y: 0 };
+    if (event.key === 'ArrowRight' && direction.x === 0) direction = { x: 10, y: 0 };
+    </head>
+    <body
+      
+});
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    change_to = 'UP'
-                elif event.key == pygame.K_DOWN:
-                    change_to = 'DOWN'
-                elif event.key == pygame.K_LEFT:
-                    change_to = 'LEFT'
-                elif event.key == pygame.K_RIGHT:
-                    change_to = 'RIGHT'
-
-        # Validate direction
-        if change_to == 'UP' and snake_direction != 'DOWN':
-            snake_direction = 'UP'
-        if change_to == 'DOWN' and snake_direction != 'UP':
-            snake_direction = 'DOWN'
-        if change_to == 'LEFT' and snake_direction != 'RIGHT':
-            snake_direction = 'LEFT'
-        if change_to == 'RIGHT' and snake_direction != 'LEFT':
-            snake_direction = 'RIGHT'
-
-        # Move snake
-        if snake_direction == 'UP':
-            snake_pos[1] -= SNAKE_SIZE
-        if snake_direction == 'DOWN':
-            snake_pos[1] += SNAKE_SIZE
-        if snake_direction == 'LEFT':
-            snake_pos[0] -= SNAKE_SIZE
-        if snake_direction == 'RIGHT':
-            snake_pos[0] += SNAKE_SIZE
-
-        # Snake body growing mechanism
-        snake_body.insert(0, list(snake_pos))
-        if snake_pos == food_pos:
-            score += 1
-            food_spawn = False
-        else:
-            snake_body.pop()
-
-        if not food_spawn:
-            food_pos = [random.randrange(1, (WIDTH // SNAKE_SIZE)) * SNAKE_SIZE,
-                        random.randrange(1, (HEIGHT // SNAKE_SIZE)) * SNAKE_SIZE]
-        food_spawn = True
-
-        # Enemy AI movement (simple random movement)
-        enemy_change_to = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT'])
-        if enemy_change_to == 'UP' and enemy_direction != 'DOWN':
-            enemy_direction = 'UP'
-        if enemy_change_to == 'DOWN' and enemy_direction != 'UP':
-            enemy_direction = 'DOWN'
-        if enemy_change_to == 'LEFT' and enemy_direction != 'RIGHT':
-            enemy_direction = 'LEFT'
-        if enemy_change_to == 'RIGHT' and enemy_direction != 'LEFT':
-            enemy_direction = 'RIGHT'
-
-        if enemy_direction == 'UP':
-            enemy_pos[1] -= SNAKE_SIZE
-        if enemy_direction == 'DOWN':
-            enemy_pos[1] += SNAKE_SIZE
-        if enemy_direction == 'LEFT':
-            enemy_pos[0] -= SNAKE_SIZE
-        if enemy_direction == 'RIGHT':
-            enemy_pos[0] += SNAKE_SIZE
-
-        enemy_body.insert(0, list(enemy_pos))
-        enemy_body.pop()
-
-        # Game Over conditions
-        if snake_pos[0] < 0 or snake_pos[0] > WIDTH - SNAKE_SIZE:
-            game_over()
-        if snake_pos[1] < 0 or snake_pos[1] > HEIGHT - SNAKE_SIZE:
-            game_over()
-
-        for block in snake_body[1:]:
-            if snake_pos == block:
-                game_over()
-
-        for block in enemy_body:
-            if snake_pos == block:
-                game_over()
-
-        # Drawing everything
-        screen.fill(WHITE)
-        for pos in snake_body:
-            pygame.draw.rect(screen, GREEN, pygame.Rect(pos[0], pos[1], SNAKE_SIZE, SNAKE_SIZE))
-        for pos in enemy_body:
-            pygame.draw.rect(screen, RED, pygame.Rect(pos[0], pos[1], SNAKE_SIZE, SNAKE_SIZE))
-        pygame.draw.rect(screen, BLUE, pygame.Rect(food_pos[0], food_pos[1], SNAKE_SIZE, SNAKE_SIZE))
-
-        # Display score
-        font = pygame.font.SysFont('arial', 35)
-        score_text = font.render(f'Score: {score}', True, BLUE)
-        screen.blit(score_text, [0, 0])
-
-        pygame.display.update()
-        clock.tick(FPS)
+gameLoop();
 
