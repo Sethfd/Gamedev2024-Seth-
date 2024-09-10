@@ -1,1 +1,155 @@
+<hdml>
+</head>
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 600, 400
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Snake Game with AI Enemy")
+
+# Colors
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+
+# Clock
+clock = pygame.time.Clock()
+FPS = 15
+
+# Snake settings
+SNAKE_SIZE = 10
+snake_pos = [100, 50]
+snake_body = [[100, 50], [90, 50], [80, 50]]
+snake_direction = 'RIGHT'
+change_to = snake_direction
+
+# Enemy AI settings
+enemy_pos = [300, 50]
+enemy_body = [[300, 50], [290, 50], [280, 50]]
+enemy_direction = 'LEFT'
+enemy_change_to = enemy_direction
+
+# Food settings
+food_pos = [random.randrange(1, (WIDTH // SNAKE_SIZE)) * SNAKE_SIZE,
+            random.randrange(1, (HEIGHT // SNAKE_SIZE)) * SNAKE_SIZE]
+food_spawn = True
+
+# Score
+score = 0
+
+# Game Over function
+def game_over():
+    pygame.quit()
+    quit()
+
+# Main function
+def game_loop():
+    global change_to, snake_direction, enemy_change_to, enemy_direction, food_spawn, score
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    change_to = 'UP'
+                elif event.key == pygame.K_DOWN:
+                    change_to = 'DOWN'
+                elif event.key == pygame.K_LEFT:
+                    change_to = 'LEFT'
+                elif event.key == pygame.K_RIGHT:
+                    change_to = 'RIGHT'
+
+        # Validate direction
+        if change_to == 'UP' and snake_direction != 'DOWN':
+            snake_direction = 'UP'
+        if change_to == 'DOWN' and snake_direction != 'UP':
+            snake_direction = 'DOWN'
+        if change_to == 'LEFT' and snake_direction != 'RIGHT':
+            snake_direction = 'LEFT'
+        if change_to == 'RIGHT' and snake_direction != 'LEFT':
+            snake_direction = 'RIGHT'
+
+        # Move snake
+        if snake_direction == 'UP':
+            snake_pos[1] -= SNAKE_SIZE
+        if snake_direction == 'DOWN':
+            snake_pos[1] += SNAKE_SIZE
+        if snake_direction == 'LEFT':
+            snake_pos[0] -= SNAKE_SIZE
+        if snake_direction == 'RIGHT':
+            snake_pos[0] += SNAKE_SIZE
+
+        # Snake body growing mechanism
+        snake_body.insert(0, list(snake_pos))
+        if snake_pos == food_pos:
+            score += 1
+            food_spawn = False
+        else:
+            snake_body.pop()
+
+        if not food_spawn:
+            food_pos = [random.randrange(1, (WIDTH // SNAKE_SIZE)) * SNAKE_SIZE,
+                        random.randrange(1, (HEIGHT // SNAKE_SIZE)) * SNAKE_SIZE]
+        food_spawn = True
+
+        # Enemy AI movement (simple random movement)
+        enemy_change_to = random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT'])
+        if enemy_change_to == 'UP' and enemy_direction != 'DOWN':
+            enemy_direction = 'UP'
+        if enemy_change_to == 'DOWN' and enemy_direction != 'UP':
+            enemy_direction = 'DOWN'
+        if enemy_change_to == 'LEFT' and enemy_direction != 'RIGHT':
+            enemy_direction = 'LEFT'
+        if enemy_change_to == 'RIGHT' and enemy_direction != 'LEFT':
+            enemy_direction = 'RIGHT'
+
+        if enemy_direction == 'UP':
+            enemy_pos[1] -= SNAKE_SIZE
+        if enemy_direction == 'DOWN':
+            enemy_pos[1] += SNAKE_SIZE
+        if enemy_direction == 'LEFT':
+            enemy_pos[0] -= SNAKE_SIZE
+        if enemy_direction == 'RIGHT':
+            enemy_pos[0] += SNAKE_SIZE
+
+        enemy_body.insert(0, list(enemy_pos))
+        enemy_body.pop()
+
+        # Game Over conditions
+        if snake_pos[0] < 0 or snake_pos[0] > WIDTH - SNAKE_SIZE:
+            game_over()
+        if snake_pos[1] < 0 or snake_pos[1] > HEIGHT - SNAKE_SIZE:
+            game_over()
+
+        for block in snake_body[1:]:
+            if snake_pos == block:
+                game_over()
+
+        for block in enemy_body:
+            if snake_pos == block:
+                game_over()
+
+        # Drawing everything
+        screen.fill(WHITE)
+        for pos in snake_body:
+            pygame.draw.rect(screen, GREEN, pygame.Rect(pos[0], pos[1], SNAKE_SIZE, SNAKE_SIZE))
+        for pos in enemy_body:
+            pygame.draw.rect(screen, RED, pygame.Rect(pos[0], pos[1], SNAKE_SIZE, SNAKE_SIZE))
+        pygame.draw.rect(screen, BLUE, pygame.Rect(food_pos[0], food_pos[1], SNAKE_SIZE, SNAKE_SIZE))
+
+        # Display score
+        font = pygame.font.SysFont('arial', 35)
+        score_text = font.render(f'Score: {score}', True, BLUE)
+        screen.blit(score_text, [0, 0])
+
+        pygame.display.update()
+        clock.tick(FPS)
+
+game_loop()
 
