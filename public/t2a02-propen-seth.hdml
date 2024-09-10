@@ -1,56 +1,40 @@
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Direction</title>
+</head>
+<body>
+    <h1>Phone Direction</h1>
+    <p id="direction">Detecting...</p>
 
-class MainActivity : AppCompatActivity(), SensorEventListener {
+    <script>
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', function(event) {
+                let alpha = event.alpha; // Rotation around z-axis
+                let beta = event.beta;   // Rotation around x-axis
+                let gamma = event.gamma; // Rotation around y-axis
 
-    private lateinit var sensorManager: SensorManager
-    private var accelerometer: Sensor? = null
+                let direction = '';
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+                if (beta > 45) {
+                    direction = 'Up';
+                } else if (beta < -45) {
+                    direction = 'Down';
+                } else if (gamma > 45) {
+                    direction = 'Right';
+                } else if (gamma < -45) {
+                    direction = 'Left';
+                } else {
+                    direction = 'Flat';
+                }
 
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        accelerometer?.also { accel ->
-            sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_NORMAL)
+                document.getElementById('direction').innerText = `Phone direction: ${direction}`;
+            });
+        } else {
+            document.getElementById('direction').innerText = 'Device orientation not supported.';
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        event?.let {
-            val x = it.values[0]
-            val y = it.values[1]
-            val z = it.values[2]
-
-            // Determine the direction based on the accelerometer values
-            val direction = when {
-                x > 5 -> "Right"
-                x < -5 -> "Left"
-                y > 5 -> "Up"
-                y < -5 -> "Down"
-                else -> "Flat"
-            }
-
-            // Update UI or log the direction
-            println("Phone direction: $direction")
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Do something if sensor accuracy changes
-    }
-}
+    </script>
+</body>
+</html>
