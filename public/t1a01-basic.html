@@ -1,6 +1,6 @@
 <font size="8"><Hello this is Python>
 
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -45,10 +45,11 @@
             cells: [],
             maxCells: 4
         };
-        let apple = {
-            x: 320,
-            y: 320
-        };
+        let apples = [
+            { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
+            { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
+            { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid }
+        ];
         let enemies = [
             { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
             { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid }
@@ -61,7 +62,7 @@
         function loop() {
             requestAnimationFrame(loop);
 
-            if (++count < 4) {
+            if (++count < 8) {
                 return;
             }
 
@@ -90,19 +91,22 @@
             }
 
             context.fillStyle = 'red';
-            context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+            apples.forEach(function (apple) {
+                context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+            });
 
             context.fillStyle = 'green';
             snake.cells.forEach(function (cell, index) {
                 context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
 
-                if (cell.x === apple.x && cell.y === apple.y) {
-                    snake.maxCells++;
-                    score++;
-                    scoreDisplay.textContent = 'Score: ' + score;
-                    apple.x = getRandomInt(0, 25) * grid;
-                    apple.y = getRandomInt(0, 25) * grid;
-                }
+                apples.forEach(function (apple, appleIndex) {
+                    if (cell.x === apple.x && cell.y === apple.y) {
+                        snake.maxCells++;
+                        score++;
+                        scoreDisplay.textContent = 'Score: ' + score;
+                        apples[appleIndex] = { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid };
+                    }
+                });
 
                 for (let i = index + 1; i < snake.cells.length; i++) {
                     if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
@@ -145,8 +149,11 @@
             snake.maxCells = 4;
             snake.dx = grid;
             snake.dy = 0;
-            apple.x = getRandomInt(0, 25) * grid;
-            apple.y = getRandomInt(0, 25) * grid;
+            apples = [
+                { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
+                { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
+                { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid }
+            ];
             score = 0;
             scoreDisplay.textContent = 'Score: ' + score;
             enemies = [
@@ -175,8 +182,4 @@
     </script>
 </body>
 </html>
-
-               
-
-
-
+  
