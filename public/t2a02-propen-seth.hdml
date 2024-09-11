@@ -1,40 +1,21 @@
-<html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phone Direction</title>
+    <title>2x2 Table</title>
 </head>
 <body>
-    <h1>Phone Direction</h1>
-    <p id="direction">Detecting...</p>
-
-    <script>
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', function(event) {
-                let alpha = event.alpha; // Rotation around z-axis
-                let beta = event.beta;   // Rotation around x-axis
-                let gamma = event.gamma; // Rotation around y-axis
-
-                let direction = '';
-
-                if (beta > 45) {
-                    direction = 'Up';
-                } else if (beta < -45) {
-                    direction = 'Down';
-                } else if (gamma > 45) {
-                    direction = 'Right';
-                } else if (gamma < -45) {
-                    direction = 'Left';
-                } else {
-                    direction = 'Flat';
-                }
-
-                document.getElementById('direction').innerText = `Phone direction: ${direction}`;
-            });
-        } else {
-            document.getElementById('direction').innerText = 'Device orientation not supported.';
-        }
-    </script>
+    <table border="1">
+        <tr>
+            <td>Box 1</td>
+            <td>Box 2</td>
+        </tr>
+        <tr>
+            <td>Box 3</td>
+            <td>Box 4</td>
+        </tr>
+    </table>
 </body>
 </html>
