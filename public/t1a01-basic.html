@@ -4,33 +4,46 @@ hi
 
 <img width=300 src"https://cdn.exputer.com/wp-content/uploads/2023/09/Microsoft-Xbox-Logo.jpg"> 
 
+</canter><br>
+ 
  <br>
-<html lang="e">
-<Head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
     <style>
         body {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
             background-color: #000;
             margin: 0;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
         canvas {
             border: 1px solid #fff;
         }
+        #score {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
+    <div id="score">Score: 0</div>
     <canvas id="game" width="400" height="400"></canvas>
     <script>
         const canvas = document.getElementById('game');
         const context = canvas.getContext('2d');
         const grid = 16;
         let count = 0;
+        let score = 0;
+        const scoreDisplay = document.getElementById('score');
         let snake = {
             x: 160,
             y: 160,
@@ -43,6 +56,10 @@ hi
             x: 320,
             y: 320
         };
+        let enemies = [
+            { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
+            { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid }
+        ];
 
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min)) + min;
@@ -88,23 +105,61 @@ hi
 
                 if (cell.x === apple.x && cell.y === apple.y) {
                     snake.maxCells++;
+                    score++;
+                    scoreDisplay.textContent = 'Score: ' + score;
                     apple.x = getRandomInt(0, 25) * grid;
                     apple.y = getRandomInt(0, 25) * grid;
                 }
 
                 for (let i = index + 1; i < snake.cells.length; i++) {
                     if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-                        snake.x = 160;
-                        snake.y = 160;
-                        snake.cells = [];
-                        snake.maxCells = 4;
-                        snake.dx = grid;
-                        snake.dy = 0;
-                        apple.x = getRandomInt(0, 25) * grid;
-                        apple.y = getRandomInt(0, 25) * grid;
+                        resetGame();
                     }
                 }
             });
+
+            context.fillStyle = 'blue';
+            enemies.forEach(function (enemy) {
+                context.fillRect(enemy.x, enemy.y, grid - 1, grid - 1);
+
+                if (snake.x === enemy.x && snake.y === enemy.y) {
+                    resetGame();
+                }
+
+                if (Math.random() < 0.1) {
+                    enemy.x += (Math.random() < 0.5 ? -grid : grid);
+                    enemy.y += (Math.random() < 0.5 ? -grid : grid);
+
+                    if (enemy.x < 0) {
+                        enemy.x = canvas.width - grid;
+                    } else if (enemy.x >= canvas.width) {
+                        enemy.x = 0;
+                    }
+
+                    if (enemy.y < 0) {
+                        enemy.y = canvas.height - grid;
+                    } else if (enemy.y >= canvas.height) {
+                        enemy.y = 0;
+                    }
+                }
+            });
+        }
+
+        function resetGame() {
+            snake.x = 160;
+            snake.y = 160;
+            snake.cells = [];
+            snake.maxCells = 4;
+            snake.dx = grid;
+            snake.dy = 0;
+            apple.x = getRandomInt(0, 25) * grid;
+            apple.y = getRandomInt(0, 25) * grid;
+            score = 0;
+            scoreDisplay.textContent = 'Score: ' + score;
+            enemies = [
+                { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid },
+                { x: getRandomInt(0, 25) * grid, y: getRandomInt(0, 25) * grid }
+            ];
         }
 
         document.addEventListener('keydown', function (e) {
