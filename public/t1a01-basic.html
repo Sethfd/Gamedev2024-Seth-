@@ -1,12 +1,5 @@
-hi 
+<font size="8"><Hello this is Python>
 
-<a href="https://www.xbox.com/en-CA?msockid=0423ac0f1a0f6b833e09b8fd1b816a70">Xbox<a/>
-
-<img width=300 src"https://cdn.exputer.com/wp-content/uploads/2023/09/Microsoft-Xbox-Logo.jpg"> 
-
-</canter><br>
- 
- <br>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -126,21 +119,21 @@ hi
                     resetGame();
                 }
 
-                if (Math.random() < 0.1) {
-                    enemy.x += (Math.random() < 0.5 ? -grid : grid);
-                    enemy.y += (Math.random() < 0.5 ? -grid : grid);
+                if (enemy.x < apple.x) {
+                    enemy.x += grid;
+                } else if (enemy.x > apple.x) {
+                    enemy.x -= grid;
+                }
 
-                    if (enemy.x < 0) {
-                        enemy.x = canvas.width - grid;
-                    } else if (enemy.x >= canvas.width) {
-                        enemy.x = 0;
-                    }
+                if (enemy.y < apple.y) {
+                    enemy.y += grid;
+                } else if (enemy.y > apple.y) {
+                    enemy.y -= grid;
+                }
 
-                    if (enemy.y < 0) {
-                        enemy.y = canvas.height - grid;
-                    } else if (enemy.y >= canvas.height) {
-                        enemy.y = 0;
-                    }
+                if (enemy.x === apple.x && enemy.y === apple.y) {
+                    apple.x = getRandomInt(0, 25) * grid;
+                    apple.y = getRandomInt(0, 25) * grid;
                 }
             });
         }
@@ -182,3 +175,8 @@ hi
     </script>
 </body>
 </html>
+
+               
+
+
+
