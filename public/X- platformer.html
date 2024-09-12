@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #000;
+            background-color: #87CEEB; /* Sky blue background */
         }
 
         canvas {
@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="1600" height="600"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -32,15 +32,37 @@
             height: 50,
             speed: 5,
             dx: 0,
-            dy: 0
+            dy: 0,
+            gravity: 0.5,
+            jumpPower: -10,
+            isJumping: false
+        };
+
+        const enemy = {
+            x: 300,
+            y: 530,
+            width: 50,
+            height: 50,
+            speed: 2,
+            dx: 2
         };
 
         const platforms = [
-            { x: 0, y: 580, width: 800, height: 20 },
+            { x: 0, y: 580, width: 1600, height: 20 },
             { x: 150, y: 450, width: 100, height: 20 },
             { x: 300, y: 350, width: 100, height: 20 },
             { x: 450, y: 250, width: 100, height: 20 },
-            { x: 600, y: 150, width: 100, height: 20 }
+            { x: 600, y: 150, width: 100, height: 20 },
+            { x: 800, y: 450, width: 100, height: 20 },
+            { x: 1000, y: 350, width: 100, height: 20 },
+            { x: 1200, y: 250, width: 100, height: 20 },
+            { x: 1400, y: 150, width: 100, height: 20 }
+        ];
+
+        const collectibles = [
+            { x: 200, y: 400, width: 20, height: 20 },
+            { x: 500, y: 200, width: 20, height: 20 },
+            { x: 1100, y: 300, width: 20, height: 20 }
         ];
 
         function drawPlayer() {
@@ -48,10 +70,22 @@
             ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
+        function drawEnemy() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+
         function drawPlatforms() {
             ctx.fillStyle = 'green';
             platforms.forEach(platform => {
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+        }
+
+        function drawCollectibles() {
+            ctx.fillStyle = 'gold';
+            collectibles.forEach(collectible => {
+                ctx.fillRect(collectible.x, collectible.y, collectible.width, collectible.height);
             });
         }
 
@@ -63,17 +97,56 @@
             player.x += player.dx;
             player.y += player.dy;
 
+            // Apply gravity
+            player.dy += player.gravity;
+
             // Prevent player from going out of bounds
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-            if (player.y < 0) player.y = 0;
-            if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                player.dy = 0;
+                player.isJumping = false;
+            }
+
+            // Check for collision with platforms
+            platforms.forEach(platform => {
+                if (player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y < platform.y + platform.height &&
+                    player.y + player.height > platform.y) {
+                    player.y = platform.y - player.height;
+                    player.dy = 0;
+                    player.isJumping = false;
+                }
+            });
+
+            // Check for collision with collectibles
+            collectibles.forEach((collectible, index) => {
+                if (player.x < collectible.x + collectible.width &&
+                    player.x + player.width > collectible.x &&
+                    player.y < collectible.y + collectible.height &&
+                    player.y + player.height > collectible.y) {
+                    // Remove collectible
+                    collectibles.splice(index, 1);
+                }
+            });
+
+            // Move enemy
+            enemy.x += enemy.dx;
+
+            // Reverse enemy direction at canvas edges
+            if (enemy.x < 0 || enemy.x + enemy.width > canvas.width) {
+                enemy.dx *= -1;
+            }
         }
 
         function update() {
             clear();
             drawPlatforms();
+            drawCollectibles();
             drawPlayer();
+            drawEnemy();
             newPos();
 
             requestAnimationFrame(update);
@@ -87,12 +160,11 @@
             player.dx = -player.speed;
         }
 
-        function moveUp() {
-            player.dy = -player.speed;
-        }
-
-        function moveDown() {
-            player.dy = player.speed;
+        function jump() {
+            if (!player.isJumping) {
+                player.dy = player.jumpPower;
+                player.isJumping = true;
+            }
         }
 
         function keyDown(e) {
@@ -101,21 +173,16 @@
             } else if (e.key === 'ArrowLeft' || e.key === 'Left') {
                 moveLeft();
             } else if (e.key === 'ArrowUp' || e.key === 'Up') {
-                moveUp();
-            } else if (e.key === 'ArrowDown' || e.key === 'Down') {
-                moveDown();
+                jump();
             }
         }
 
         function keyUp(e) {
             if (
                 e.key === 'ArrowRight' || e.key === 'Right' ||
-                e.key === 'ArrowLeft' || e.key === 'Left' ||
-                e.key === 'ArrowUp' || e.key === 'Up' ||
-                e.key === 'ArrowDown' || e.key === 'Down'
+                e.key === 'ArrowLeft' || e.key === 'Left'
             ) {
                 player.dx = 0;
-                player.dy = 0;
             }
         }
 
