@@ -1,58 +1,81 @@
 <h1 align=center> CSS by-Seth
 <a href="w3schools.com">w3schools.com</a><br>
-<b style="color:green; backaround-color:blue;">
-<border-style: solid>
-<border-width: 5px 20px>
 
- /* style.css */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Styled Page</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-/* General styles */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-}
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
 
-header {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 0;
-    text-align: center;
-}
+        header h1 {
+            margin: 0;
+        }
 
-header h1 {
-    margin: 0;
-}
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
 
-nav {
-    background-color: #444;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-}
+        nav a {
+            color: #fff;
+            margin: 0 10px;
+            text-decoration: none;
+        }
 
-nav a {
-    color: #fff;
-    margin: 0 10px;
-    text-decoration: none;
-}
+        nav a:hover {
+            text-decoration: underline;
+        }
 
-nav a:hover {
-    text-decoration: underline;
-}
+        main {
+            padding: 20px;
+        }
 
-main {
-    padding: 20px;
-}
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Website</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+    <main>
+        <h2>About Us</h2>
+        <p>This is a sample paragraph to demonstrate internal CSS styling within an HTML file.</p>
+    </main>
+    <footer>
+        <p>© 2024 My Website</p>
+    </footer>
+</body>
+</html>
 
-footer {
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 10px 0;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-} 
   
