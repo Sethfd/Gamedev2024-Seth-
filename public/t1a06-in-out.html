@@ -79,18 +79,13 @@ input:<input type=text id="myFirstName" value="Name">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe with Restart</title>
+    <title>Tic-Tac-Toe</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
         .board {
             display: grid;
             grid-template-columns: repeat(3, 100px);
-            grid-gap: 5px;
-            justify-content: center;
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
         }
         .cell {
             width: 100px;
@@ -102,71 +97,73 @@ input:<input type=text id="myFirstName" value="Name">
             border: 1px solid #000;
             cursor: pointer;
         }
-        .cell:hover {
-            background-color: #f0f0f0;
-        }
     </style>
 </head>
 <body>
-    <h1>Tic-Tac-Toe</h1>
-    <div class="board" id="board">
-        <div class="cell" onclick="makeMove(this, 0)"></div>
-        <div class="cell" onclick="makeMove(this, 1)"></div>
-        <div class="cell" onclick="makeMove(this, 2)"></div>
-        <div class="cell" onclick="makeMove(this, 3)"></div>
-        <div class="cell" onclick="makeMove(this, 4)"></div>
-        <div class="cell" onclick="makeMove(this, 5)"></div>
-        <div class="cell" onclick="makeMove(this, 6)"></div>
-        <div class="cell" onclick="makeMove(this, 7)"></div>
-        <div class="cell" onclick="makeMove(this, 8)"></div>
-    </div>
-    <p id="result"></p>
-    <button onclick="restartGame()">Restart</button>
-
+    <div class="board" id="board"></div>
+    <p id="message"></p>
     <script>
-        const board = Array(9).fill(null);
-        const player = 'X';
-        const computer = 'O';
+        const board = document.getElementById('board');
+        const message = document.getElementById('message');
+        let cells = Array(9).fill(null);
+        let currentPlayer = 'X';
         let attempts = 0;
-        const maxAttempts = 10;
-        const winningCell = Math.floor(Math.random() * 9);
 
-        function makeMove(cell, index) {
-            if (!board[index] && attempts < maxAttempts) {
-                board[index] = player;
-                cell.textContent = player;
-                attempts++;
-                if (index === winningCell) {
-                    document.getElementById('result').textContent = 'Congratulations! You guessed the winning cell!';
-                    return;
-                } else if (attempts === maxAttempts) {
-                    document.getElementById('result').textContent = 'Game over! You used all your attempts.';
-                    return;
-                } else {
-                    document.getElementById('result').textContent = `Attempt ${attempts}/${maxAttempts}. Try again.`;
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            for (const combination of winningCombinations) {
+                const [a, b, c] = combination;
+                if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+                    return cells[a];
                 }
-                computerMove();
+            }
+            return null;
+        }
+
+        function handleClick(event) {
+            const index = event.target.dataset.index;
+            if (cells[index] || checkWinner()) return;
+            cells[index] = currentPlayer;
+            event.target.textContent = currentPlayer;
+            const winner = checkWinner();
+            if (winner) {
+                message.textContent = `${winner} wins!`;
+                return;
+            }
+            if (!cells.includes(null)) {
+                attempts++;
+                if (attempts >= 10) {
+                    message.textContent = `You win after ${attempts} tries!`;
+                } else {
+                    message.textContent = `Draw! Try again. Attempts: ${attempts}`;
+                    resetBoard();
+                }
+                return;
+            }
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function resetBoard() {
+            cells = Array(9).fill(null);
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleClick);
+                board.appendChild(cell);
             }
         }
 
-        function computerMove() {
-            let emptyCells = board.map((cell, index) => cell === null ? index : null).filter(index => index !== null);
-            if (emptyCells.length > 0) {
-                let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                board[randomIndex] = computer;
-                document.querySelectorAll('.cell')[randomIndex].textContent = computer;
-            }
-        }
-
-        function restartGame() {
-            board.fill(null);
-            attempts = 0;
-            document.getElementById('result').textContent = '';
-            document.querySelectorAll('.cell').forEach(cell => cell.textContent = '');
-        }
+        resetBoard();
     </script>
 </body>
 </html>
+
 
 <!DOCTYPE html>
 <html lang="en">
