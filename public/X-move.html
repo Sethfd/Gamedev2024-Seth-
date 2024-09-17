@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,200 +9,167 @@
     <title>Dodge the Falling Blocks</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            background-color: #000;
-            color: white;
-            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #f0f0f0;
         }
         canvas {
-            border: 1px solid #fff;
+            display: block;
+            background: #333;
         }
-        #timer, #highScores {
+        #score, #highscore, #lives, #level {
             position: absolute;
             top: 10px;
-            left: 10px;
             color: white;
             font-size: 24px;
+            font-family: Arial, sans-serif;
         }
-        #highScores {
-            top: 40px;
-        }
+        #score { left: 10px; }
+        #highscore { right: 10px; }
+        #lives { left: 50%; transform: translateX(-50%); }
+        #level { top: 40px; left: 10px; }
     </style>
 </head>
 <body>
-    <div id="timer">Time: 0s</div>
-    <div id="highScores">High Scores:</div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
+    <div id="score">Score: 0</div>
+    <div id="highscore">High Score: 0</div>
+    <div id="lives">Lives: 3</div>
+    <div id="level">Level: 1</div>
     <script>
-        
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const timerElement = document.getElementById('timer');
-        const highScoresElement = document.getElementById('highScores');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
         const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 30,
             width: 50,
             height: 50,
-            x: canvas.width / 2 - 25,
-            y: canvas.height - 60,
-            speed: 10,
+            speed: 5,
             dx: 0
         };
 
         const blocks = [];
-        let blockSpeed = 2;
+        const blockWidth = 50;
+        const blockHeight = 50;
+        let blockSpeed = 3;
         let blockInterval = 2000;
-        let gameOver = false;
-        let timeSurvived = 0;
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let lives = 3;
+        let level = 1;
+
+        document.getElementById('highscore').innerText = 'High Score: ' + highScore;
 
         function drawPlayer() {
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = 'blue';
             ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
         function drawBlocks() {
             ctx.fillStyle = 'red';
             blocks.forEach(block => {
-                ctx.fillRect(block.x, block.y, block.width, block.height);
+                ctx.fillRect(block.x, block.y, blockWidth, blockHeight);
             });
         }
 
-        function clear() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function newPos() {
+        function movePlayer() {
             player.x += player.dx;
 
-            // Wall detection
-            if (player.x < 0) {
-                player.x = 0;
-            }
-
-            if (player.x + player.width > canvas.width) {
-                player.x = canvas.width - player.width;
-            }
+            // Check for canvas boundaries
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
         }
 
         function moveBlocks() {
             blocks.forEach(block => {
-                block.y += block.speed;
+                block.y += blockSpeed;
             });
+        }
 
+        function addBlock() {
+            const x = Math.random() * (canvas.width - blockWidth);
+            blocks.push({ x, y: -blockHeight });
+        }
+
+        function checkCollision() {
             blocks.forEach((block, index) => {
+                if (
+                    player.x < block.x + blockWidth &&
+                    player.x + player.width > block.x &&
+                    player.y < block.y + blockHeight &&
+                    player.y + player.height > block.y
+                ) {
+                    lives--;
+                    document.getElementById('lives').innerText = 'Lives: ' + lives;
+                    blocks.splice(index, 1);
+
+                    if (lives === 0) {
+                        if (score > highScore) {
+                            highScore = score;
+                            localStorage.setItem('highScore', highScore);
+                        }
+                        alert('Game Over! Your score: ' + score);
+                        document.location.reload();
+                    }
+                }
+
+                // Remove blocks that are out of view
                 if (block.y > canvas.height) {
                     blocks.splice(index, 1);
                 }
             });
         }
 
-        function detectCollision() {
-            blocks.forEach(block => {
-                if (player.x < block.x + block.width &&
-                    player.x + player.width > block.x &&
-                    player.y < block.y + block.height &&
-                    player.y + player.height > block.y) {
-                    gameOver = true;
-                }
-            });
+        function updateScore() {
+            score++;
+            document.getElementById('score').innerText = 'Score: ' + score;
+
+            // Increase difficulty every 100 points
+            if (score % 100 === 0) {
+                level++;
+                document.getElementById('level').innerText = 'Level: ' + level;
+                blockSpeed += 1;
+                blockInterval = Math.max(500, blockInterval - 200);
+                clearInterval(blockIntervalId);
+                blockIntervalId = setInterval(addBlock, blockInterval);
+            }
         }
 
         function update() {
-            if (!gameOver) {
-                clear();
-                drawPlayer();
-                drawBlocks();
-                newPos();
-                moveBlocks();
-                detectCollision();
-
-                requestAnimationFrame(update);
-            } else {
-                alert('Game Over! You survived for ' + timeSurvived + ' seconds.');
-                saveHighScore(timeSurvived);
-                displayHighScores();
-            }
-        }
-
-        function addBlock() {
-            const block = {
-                width: 50,
-                height: 50,
-                x: Math.random() * (canvas.width - 50),
-                y: 0,
-                speed: blockSpeed
-            };
-            blocks.push(block);
-        }
-
-        function increaseDifficulty() {
-            blockSpeed += 0.5;
-            blockInterval -= 100;
-            if (blockInterval < 500) {
-                blockInterval = 500;
-            }
-        }
-
-        function startGame() {
-            setInterval(addBlock, blockInterval);
-            setInterval(increaseDifficulty, 5000);
-            setInterval(updateTimer, 1000);
-            update();
-        }
-
-        function updateTimer() {
-            if (!gameOver) {
-                timeSurvived++;
-                timerElement.textContent = 'Time: ' + timeSurvived + 's';
-            }
-        }
-
-        function moveRight() {
-            player.dx = player.speed;
-        }
-
-        function moveLeft() {
-            player.dx = -player.speed;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawBlocks();
+            movePlayer();
+            moveBlocks();
+            checkCollision();
+            updateScore();
+            requestAnimationFrame(update);
         }
 
         function keyDown(e) {
             if (e.key === 'ArrowRight' || e.key === 'Right') {
-                moveRight();
+                player.dx = player.speed;
             } else if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                moveLeft();
+                player.dx = -player.speed;
             }
         }
 
         function keyUp(e) {
-            if (e.key === 'ArrowRight' || e.key === 'Right' ||
-                e.key === 'ArrowLeft' || e.key === 'Left') {
+            if (e.key === 'ArrowRight' || e.key === 'Right' || e.key === 'ArrowLeft' || e.key === 'Left') {
                 player.dx = 0;
             }
-        }
-
-        function saveHighScore(score) {
-            let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-            highScores.push(score);
-            highScores.sort((a, b) => b - a);
-            highScores = highScores.slice(0, 5); // Keep only top 5 scores
-            localStorage.setItem('highScores', JSON.stringify(highScores));
-        }
-
-        function displayHighScores() {
-            const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-            highScoresElement.innerHTML = 'High Scores:<br>' + highScores.map(score => score + 's').join('<br>');
         }
 
         document.addEventListener('keydown', keyDown);
         document.addEventListener('keyup', keyUp);
 
-        displayHighScores();
-        startGame();
+        let blockIntervalId = setInterval(addBlock, blockInterval);
+        update();
     </script>
 </body>
 </html>
+
 
