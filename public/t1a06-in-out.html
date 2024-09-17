@@ -168,4 +168,60 @@ input:<input type=text id="myFirstName" value="Name">
 </body>
 </html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Button</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #movingButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            position: absolute;
+        }
+
+        #message {
+            display: none;
+            font-size: 24px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <button id="movingButton">Click Me!</button>
+    <div id="message">Congratulations!</div>
+
+    <script>
+        const button = document.getElementById('movingButton');
+        const message = document.getElementById('message');
+        let moveCount = 0;
+
+        button.addEventListener('mouseover', () => {
+            if (moveCount < 10) {
+                const x = Math.random() * (window.innerWidth - button.offsetWidth);
+                const y = Math.random() * (window.innerHeight - button.offsetHeight);
+                button.style.left = `${x}px`;
+                button.style.top = `${y}px`;
+                moveCount++;
+            }
+        });
+
+        button.addEventListener('click', () => {
+            message.style.display = 'block';
+            button.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
 
