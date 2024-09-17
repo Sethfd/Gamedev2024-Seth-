@@ -22,3 +22,50 @@ input:<input type=text id="myFirstName" value="Seth">
 }">
 
 <div id="myDiv01">...</div>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input, button {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guess the Number!</h1>
+    <p>Guess a number between 1 and 100:</p>
+    <input type="number" id="userGuess" min="1" max="100">
+    <button onclick="checkGuess()">Guess</button>
+    <p id="result"></p>
+
+    <script>
+        // Generate a random number between 1 and 10
+        const randomNumber = Math.floor(Math.random() * 100) + 1;
+
+        function checkGuess() {
+            const userGuess = document.getElementById('userGuess').value;
+            const result = document.getElementById('result');
+
+            if (userGuess == randomNumber) {
+                result.textContent = 'Congratulations! You guessed the right number!';
+            } else if (userGuess > randomNumber) {
+                result.textContent = 'Too high! Try again.';
+            } else {
+                result.textContent = 'Too low! Try again.';
+            }
+        }
+    </script>
+</body>
+</html>
