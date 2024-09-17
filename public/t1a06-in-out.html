@@ -14,7 +14,7 @@ raturn document.getElementbyid(myin)
 
 
 
-input:<input type=text id="myFirstName" value="Seth">
+input:<input type=text id="myFirstName" value="Name">
 <Input type=button value="Show on page" onclick="{
 
     myvar('myDiv01').innerhtml = 'your name is' + myvar('myFirstName').value
@@ -69,3 +69,103 @@ input:<input type=text id="myFirstName" value="Seth">
     </script>
 </body>
 </html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe with Restart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            justify-content: center;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <div class="board" id="board">
+        <div class="cell" onclick="makeMove(this, 0)"></div>
+        <div class="cell" onclick="makeMove(this, 1)"></div>
+        <div class="cell" onclick="makeMove(this, 2)"></div>
+        <div class="cell" onclick="makeMove(this, 3)"></div>
+        <div class="cell" onclick="makeMove(this, 4)"></div>
+        <div class="cell" onclick="makeMove(this, 5)"></div>
+        <div class="cell" onclick="makeMove(this, 6)"></div>
+        <div class="cell" onclick="makeMove(this, 7)"></div>
+        <div class="cell" onclick="makeMove(this, 8)"></div>
+    </div>
+    <p id="result"></p>
+    <button onclick="restartGame()">Restart</button>
+
+    <script>
+        const board = Array(9).fill(null);
+        const player = 'X';
+        const computer = 'O';
+        let attempts = 0;
+        const maxAttempts = 10;
+        const winningCell = Math.floor(Math.random() * 9);
+
+        function makeMove(cell, index) {
+            if (!board[index] && attempts < maxAttempts) {
+                board[index] = player;
+                cell.textContent = player;
+                attempts++;
+                if (index === winningCell) {
+                    document.getElementById('result').textContent = 'Congratulations! You guessed the winning cell!';
+                    return;
+                } else if (attempts === maxAttempts) {
+                    document.getElementById('result').textContent = 'Game over! You used all your attempts.';
+                    return;
+                } else {
+                    document.getElementById('result').textContent = `Attempt ${attempts}/${maxAttempts}. Try again.`;
+                }
+                computerMove();
+            }
+        }
+
+        function computerMove() {
+            let emptyCells = board.map((cell, index) => cell === null ? index : null).filter(index => index !== null);
+            if (emptyCells.length > 0) {
+                let randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                board[randomIndex] = computer;
+                document.querySelectorAll('.cell')[randomIndex].textContent = computer;
+            }
+        }
+
+        function restartGame() {
+            board.fill(null);
+            attempts = 0;
+            document.getElementById('result').textContent = '';
+            document.querySelectorAll('.cell').forEach(cell => cell.textContent = '');
+        }
+    </script>
+</body>
+</html>
+
+
