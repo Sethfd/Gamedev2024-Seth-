@@ -7,10 +7,26 @@
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { background: #87CEEB; display: block; margin: 0 auto; }
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
+<div id="gameOverScreen" class="game-over" style="display: none;">
+    Game Over!<br>
+    Press R to Restart
+</div>
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -18,14 +34,16 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 400;
 
+let gameOver = false;
+
 const player = {
     x: 50,
     y: 300,
     width: 30,
     height: 30,
-    speed: 2,
+    speed: 0,
     maxSpeed: 5,
-    acceleration: 1.0,
+    acceleration: 0.5,
     friction: 0.1,
     dy: 0,
     gravity: 0.5,
@@ -35,28 +53,39 @@ const player = {
     score: 0
 };
 
-const platforms = [
-    { x: 0, y: 370, width: 800, height: 30 },
-    { x: 100, y: 300, width: 100, height: 10 },
-    { x: 300, y: 250, width: 100, height: 10 },
-    { x: 500, y: 200, width: 100, height: 10 },
-    { x: 200, y: 150, width: 100, height: 10 },
-    { x: 600, y: 100, width: 100, height: 10 },
-    { x: 400, y: 50, width: 100, height: 10 }
-];
-
-const collectibles = [
-    { x: 200, y: 250, width: 20, height: 20, isCollected: false },
-    { x: 400, y: 150, width: 20, height: 20, isCollected: false },
-];
-
-const enemies = [
-    { x: 300, y: 260, width: 30, height: 30, speed: 1, range: 100, chaseRange: 150, type: 'patrol' },
-    { x: 600, y: 260, width: 30, height: 30, speed: 1.5, range: 100, chaseRange: 100, type: 'chase' },
-    { x: 400, y: 200, width: 30, height: 30, speed: 1, direction: Math.random() < 0.5 ? 1 : -1, type: 'random' }
-];
-
+let platforms = [];
+let collectibles = [];
+let enemies = [];
 const goalPlatform = { x: 750, y: 50, width: 40, height: 10 };
+
+function generateRandomMap() {
+    platforms = [];
+    collectibles = [];
+    enemies = [];
+
+    // Generate random platforms
+    for (let i = 0; i < 7; i++) {
+        const width = Math.random() * 100 + 50;
+        const height = 10;
+        const x = Math.random() * (canvas.width - width);
+        const y = Math.random() * (canvas.height - 100) + 50; // Avoid the bottom area
+        platforms.push({ x, y, width, height });
+    }
+
+    // Generate random collectibles
+    for (let i = 0; i < 2; i++) {
+        const x = Math.random() * (canvas.width - 20);
+        const y = Math.random() * (canvas.height - 100) + 50; // Avoid the bottom area
+        collectibles.push({ x, y, width: 20, height: 20, isCollected: false });
+    }
+
+    // Generate random enemies
+    for (let i = 0; i < 3; i++) {
+        const x = Math.random() * (canvas.width - 30);
+        const y = Math.random() * (canvas.height - 50) + 50; // Avoid the bottom area
+        enemies.push({ x, y, width: 30, height: 30, speed: Math.random() + 0.5, chaseRange: 150, type: 'chase' });
+    }
+}
 
 function drawPlayer() {
     ctx.fillStyle = 'red';
@@ -99,6 +128,8 @@ function drawStats() {
 }
 
 function update() {
+    if (gameOver) return; // Prevent updates if game is over
+
     // Apply friction
     if (player.speed > 0) {
         player.speed -= player.friction;
@@ -154,30 +185,9 @@ function updateEnemies() {
     enemies.forEach(enemy => {
         const distanceToPlayer = player.x - enemy.x;
 
-        if (enemy.type === 'patrol') {
-            // Patrol logic
-            enemy.x += enemy.speed;
-            if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
-                enemy.speed *= -1; // Reverse direction
-            }
-            if (Math.abs(distanceToPlayer) < enemy.chaseRange) {
-                enemy.x += (distanceToPlayer > 0 ? enemy.speed : -enemy.speed); // Move towards player
-            }
-        } else if (enemy.type === 'chase') {
-            // Chase logic
-            if (Math.abs(distanceToPlayer) < enemy.chaseRange) {
-                enemy.x += (distanceToPlayer > 0 ? enemy.speed : -enemy.speed); // Move towards player
-            }
-        } else if (enemy.type === 'random') {
-            // Random movement logic
-            enemy.x += enemy.speed * enemy.direction;
-            if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
-                enemy.direction *= -1; // Reverse direction
-            }
-            // Change direction randomly
-            if (Math.random() < 0.01) {
-                enemy.direction *= -1; // Change direction randomly
-            }
+        // Chase logic
+        if (Math.abs(distanceToPlayer) < enemy.chaseRange) {
+            enemy.x += (distanceToPlayer > 0 ? enemy.speed : -enemy.speed); // Move towards player
         }
 
         // Check for collision with the player
@@ -187,8 +197,8 @@ function updateEnemies() {
             player.y + player.height > enemy.y) {
             player.health -= 1; // Decrease health on collision
             if (player.health <= 0) {
-                alert("Game Over!");
-                document.location.reload(); // Restart the game
+                gameOver = true; // Set game over flag
+                showGameOverScreen();
             }
         }
     });
@@ -200,8 +210,26 @@ function checkGoal() {
         player.y < goalPlatform.y + goalPlatform.height &&
         player.y + player.height > goalPlatform.y) {
         alert("You've reached the goal!");
-        document.location.reload(); // Restart the game
+        restartGame(); // Restart the game
     }
+}
+
+function showGameOverScreen() {
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    gameOverScreen.style.display = 'block';
+}
+
+function restartGame() {
+    player.health = 100;
+    player.score = 0;
+    player.x = 50;
+    player.y = 300;
+    player.speed = 0;
+    player.dy = 0;
+    gameOver = false;
+    document.getElementById('gameOverScreen').style.display = 'none';
+    generateRandomMap(); // Generate a new map
+    gameLoop();
 }
 
 function gameLoop() {
@@ -216,6 +244,11 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+// Initialize the game
+generateRandomMap(); // Generate the first map
+gameLoop();
+
+// Handle keyboard input for movement
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') {
         if (player.speed < player.maxSpeed) {
@@ -231,9 +264,10 @@ document.addEventListener('keydown', (e) => {
         player.dy = player.jumpStrength;
         player.isJumping = true;
     }
+    if (e.key === 'r' && gameOver) {
+        restartGame(); // Restart if game over
+    }
 });
-
-gameLoop();
 </script>
 </body>
 </html>
