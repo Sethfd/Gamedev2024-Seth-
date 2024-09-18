@@ -23,7 +23,10 @@ const player = {
     y: 300,
     width: 30,
     height: 30,
-    speed: 5,
+    speed: 0,
+    maxSpeed: 5,
+    acceleration: 0.5,
+    friction: 0.1,
     dy: 0,
     gravity: 0.5,
     jumpStrength: -10,
@@ -93,8 +96,20 @@ function drawStats() {
 }
 
 function update() {
-    player.y += player.dy;
+    // Apply friction
+    if (player.speed > 0) {
+        player.speed -= player.friction;
+        if (player.speed < 0) player.speed = 0; // Prevent negative speed
+    } else if (player.speed < 0) {
+        player.speed += player.friction;
+        if (player.speed > 0) player.speed = 0; // Prevent negative speed
+    }
 
+    // Update player position based on speed
+    player.x += player.speed;
+
+    // Apply gravity
+    player.y += player.dy;
     if (player.y + player.height < canvas.height) {
         player.dy += player.gravity; // Apply gravity
     } else {
@@ -172,10 +187,14 @@ function gameLoop() {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') {
-        player.x += player.speed;
+        if (player.speed < player.maxSpeed) {
+            player.speed += player.acceleration; // Accelerate
+        }
     }
     if (e.key === 'ArrowLeft') {
-        player.x -= player.speed;
+        if (player.speed > -player.maxSpeed) {
+            player.speed -= player.acceleration; // Accelerate in reverse
+        }
     }
     if (e.key === 'ArrowUp' && !player.isJumping) {
         player.dy = player.jumpStrength;
