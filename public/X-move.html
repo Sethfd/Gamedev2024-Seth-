@@ -1,182 +1,100 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dodge the Falling Blocks</title>
+    <title>Simple Platformer</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #f0f0f0;
-        }
-        canvas {
-            display: block;
-            background: #333;
-        }
-        #score, #highscore, #lives, #level {
-            position: absolute;
-            top: 10px;
-            color: white;
-            font-size: 24px;
-            font-family: Arial, sans-serif;
-        }
-        #score { left: 10px; }
-        #highscore { right: 10px; }
-        #lives { left: 50%; transform: translateX(-50%); }
-        #level { top: 40px; left: 10px; }
+        body { margin: 0; overflow: hidden; }
+        canvas { background: #87CEEB; display: block; margin: 0 auto; }
+        .platform { background: #8B4513; position: absolute; }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="score">Score: 0</div>
-    <div id="highscore">High Score: 0</div>
-    <div id="lives">Lives: 3</div>
-    <div id="level">Level: 1</div>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+canvas.width = 800;
+canvas.height = 400;
+
+const player = {
+    x: 50,
+    y: 300,
+    width: 30,
+    height: 30,
+    speed: 5,
+    dy: 0,
+    gravity: 0.5,
+    jumpStrength: -10,
+    isJumping: false
+};
+
+const platforms = [
+    { x: 0, y: 370, width: 800, height: 30 },
+    { x: 100, y: 300, width: 100, height: 10 },
+    { x: 300, y: 250, width: 100, height: 10 },
+    { x: 500, y: 200, width: 100, height: 10 },
+];
+
+function drawPlayer() {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function drawPlatforms() {
+    ctx.fillStyle = 'brown';
+    platforms.forEach(platform => {
+        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    });
+}
+
+function update() {
+    player.y += player.dy;
+
+    if (player.y + player.height < canvas.height) {
+        player.dy += player.gravity; // Apply gravity
+    } else {
+        player.y = canvas.height - player.height; // Keep player on the ground
+        player.dy = 0;
+        player.isJumping = false;
+    }
+
+    platforms.forEach(platform => {
+        if (player.x < platform.x + platform.width &&
+            player.x + player.width > platform.x &&
+            player.y + player.height < platform.y + platform.height &&
+            player.y + player.height + player.dy >= platform.y) {
+            player.y = platform.y - player.height;
+            player.dy = 0;
+            player.isJumping = false;
         }
+    });
+}
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlatforms();
+    drawPlayer();
+    update();
+    requestAnimationFrame(gameLoop);
+}
 
-        const player = {
-            x: canvas.width / 2,
-            y: canvas.height - 30,
-            width: 50,
-            height: 50,
-            speed: 7,
-            dx: 0
-        };
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') {
+        player.x += player.speed;
+    }
+    if (e.key === 'ArrowLeft') {
+        player.x -= player.speed;
+    }
+    if (e.key === 'ArrowUp' && !player.isJumping) {
+        player.dy = player.jumpStrength;
+        player.isJumping = true;
+    }
+});
 
-        const blocks = [];
-        const blockWidth = 50;
-        const blockHeight = 50;
-        let blockSpeed = 3;
-        let blockInterval = 2000;
-        let score = 0;
-        let highScore = localStorage.getItem('highScore') || 0;
-        let lives = 3;
-        let level = 1;
-
-        document.getElementById('highscore').innerText = 'High Score: ' + highScore;
-
-        function drawPlayer() {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-        }
-
-        function drawBlocks() {
-            ctx.fillStyle = 'red';
-            blocks.forEach(block => {
-                ctx.fillRect(block.x, block.y, blockWidth, blockHeight);
-            });
-        }
-
-        function movePlayer() {
-            player.x += player.dx;
-
-            // Check for canvas boundaries
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-        }
-
-        function moveBlocks() {
-            blocks.forEach(block => {
-                block.y += blockSpeed;
-            });
-        }
-
-        function addBlock() {
-            const x = Math.random() * (canvas.width - blockWidth);
-            blocks.push({ x, y: -blockHeight });
-        }
-
-        function checkCollision() {
-            blocks.forEach((block, index) => {
-                if (
-                    player.x < block.x + blockWidth &&
-                    player.x + player.width > block.x &&
-                    player.y < block.y + blockHeight &&
-                    player.y + player.height > block.y
-                ) {
-                    lives--;
-                    document.getElementById('lives').innerText = 'Lives: ' + lives;
-                    blocks.splice(index, 1);
-
-                    if (lives === 0) {
-                        if (score > highScore) {
-                            highScore = score;
-                            localStorage.setItem('highScore', highScore);
-                        }
-                        alert('Game Over! Your score: ' + score);
-                        document.location.reload();
-                    }
-                }
-
-                // Remove blocks that are out of view
-                if (block.y > canvas.height) {
-                    blocks.splice(index, 1);
-                }
-            });
-        }
-
-        function updateScore() {
-            score++;
-            document.getElementById('score').innerText = 'Score: ' + score;
-
-            // Increase difficulty every 100 points
-            if (score % 100 === 0) {
-                level++;
-                document.getElementById('level').innerText = 'Level: ' + level;
-                blockSpeed += 1;
-                blockInterval = Math.max(500, blockInterval - 200);
-                clearInterval(blockIntervalId);
-                blockIntervalId = setInterval(addBlock, blockInterval);
-            }
-        }
-
-        function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-            drawBlocks();
-            movePlayer();
-            moveBlocks();
-            checkCollision();
-            updateScore();
-            requestAnimationFrame(update);
-        }
-
-        function keyDown(e) {
-            if (e.key === 'ArrowRight' || e.key === 'Right') {
-                player.dx = player.speed;
-            } else if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                player.dx = -player.speed;
-            }
-        }
-
-        function keyUp(e) {
-            if (e.key === 'ArrowRight' || e.key === 'Right' || e.key === 'ArrowLeft' || e.key === 'Left') {
-                player.dx = 0;
-            }
-        }
-
-        document.addEventListener('keydown', keyDown);
-        document.addEventListener('keyup', keyUp);
-
-        let blockIntervalId = setInterval(addBlock, blockInterval);
-        update();
-    </script>
+gameLoop();
+</script>
 </body>
 </html>
-
-
-
