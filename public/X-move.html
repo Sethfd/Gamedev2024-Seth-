@@ -7,7 +7,6 @@
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { background: #87CEEB; display: block; margin: 0 auto; }
-        .platform { background: #8B4513; position: absolute; }
     </style>
 </head>
 <body>
@@ -28,7 +27,9 @@ const player = {
     dy: 0,
     gravity: 0.5,
     jumpStrength: -10,
-    isJumping: false
+    isJumping: false,
+    health: 100,
+    score: 0
 };
 
 const platforms = [
@@ -38,16 +39,57 @@ const platforms = [
     { x: 500, y: 200, width: 100, height: 10 },
 ];
 
+const collectibles = [
+    { x: 200, y: 250, width: 20, height: 20, isCollected: false },
+    { x: 400, y: 150, width: 20, height: 20, isCollected: false },
+];
+
+const enemies = [
+    { x: 300, y: 260, width: 30, height: 30, isActive: true }
+];
+
+const goalPlatform = { x: 750, y: 340, width: 40, height: 10 };
+
 function drawPlayer() {
     ctx.fillStyle = 'red';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
 function drawPlatforms() {
-    ctx.fillStyle = 'green';
+    ctx.fillStyle = 'brown';
     platforms.forEach(platform => {
         ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
     });
+}
+
+function drawCollectibles() {
+    ctx.fillStyle = 'gold';
+    collectibles.forEach(collectible => {
+        if (!collectible.isCollected) {
+            ctx.fillRect(collectible.x, collectible.y, collectible.width, collectible.height);
+        }
+    });
+}
+
+function drawEnemies() {
+    ctx.fillStyle = 'black';
+    enemies.forEach(enemy => {
+        if (enemy.isActive) {
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+    });
+}
+
+function drawGoalPlatform() {
+    ctx.fillStyle = 'green';
+    ctx.fillRect(goalPlatform.x, goalPlatform.y, goalPlatform.width, goalPlatform.height);
+}
+
+function drawStats() {
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Health: ${player.health}`, 10, 20);
+    ctx.fillText(`Score: ${player.score}`, 10, 40);
 }
 
 function update() {
@@ -71,12 +113,59 @@ function update() {
             player.isJumping = false;
         }
     });
+
+    updateCollectibles();
+    updateEnemies();
+    checkGoal();
+}
+
+function updateCollectibles() {
+    collectibles.forEach(collectible => {
+        if (!collectible.isCollected &&
+            player.x < collectible.x + collectible.width &&
+            player.x + player.width > collectible.x &&
+            player.y < collectible.y + collectible.height &&
+            player.y + player.height > collectible.y) {
+            collectible.isCollected = true;
+            player.score += 10; // Increase score when collected
+        }
+    });
+}
+
+function updateEnemies() {
+    enemies.forEach(enemy => {
+        if (enemy.isActive &&
+            player.x < enemy.x + enemy.width &&
+            player.x + player.width > enemy.x &&
+            player.y < enemy.y + enemy.height &&
+            player.y + player.height > enemy.y) {
+            player.health -= 1; // Decrease health on collision
+            if (player.health <= 0) {
+                alert("Game Over!");
+                document.location.reload(); // Restart the game
+            }
+        }
+    });
+}
+
+function checkGoal() {
+    if (player.x < goalPlatform.x + goalPlatform.width &&
+        player.x + player.width > goalPlatform.x &&
+        player.y < goalPlatform.y + goalPlatform.height &&
+        player.y + player.height > goalPlatform.y) {
+        alert("You've reached the goal!");
+        document.location.reload(); // Restart the game
+    }
 }
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlatforms();
     drawPlayer();
+    drawCollectibles();
+    drawEnemies();
+    drawGoalPlatform();
+    drawStats(); // Draw health and score
     update();
     requestAnimationFrame(gameLoop);
 }
