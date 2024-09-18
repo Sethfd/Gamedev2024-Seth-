@@ -23,15 +23,15 @@ const player = {
     y: 300,
     width: 30,
     height: 30,
-    speed: 0,
+    speed: 2,
     maxSpeed: 5,
     acceleration: 1.0,
-    friction: 0.1,
+    friction: 0.0,
     dy: 0,
     gravity: 0.5,
     jumpStrength: -10,
     isJumping: false,
-    health: 500,
+    health: 100,
     score: 0
 };
 
@@ -40,6 +40,9 @@ const platforms = [
     { x: 100, y: 300, width: 100, height: 10 },
     { x: 300, y: 250, width: 100, height: 10 },
     { x: 500, y: 200, width: 100, height: 10 },
+    { x: 200, y: 150, width: 100, height: 10 },
+    { x: 600, y: 100, width: 100, height: 10 },
+    { x: 400, y: 50, width: 100, height: 10 }
 ];
 
 const collectibles = [
@@ -48,10 +51,12 @@ const collectibles = [
 ];
 
 const enemies = [
-    { x: 300, y: 260, width: 30, height: 30, speed: 1, direction: 1, range: 100 }
+    { x: 300, y: 260, width: 30, height: 30, speed: 1, range: 100, chaseRange: 150, type: 'patrol' },
+    { x: 600, y: 260, width: 30, height: 30, speed: 1.5, range: 100, chaseRange: 100, type: 'chase' },
+    { x: 400, y: 200, width: 30, height: 30, speed: 1, direction: Math.random() < 0.5 ? 1 : -1, type: 'random' }
 ];
 
-const goalPlatform = { x: 750, y: 340, width: 40, height: 10 };
+const goalPlatform = { x: 750, y: 50, width: 40, height: 10 };
 
 function drawPlayer() {
     ctx.fillStyle = 'red';
@@ -147,12 +152,32 @@ function updateCollectibles() {
 
 function updateEnemies() {
     enemies.forEach(enemy => {
-        // Move enemy back and forth
-        enemy.x += enemy.speed * enemy.direction;
+        const distanceToPlayer = player.x - enemy.x;
 
-        // Change direction if the enemy hits the edge of its range
-        if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
-            enemy.direction *= -1; // Reverse direction
+        if (enemy.type === 'patrol') {
+            // Patrol logic
+            enemy.x += enemy.speed;
+            if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
+                enemy.speed *= -1; // Reverse direction
+            }
+            if (Math.abs(distanceToPlayer) < enemy.chaseRange) {
+                enemy.x += (distanceToPlayer > 0 ? enemy.speed : -enemy.speed); // Move towards player
+            }
+        } else if (enemy.type === 'chase') {
+            // Chase logic
+            if (Math.abs(distanceToPlayer) < enemy.chaseRange) {
+                enemy.x += (distanceToPlayer > 0 ? enemy.speed : -enemy.speed); // Move towards player
+            }
+        } else if (enemy.type === 'random') {
+            // Random movement logic
+            enemy.x += enemy.speed * enemy.direction;
+            if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
+                enemy.direction *= -1; // Reverse direction
+            }
+            // Change direction randomly
+            if (Math.random() < 0.01) {
+                enemy.direction *= -1; // Change direction randomly
+            }
         }
 
         // Check for collision with the player
