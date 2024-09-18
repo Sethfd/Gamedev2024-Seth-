@@ -48,7 +48,7 @@ const collectibles = [
 ];
 
 const enemies = [
-    { x: 300, y: 260, width: 30, height: 30, isActive: true }
+    { x: 300, y: 260, width: 30, height: 30, speed: 1, direction: 1, range: 100 }
 ];
 
 const goalPlatform = { x: 750, y: 340, width: 40, height: 10 };
@@ -77,9 +77,7 @@ function drawCollectibles() {
 function drawEnemies() {
     ctx.fillStyle = 'black';
     enemies.forEach(enemy => {
-        if (enemy.isActive) {
-            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-        }
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     });
 }
 
@@ -149,8 +147,16 @@ function updateCollectibles() {
 
 function updateEnemies() {
     enemies.forEach(enemy => {
-        if (enemy.isActive &&
-            player.x < enemy.x + enemy.width &&
+        // Move enemy back and forth
+        enemy.x += enemy.speed * enemy.direction;
+
+        // Change direction if the enemy hits the edge of its range
+        if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
+            enemy.direction *= -1; // Reverse direction
+        }
+
+        // Check for collision with the player
+        if (player.x < enemy.x + enemy.width &&
             player.x + player.width > enemy.x &&
             player.y < enemy.y + enemy.height &&
             player.y + player.height > enemy.y) {
