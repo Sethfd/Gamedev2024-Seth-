@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer with Flying Enemy</title>
+    <title>Platformer with Adjustments</title>
     <style>
         body {
             margin: 0;
@@ -86,8 +86,8 @@
 
         // Enemy properties
         const enemies = [
-            { x: 300, y: 500, width: 30, height: 30, dy: 0, gravity: 0.5, direction: 1 },
-            { x: 700, y: 400, width: 30, height: 30, dy: 0, gravity: 0.5, direction: -1 }
+            { x: 300, y: 500, width: 30, height: 30, dy: 0, gravity: 0.5, direction: 1, damage: 1 },
+            { x: 700, y: 400, width: 30, height: 30, dy: 0, gravity: 0.5, direction: -1, damage: 1 }
         ];
 
         // Flying enemy properties
@@ -100,18 +100,19 @@
             speed: 2,
             range: 100,
             startX: 900,
+            damage: 1,
         };
 
         // Platform properties
         const platforms = [
             { x: 100, y: 450, width: 200, height: 10 },
-            { x: 400, y: 400, width: 200, height: 10 },
-            { x: 700, y: 350, width: 200, height: 10 },
-            { x: 900, y: 300, width: 150, height: 10 },
-            { x: 200, y: 250, width: 150, height: 10 },
-            { x: 600, y: 200, width: 150, height: 10 },
-            { x: 900, y: 150, width: 100, height: 10 },
-            { x: 300, y: 100, width: 200, height: 10 }
+            { x: 400, y: 375, width: 200, height: 10 }, // Lowered
+            { x: 700, y: 325, width: 200, height: 10 }, // Lowered
+            { x: 900, y: 275, width: 150, height: 10 }, // Lowered
+            { x: 200, y: 200, width: 150, height: 10 }, // Lowered
+            { x: 600, y: 150, width: 150, height: 10 }, // Lowered
+            { x: 900, y: 100, width: 100, height: 10 }, // Lowered
+            { x: 300, y: 50, width: 200, height: 10 }   // Lowered
         ];
 
         // Moving platform properties
@@ -301,7 +302,7 @@
                     player.y < enemy.y + enemy.height &&
                     player.y + player.height > enemy.y
                 ) {
-                    player.health -= 10;
+                    player.health -= enemy.damage; // Damage reduced to 1
                     if (player.health <= 0) {
                         gameOverScreen();
                     }
@@ -321,7 +322,7 @@
                 player.y < flyingEnemy.y + flyingEnemy.height &&
                 player.y + player.height > flyingEnemy.y
             ) {
-                player.health -= 10;
+                player.health -= flyingEnemy.damage; // Damage reduced to 1
                 if (player.health <= 0) {
                     gameOverScreen();
                 }
@@ -376,3 +377,4 @@
     </script>
 </body>
 </html>
+
