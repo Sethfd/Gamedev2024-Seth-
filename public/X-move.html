@@ -246,7 +246,7 @@
                 if (player.grounded) {
                     player.dy = player.jumpPower;
                     player.grounded = false;
-                    player.jumpCount = 1; // Reset jump count
+                    player.jumpCount = 2; // Reset jump count
                 } else if (player.jumpCount < player.maxJumps) {
                     player.dy = player.jumpPower;
                     player.jumpCount++;
