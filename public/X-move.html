@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer with Pause Menu</title>
+    <title>Platformer with Flying Enemy</title>
     <style>
         body {
             margin: 0;
@@ -70,10 +70,10 @@
             gravity: 0.5,
             jumpPower: -10,
             grounded: false,
-            jumpCount: 1,
+            jumpCount: 0,
             maxJumps: 2,
             speed: 5,
-            health: 100, // Player health
+            health: 100,
         };
 
         // Goal properties (moved to the top right)
@@ -89,6 +89,18 @@
             { x: 300, y: 500, width: 30, height: 30, dy: 0, gravity: 0.5, direction: 1 },
             { x: 700, y: 400, width: 30, height: 30, dy: 0, gravity: 0.5, direction: -1 }
         ];
+
+        // Flying enemy properties
+        const flyingEnemy = {
+            x: 900,
+            y: 200,
+            width: 30,
+            height: 30,
+            direction: 1,
+            speed: 2,
+            range: 100,
+            startX: 900,
+        };
 
         // Platform properties
         const platforms = [
@@ -149,6 +161,11 @@
             });
         }
 
+        function drawFlyingEnemy() {
+            ctx.fillStyle = 'purple';
+            ctx.fillRect(flyingEnemy.x, flyingEnemy.y, flyingEnemy.width, flyingEnemy.height);
+        }
+
         function drawPlatforms() {
             ctx.fillStyle = 'green';
             platforms.forEach(platform => {
@@ -168,7 +185,7 @@
 
         function drawHealthBar() {
             const healthBar = document.getElementById('health');
-            healthBar.style.width = `${player.health * 2}px`; // 200px max health
+            healthBar.style.width = `${player.health * 2}px`;
         }
 
         function gameOverScreen() {
@@ -207,7 +224,7 @@
             player.y += player.dy;
 
             // Check for platform collisions
-            player.grounded = false; // Reset grounded status
+            player.grounded = false;
             platforms.forEach(platform => {
                 if (
                     player.x < platform.x + platform.width &&
@@ -215,9 +232,9 @@
                     player.y + player.height <= platform.y &&
                     player.y + player.height + player.dy >= platform.y
                 ) {
-                    player.dy = 0; // Stop falling
-                    player.y = platform.y - player.height; // Position on top of platform
-                    player.grounded = true; // Set grounded status
+                    player.dy = 0;
+                    player.y = platform.y - player.height;
+                    player.grounded = true;
                 }
             });
 
@@ -228,17 +245,17 @@
                 player.y + player.height <= movingPlatform.y &&
                 player.y + player.height + player.dy >= movingPlatform.y
             ) {
-                player.dy = 0; // Stop falling
-                player.y = movingPlatform.y - player.height; // Position on top of moving platform
-                player.grounded = true; // Set grounded status
-                player.x += movingPlatform.direction * movingPlatform.speed; // Move with platform
+                player.dy = 0;
+                player.y = movingPlatform.y - player.height;
+                player.grounded = true;
+                player.x += movingPlatform.direction * movingPlatform.speed;
             }
 
             // Check for ground collision
             if (player.y + player.height >= ground.y) {
-                player.y = ground.y - player.height; // Position on top of ground
-                player.dy = 0; // Stop falling
-                player.grounded = true; // Set grounded status
+                player.y = ground.y - player.height;
+                player.dy = 0;
+                player.grounded = true;
             }
 
             // Jumping
@@ -246,7 +263,7 @@
                 if (player.grounded) {
                     player.dy = player.jumpPower;
                     player.grounded = false;
-                    player.jumpCount = 2; // Reset jump count
+                    player.jumpCount = 1;
                 } else if (player.jumpCount < player.maxJumps) {
                     player.dy = player.jumpPower;
                     player.jumpCount++;
@@ -266,7 +283,6 @@
                 enemy.dy += enemy.gravity;
                 enemy.y += enemy.dy;
 
-                // Check boundaries for enemies
                 if (enemy.y + enemy.height >= canvas.height) {
                     enemy.y = canvas.height - enemy.height;
                     enemy.dy = 0;
@@ -275,7 +291,7 @@
                 // Simple enemy horizontal movement
                 enemy.x += enemy.direction * 2;
                 if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
-                    enemy.direction *= -1; // Change direction
+                    enemy.direction *= -1;
                 }
 
                 // Check for player collision with enemies
@@ -285,17 +301,36 @@
                     player.y < enemy.y + enemy.height &&
                     player.y + player.height > enemy.y
                 ) {
-                    player.health -= 10; // Decrease health
+                    player.health -= 10;
                     if (player.health <= 0) {
-                        gameOverScreen(); // Show game over screen
+                        gameOverScreen();
                     }
                 }
             });
 
+            // Move flying enemy
+            flyingEnemy.x += flyingEnemy.direction * flyingEnemy.speed;
+            if (flyingEnemy.x >= flyingEnemy.startX + flyingEnemy.range || flyingEnemy.x <= flyingEnemy.startX - flyingEnemy.range) {
+                flyingEnemy.direction *= -1; // Change direction
+            }
+
+            // Check for player collision with flying enemy
+            if (
+                player.x < flyingEnemy.x + flyingEnemy.width &&
+                player.x + player.width > flyingEnemy.x &&
+                player.y < flyingEnemy.y + flyingEnemy.height &&
+                player.y + player.height > flyingEnemy.y
+            ) {
+                player.health -= 10;
+                if (player.health <= 0) {
+                    gameOverScreen();
+                }
+            }
+
             // Update moving platform
             movingPlatform.x += movingPlatform.direction * movingPlatform.speed;
             if (movingPlatform.x >= movingPlatform.startX + movingPlatform.range || movingPlatform.x <= movingPlatform.startX - movingPlatform.range) {
-                movingPlatform.direction *= -1; // Change direction
+                movingPlatform.direction *= -1;
             }
 
             // Check for goal collision
@@ -306,7 +341,7 @@
                 player.y + player.height > goal.y
             ) {
                 alert('You reached the goal!');
-                document.location.reload(); // Reload the page
+                document.location.reload();
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -316,7 +351,8 @@
             drawPlayer();
             drawGoal();
             drawEnemies();
-            drawHealthBar(); // Draw the health bar
+            drawFlyingEnemy();
+            drawHealthBar();
 
             requestAnimationFrame(update);
         }
