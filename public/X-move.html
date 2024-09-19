@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer with Game Over Screen</title>
+    <title>Platformer with Pause Menu</title>
     <style>
         body {
             margin: 0;
@@ -29,7 +29,7 @@
             height: 100%;
             background-color: green;
         }
-        #gameOverScreen {
+        #gameOverScreen, #pauseMenu {
             display: none;
             position: absolute;
             top: 50%;
@@ -49,6 +49,11 @@
     <div id="gameOverScreen">
         <h1>Game Over</h1>
         <p>Your health reached zero!</p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <div id="pauseMenu">
+        <h1>Paused</h1>
+        <button onclick="resumeGame()">Resume</button>
         <button onclick="restartGame()">Restart</button>
     </div>
     <script>
@@ -74,7 +79,7 @@
         // Goal properties (moved to the top right)
         const goal = {
             x: 1150,
-            y: 50,  // Adjusted to the top of the canvas
+            y: 50,
             width: 30,
             height: 30,
         };
@@ -125,6 +130,7 @@
         };
 
         let gameOver = false;
+        let paused = false;
 
         function drawPlayer() {
             ctx.fillStyle = 'blue';
@@ -170,18 +176,31 @@
             gameOver = true;
         }
 
+        function pauseMenu() {
+            document.getElementById('pauseMenu').style.display = 'block';
+            paused = true;
+        }
+
+        function resumeGame() {
+            document.getElementById('pauseMenu').style.display = 'none';
+            paused = false;
+            update();
+        }
+
         function restartGame() {
             player.health = 100;
             player.x = 50;
             player.y = 500;
             player.dy = 0;
             gameOver = false;
+            paused = false;
             document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('pauseMenu').style.display = 'none';
             update();
         }
 
         function update() {
-            if (gameOver) return;
+            if (gameOver || paused) return;
 
             // Gravity for player
             player.dy += player.gravity;
@@ -307,6 +326,7 @@
             if (e.key === 'a') keys.left = true;
             if (e.key === 'd') keys.right = true;
             if (e.key === ' ') keys.up = true; // Spacebar for jump
+            if (e.key === 'p' && !gameOver) pauseMenu(); // Press P to pause
         });
 
         document.addEventListener('keyup', (e) => {
@@ -320,4 +340,3 @@
     </script>
 </body>
 </html>
-
