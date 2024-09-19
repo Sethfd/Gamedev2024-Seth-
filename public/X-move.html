@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer with Ground</title>
+    <title>Platformer with Game Over Screen</title>
     <style>
         body {
             margin: 0;
@@ -16,10 +16,41 @@
         canvas {
             border: 2px solid #000;
         }
+        #healthBar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 200px;
+            height: 20px;
+            background-color: lightgray;
+            border: 1px solid #000;
+        }
+        #health {
+            height: 100%;
+            background-color: green;
+        }
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
+    <div id="healthBar"><div id="health"></div></div>
     <canvas id="gameCanvas" width="1200" height="600"></canvas>
+    <div id="gameOverScreen">
+        <h1>Game Over</h1>
+        <p>Your health reached zero!</p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -37,12 +68,13 @@
             jumpCount: 0,
             maxJumps: 2,
             speed: 5,
+            health: 100, // Player health
         };
 
-        // Goal properties
+        // Goal properties (moved to the top right)
         const goal = {
             x: 1150,
-            y: 500,
+            y: 50,  // Adjusted to the top of the canvas
             width: 30,
             height: 30,
         };
@@ -92,6 +124,8 @@
             up: false
         };
 
+        let gameOver = false;
+
         function drawPlayer() {
             ctx.fillStyle = 'blue';
             ctx.fillRect(player.x, player.y, player.width, player.height);
@@ -126,7 +160,29 @@
             ctx.fillRect(ground.x, ground.y, ground.width, ground.height);
         }
 
+        function drawHealthBar() {
+            const healthBar = document.getElementById('health');
+            healthBar.style.width = `${player.health * 2}px`; // 200px max health
+        }
+
+        function gameOverScreen() {
+            document.getElementById('gameOverScreen').style.display = 'block';
+            gameOver = true;
+        }
+
+        function restartGame() {
+            player.health = 100;
+            player.x = 50;
+            player.y = 500;
+            player.dy = 0;
+            gameOver = false;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            update();
+        }
+
         function update() {
+            if (gameOver) return;
+
             // Gravity for player
             player.dy += player.gravity;
             player.y += player.dy;
@@ -202,6 +258,19 @@
                 if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
                     enemy.direction *= -1; // Change direction
                 }
+
+                // Check for player collision with enemies
+                if (
+                    player.x < enemy.x + enemy.width &&
+                    player.x + player.width > enemy.x &&
+                    player.y < enemy.y + enemy.height &&
+                    player.y + player.height > enemy.y
+                ) {
+                    player.health -= 10; // Decrease health
+                    if (player.health <= 0) {
+                        gameOverScreen(); // Show game over screen
+                    }
+                }
             });
 
             // Update moving platform
@@ -228,6 +297,7 @@
             drawPlayer();
             drawGoal();
             drawEnemies();
+            drawHealthBar(); // Draw the health bar
 
             requestAnimationFrame(update);
         }
@@ -250,3 +320,4 @@
     </script>
 </body>
 </html>
+
