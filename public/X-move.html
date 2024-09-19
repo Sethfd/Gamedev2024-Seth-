@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer with Platforms</title>
+    <title>Platformer with Ground</title>
     <style>
         body {
             margin: 0;
@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="gameCanvas" width="1200" height="600"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -27,37 +27,63 @@
         // Player properties
         const player = {
             x: 50,
-            y: 300,
+            y: 500,
             width: 30,
             height: 30,
             dy: 0,
             gravity: 0.5,
             jumpPower: -10,
             grounded: false,
-            jumpCount: 1,
-            maxJumps: 2, // Allow double jump
-            speed: 5,    // Movement speed
+            jumpCount: 0,
+            maxJumps: 2,
+            speed: 5,
         };
 
         // Goal properties
         const goal = {
-            x: 750,
-            y: 300,
+            x: 1150,
+            y: 500,
             width: 30,
             height: 30,
         };
 
         // Enemy properties
         const enemies = [
-            { x: 200, y: 300, width: 30, height: 30, dy: 0, gravity: 0.5, direction: 1 }
+            { x: 300, y: 500, width: 30, height: 30, dy: 0, gravity: 0.5, direction: 1 },
+            { x: 700, y: 400, width: 30, height: 30, dy: 0, gravity: 0.5, direction: -1 }
         ];
 
         // Platform properties
         const platforms = [
-            { x: 100, y: 250, width: 200, height: 10 },
-            { x: 400, y: 200, width: 200, height: 10 },
-            { x: 600, y: 150, width: 150, height: 10 },
+            { x: 100, y: 450, width: 200, height: 10 },
+            { x: 400, y: 400, width: 200, height: 10 },
+            { x: 700, y: 350, width: 200, height: 10 },
+            { x: 900, y: 300, width: 150, height: 10 },
+            { x: 200, y: 250, width: 150, height: 10 },
+            { x: 600, y: 200, width: 150, height: 10 },
+            { x: 900, y: 150, width: 100, height: 10 },
+            { x: 300, y: 100, width: 200, height: 10 }
         ];
+
+        // Moving platform properties
+        const movingPlatform = {
+            x: 500,
+            y: 300,
+            width: 150,
+            height: 10,
+            direction: 1,
+            speed: 2,
+            range: 100,
+            startX: 500,
+        };
+
+        // Ground properties
+        const ground = {
+            x: 0,
+            y: canvas.height - 10,
+            width: canvas.width,
+            height: 10,
+        };
 
         // Control properties
         const keys = {
@@ -90,6 +116,16 @@
             });
         }
 
+        function drawMovingPlatform() {
+            ctx.fillStyle = 'orange';
+            ctx.fillRect(movingPlatform.x, movingPlatform.y, movingPlatform.width, movingPlatform.height);
+        }
+
+        function drawGround() {
+            ctx.fillStyle = 'brown';
+            ctx.fillRect(ground.x, ground.y, ground.width, ground.height);
+        }
+
         function update() {
             // Gravity for player
             player.dy += player.gravity;
@@ -110,6 +146,26 @@
                 }
             });
 
+            // Check for moving platform collision
+            if (
+                player.x < movingPlatform.x + movingPlatform.width &&
+                player.x + player.width > movingPlatform.x &&
+                player.y + player.height <= movingPlatform.y &&
+                player.y + player.height + player.dy >= movingPlatform.y
+            ) {
+                player.dy = 0; // Stop falling
+                player.y = movingPlatform.y - player.height; // Position on top of moving platform
+                player.grounded = true; // Set grounded status
+                player.x += movingPlatform.direction * movingPlatform.speed; // Move with platform
+            }
+
+            // Check for ground collision
+            if (player.y + player.height >= ground.y) {
+                player.y = ground.y - player.height; // Position on top of ground
+                player.dy = 0; // Stop falling
+                player.grounded = true; // Set grounded status
+            }
+
             // Jumping
             if (keys.up) {
                 if (player.grounded) {
@@ -120,13 +176,6 @@
                     player.dy = player.jumpPower;
                     player.jumpCount++;
                 }
-            }
-
-            // Check boundaries
-            if (player.y + player.height >= canvas.height) {
-                player.y = canvas.height - player.height;
-                player.dy = 0;
-                player.grounded = true;
             }
 
             // Horizontal movement
@@ -155,6 +204,12 @@
                 }
             });
 
+            // Update moving platform
+            movingPlatform.x += movingPlatform.direction * movingPlatform.speed;
+            if (movingPlatform.x >= movingPlatform.startX + movingPlatform.range || movingPlatform.x <= movingPlatform.startX - movingPlatform.range) {
+                movingPlatform.direction *= -1; // Change direction
+            }
+
             // Check for goal collision
             if (
                 player.x < goal.x + goal.width &&
@@ -168,6 +223,8 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawPlatforms();
+            drawMovingPlatform();
+            drawGround();
             drawPlayer();
             drawGoal();
             drawEnemies();
@@ -185,7 +242,7 @@
         document.addEventListener('keyup', (e) => {
             if (e.key === 'a') keys.left = false;
             if (e.key === 'd') keys.right = false;
-            if (e.key === 'w') keys.up = false; // Spacebar for jump
+            if (e.key === ' ') keys.up = false; // Spacebar for jump
         });
 
         // Start the game
