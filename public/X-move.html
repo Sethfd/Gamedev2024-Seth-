@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer with Single Air Jump</title>
+    <title>Platformer with Double Jump</title>
     <style>
         body {
             margin: 0;
@@ -70,7 +70,8 @@
             gravity: 0.5,
             jumpPower: -10,
             grounded: false,
-            canJump: true,
+            jumpCount: 0,
+            maxJumps: 2, // Allow double jump
             speed: 5,
             health: 100,
         };
@@ -209,7 +210,7 @@
             player.x = 50;
             player.y = 500;
             player.dy = 0;
-            player.canJump = true;
+            player.jumpCount = 0; // Reset jump count
             gameOver = false;
             paused = false;
             document.getElementById('gameOverScreen').style.display = 'none';
@@ -236,7 +237,7 @@
                     player.dy = 0;
                     player.y = platform.y - player.height;
                     player.grounded = true;
-                    player.canJump = true; // Reset jump ability when grounded
+                    player.jumpCount = 0; // Reset jump count when grounded
                 }
             });
 
@@ -251,7 +252,7 @@
                 player.y = movingPlatform.y - player.height;
                 player.grounded = true;
                 player.x += movingPlatform.direction * movingPlatform.speed;
-                player.canJump = true; // Reset jump ability when on moving platform
+                player.jumpCount = 0; // Reset jump count when on moving platform
             }
 
             // Check for ground collision
@@ -259,13 +260,15 @@
                 player.y = ground.y - player.height;
                 player.dy = 0;
                 player.grounded = true;
-                player.canJump = true; // Reset jump ability when grounded
+                player.jumpCount = 0; // Reset jump count when grounded
             }
 
             // Jumping
-            if (keys.up && player.canJump) {
-                player.dy = player.jumpPower;
-                player.canJump = false; // Disable further jumps until grounded
+            if (keys.up) {
+                if (player.grounded || player.jumpCount < player.maxJumps) {
+                    player.dy = player.jumpPower;
+                    player.jumpCount++; // Increase jump count on jump
+                }
             }
 
             // Horizontal movement
@@ -374,3 +377,4 @@
     </script>
 </body>
 </html>
+
