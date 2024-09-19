@@ -36,6 +36,7 @@
             grounded: false,
             jumpCount: 0,
             maxJumps: 2, // Allow double jump
+            speed: 5,    // Movement speed
         };
 
         // Goal properties
@@ -100,8 +101,12 @@
             }
 
             // Horizontal movement
-            if (keys.left) player.x -= 5;
-            if (keys.right) player.x += 5;
+            if (keys.left) player.x -= player.speed;
+            if (keys.right) player.x += player.speed;
+
+            // Prevent going out of bounds
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
 
             // Move enemies
             enemies.forEach(enemy => {
@@ -144,13 +149,13 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'a') keys.left = true;
             if (e.key === 'd') keys.right = true;
-            if (e.key === 'w') keys.up = true;
+            if (e.key === ' ') keys.up = true; // Spacebar for jump
         });
 
         document.addEventListener('keyup', (e) => {
             if (e.key === 'a') keys.left = false;
             if (e.key === 'd') keys.right = false;
-            if (e.key === 'w') keys.up = false;
+            if (e.key === ' ') keys.up = false; // Spacebar for jump
         });
 
         // Start the game
@@ -158,4 +163,3 @@
     </script>
 </body>
 </html>
-
