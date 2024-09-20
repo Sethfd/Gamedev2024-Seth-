@@ -53,7 +53,7 @@
     <script>
         function showName() {
             const firstName = document.getElementById('myFirstName').value;
-            document.getElementById('myDiv01').innerHTML = 'Your name is ' + firstName;
+            document.getElementById('myDiv01').innerHTML = 'hi ' + firstName;
         }
     </script>
 </body>
@@ -92,6 +92,39 @@
 </body>
 </html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Reverse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #output {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reverse Your Text!</h1>
+    <input type="text" id="userInput" placeholder="Type something here">
+    <input type="button" value="Reverse Text" id="reverseButton">
+
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('reverseButton').addEventListener('click', function() {
+            const inputText = document.getElementById('userInput').value; // Get the text
+            const reversedText = inputText.split('').reverse().join(''); // Reverse the text
+            document.getElementById('output').innerText = `Reversed Text: ${reversedText}`; // Show it
+        });
+    </script>
+</body>
+</html>
 
 
 
