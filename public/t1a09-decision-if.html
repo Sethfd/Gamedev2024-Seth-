@@ -147,77 +147,64 @@
 </body>
 </html>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rainbow Pixel Explosion</title>
+    <title>Drawing Canvas</title>
     <style>
         body {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            overflow: hidden; /* Prevent scrollbars */
+            margin: 20px;
         }
-        .pixel {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            opacity: 1;
-            animation: explode 1s forwards; /* Animation for explosion */
-        }
-        @keyframes explode {
-            0% {
-                transform: translate(0, 0);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--x), var(--y));
-                opacity: 0; /* Fade out */
-            }
+        canvas {
+            border: 1px solid #000;
+            cursor: crosshair; /* Change cursor to crosshair */
         }
     </style>
 </head>
 <body>
-    <h1 style="position: absolute; top: 20px;">Click for a Rainbow Pixel Explosion!</h1>
-    <input type="button" value="Explosion" id="explosionButton">
+    <h1>Draw on the Canvas!</h1>
+    <canvas id="drawingCanvas" width="500" height="400"></canvas>
+    <input type="button" value="Clear Canvas" id="clearButton">
 
     <script>
-        const colors = ['#FF5733', '#FFBD33', '#75FF33', '#33FF57', '#33FFBD', '#3375FF', '#3357FF', '#A133FF'];
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
 
-        document.getElementById('explosionButton').addEventListener('click', function() {
-            const numberOfPixels = 100; // Number of pixels to create each time
-            const centerX = window.innerWidth / 2; // Center of the screen
-            const centerY = window.innerHeight / 2; // Center of the screen
-            
-            for (let i = 0; i < numberOfPixels; i++) {
-                const pixel = document.createElement('div');
-                pixel.className = 'pixel';
-                
-                // Set random color
-                pixel.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                
-                // Position the pixel in the center
-                pixel.style.left = `${centerX}px`;
-                pixel.style.top = `${centerY}px`;
+        // Start drawing
+        canvas.addEventListener('mousedown', function(e) {
+            drawing = true;
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
 
-                // Set random explosion direction
-                const angle = Math.random() * 2 * Math.PI; // Random angle
-                const distance = Math.random() * 200 + 50; // Random distance
-                pixel.style.setProperty('--x', `${Math.cos(angle) * distance}px`);
-                pixel.style.setProperty('--y', `${Math.sin(angle) * distance}px`);
-
-                document.body.appendChild(pixel);
+        // Draw on canvas
+        canvas.addEventListener('mousemove', function(e) {
+            if (drawing) {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
             }
+        });
+
+        // Stop drawing
+        canvas.addEventListener('mouseup', function() {
+            drawing = false;
+            ctx.beginPath(); // Start a new path for next drawing
+        });
+
+        // Clear canvas button
+        document.getElementById('clearButton').addEventListener('click', function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
         });
     </script>
 </body>
 </html>
+
+
 
 
 
