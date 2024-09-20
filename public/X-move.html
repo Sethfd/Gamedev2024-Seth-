@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Platformer</title>
+    <title>Enhanced Platformer with Health System</title>
     <style>
         body {
             margin: 0;
@@ -30,7 +30,10 @@
         // Game variables
         const gravity = 0.5;
         let score = 0;
+        let health = 3; // Player health
         let isJumping = false;
+        let leftPressed = false;
+        let rightPressed = false;
 
         const player = {
             x: 50,
@@ -39,6 +42,7 @@
             height: 40,
             velocityY: 0,
             color: 'red',
+            speed: 5,
             update() {
                 this.velocityY += gravity;
                 this.y += this.velocityY;
@@ -48,6 +52,14 @@
                     this.y = canvas.height - this.height;
                     this.velocityY = 0;
                     isJumping = false;
+                }
+
+                // Move left and right
+                if (leftPressed && this.x > 0) {
+                    this.x -= this.speed;
+                }
+                if (rightPressed && this.x < canvas.width - this.width) {
+                    this.x += this.speed;
                 }
             },
             jump() {
@@ -102,6 +114,12 @@
             });
         }
 
+        function drawHealth() {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Health: ' + health, canvas.width - 100, 20); // Display health
+        }
+
         function checkPlatformCollision() {
             platforms.forEach(platform => {
                 if (player.x < platform.x + platform.width &&
@@ -134,8 +152,11 @@
                     player.x + player.width > enemy.x &&
                     player.y < enemy.y + enemy.height &&
                     player.y + player.height > enemy.y) {
-                    alert("Game Over! Your score: " + score);
-                    document.location.reload(); // Restart the game
+                    health--; // Decrease health on collision
+                    if (health <= 0) {
+                        alert("Game Over! Your score: " + score);
+                        document.location.reload(); // Restart the game
+                    }
                 }
             });
         }
@@ -160,6 +181,7 @@
             drawPlatforms();
             drawCollectibles();
             drawEnemies();
+            drawHealth(); // Draw health on screen
             ctx.fillStyle = 'black';
             ctx.font = '20px Arial';
             ctx.fillText('Score: ' + score, 10, 20); // Display score
@@ -169,6 +191,21 @@
         window.addEventListener('keydown', function(e) {
             if (e.code === 'Space') {
                 player.jump();
+            }
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                leftPressed = true;
+            }
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                rightPressed = true;
+            }
+        });
+
+        window.addEventListener('keyup', function(e) {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                leftPressed = false;
+            }
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                rightPressed = false;
             }
         });
 
