@@ -3,245 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Platformer with Enemy Types</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #output {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-   
-    <input type="text" id="userInput" placeholder="Type something here">
-    <button id="submitButton">Submit</button>
-    <div id="output"></div>
-
-    <script>
-        document.getElementById('submitButton').addEventListener('click', function() {
-            const input = document.getElementById('userInput').value;
-            document.getElementById('output').innerText = `You entered: ${input}`;
-        });
-    </script>
-</body>
-</html>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Show Name Example</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Input Your Name</h1>
-    <input type="text" id="myFirstName" value="Name">
-    <input type="button" value="Show on page" onclick="showName()">
-
-    <div id="myDiv01">...</div>
-
-    <script>
-        function showName() {
-            const firstName = document.getElementById('myFirstName').value;
-            document.getElementById('myDiv01').innerHTML = 'hi ' + firstName;
-        }
-    </script>
-</body>
-</html>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Change Background Color</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            transition: background-color 0.5s; /* Smooth transition */
-        }
-    </style>
-</head>
-<body>
-    <h1>Change Background Color</h1>
-    <input type="button" value="Change Color" id="colorButton">
-
-    <script>
-        const colors = ['#FF5733', '#33FF57', '#3357FF', '#F1C40F', 'white'];
-        let currentIndex = 0;
-
-        document.getElementById('colorButton').addEventListener('click', function() {
-            // Change the background color
-            document.body.style.backgroundColor = colors[currentIndex];
-
-            // Update index for next color
-            currentIndex = (currentIndex + 1) % colors.length;
-        });
-    </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Falling Pink Blocks</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            overflow: hidden; /* Prevents scrollbars from appearing */
-            position: relative;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .block {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-color: pink; /* Changed color to pink */
-            animation: fall 2s forwards; /* Makes the block fall */
-        }
-        @keyframes fall {
-            from {
-                top: -50px; /* Start above the viewport */
-            }
-            to {
-                transform: translateY(100vh); /* Move the block to the bottom */
-            }
-        }
-    </style>
-</head>
-<body>
-    <h1>Click to Make Pink Blocks Fall!</h1>
-    <input type="button" value="Make Blocks Fall" id="fallButton">
-
-    <script>
-        document.getElementById('fallButton').addEventListener('click', function() {
-            const numberOfBlocks = 5; // Number of blocks to create each time
-            for (let i = 0; i < numberOfBlocks; i++) {
-                // Create a new block
-                const block = document.createElement('div');
-                block.className = 'block';
-                
-                // Set a random horizontal position for the block
-                const randomX = Math.random() * (window.innerWidth - 50); // 50 is the width of the block
-                block.style.left = randomX + 'px';
-                
-                // Add the block to the body
-                document.body.appendChild(block);
-            }
-        });
-    </script>
-</body>
-</html>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drawing Canvas with Colors and Size</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px;
+            margin: 0;
+            overflow: hidden;
         }
         canvas {
+            background: #87CEEB; /* Sky color */
+            display: block;
+            margin: auto;
             border: 1px solid #000;
-            cursor: crosshair; /* Change cursor to crosshair */
         }
-        .color-button, .size-button {
-            width: 50px;
-            height: 30px;
-            margin: 5px;
-            border: none;
-            cursor: pointer;
+        h1 {
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>Draw on the Canvas!</h1>
-    <canvas id="drawingCanvas" width="500" height="400"></canvas>
-    
-    <div>
-        <h3>Choose Color:</h3>
-        <button class="color-button" style="background-color: red;" onclick="changeColor('red')"></button>
-        <button class="color-button" style="background-color: blue;" onclick="changeColor('blue')"></button>
-        <button class="color-button" style="background-color: green;" onclick="changeColor('green')"></button>
-        <button class="color-button" style="background-color: yellow;" onclick="changeColor('yellow')"></button>
-        <button class="color-button" style="background-color: black;" onclick="changeColor('black')"></button>
-    </div>
-
-    <div>
-        <h3>Choose Size:</h3>
-        <button class="size-button" onclick="changeSize(5)">Small</button>
-        <button class="size-button" onclick="changeSize(10)">Medium</button>
-        <button class="size-button" onclick="changeSize(20)">Large</button>
-    </div>
-
-    <input type="button" value="Clear Canvas" id="clearButton">
-
+    <h1>Enhanced Platformer</h1>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
     <script>
-        const canvas = document.getElementById('drawingCanvas');
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let drawing = false;
-        let currentColor = 'black'; // Default color
-        let currentSize = 5; // Default brush size
 
-        // Change color function
-        function changeColor(color) {
-            currentColor = color;
-            ctx.strokeStyle = currentColor; // Update stroke color
+        // Game variables
+        const gravity = 0.5;
+        let score = 0;
+        let health = 3; // Player health
+        let isJumping = false;
+        let leftPressed = false;
+        let rightPressed = false;
+
+        const player = {
+            x: 50,
+            y: 500,
+            width: 40,
+            height: 40,
+            velocityY: 0,
+            color: 'red',
+            speed: 5,
+            update() {
+                this.velocityY += gravity;
+                this.y += this.velocityY;
+
+                // Ground collision
+                if (this.y + this.height >= canvas.height) {
+                    this.y = canvas.height - this.height;
+                    this.velocityY = 0;
+                    isJumping = false;
+                }
+
+                // Move left and right
+                if (leftPressed && this.x > 0) {
+                    this.x -= this.speed;
+                }
+                if (rightPressed && this.x < canvas.width - this.width) {
+                    this.x += this.speed;
+                }
+            },
+            jump() {
+                if (!isJumping) {
+                    this.velocityY = -10;
+                    isJumping = true;
+                }
+            },
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        };
+
+        const platforms = [
+            { x: 0, y: 550, width: 1000, height: 20 },
+            { x: 100, y: 450, width: 200, height: 20 },
+            { x: 400, y: 350, width: 150, height: 20 },
+            { x: 650, y: 250, width: 200, height: 20 },
+            { x: 200, y: 300, width: 150, height: 20 },
+            { x: 800, y: 400, width: 150, height: 20 },
+            { x: 300, y: 150, width: 200, height: 20 },
+            { x: 500, y: 100, width: 200, height: 20 },
+            { x: 900, y: 200, width: 100, height: 20 }
+        ];
+
+        const collectibles = [
+            { x: 200, y: 420, width: 20, height: 20, collected: false, color: 'gold' },
+            { x: 600, y: 320, width: 20, height: 20, collected: false, color: 'gold' },
+            { x: 750, y: 180, width: 20, height: 20, collected: false, color: 'gold' }
+        ];
+
+        // Enemy types with different behaviors
+        const enemies = [
+            { x: 300, y: 500, width: 40, height: 40, color: 'black', direction: 1, type: 'patrol', range: 100, startX: 300 },
+            { x: 600, y: 400, width: 40, height: 40, color: 'orange', direction: 1, type: 'vertical', range: 150 },
+            { x: 800, y: 300, width: 40, height: 40, color: 'green', direction: 1, type: 'bouncing', bounceHeight: 100 }
+        ];
+
+        const goalPlatform = { x: 950, y: 500, width: 40, height: 40, color: 'blue' };
+
+        function drawPlatforms() {
+            ctx.fillStyle = 'green';
+            platforms.forEach(platform => {
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
         }
 
-        // Change size function
-        function changeSize(size) {
-            currentSize = size;
-            ctx.lineWidth = currentSize; // Update brush size
+        function drawCollectibles() {
+            collectibles.forEach(coin => {
+                if (!coin.collected) {
+                    ctx.fillStyle = coin.color;
+                    ctx.fillRect(coin.x, coin.y, coin.width, coin.height);
+                }
+            });
         }
 
-        // Start drawing
-        canvas.addEventListener('mousedown', function(e) {
-            drawing = true;
-            ctx.moveTo(e.offsetX, e.offsetY);
-        });
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.fillStyle = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+        }
 
-        // Draw on canvas
-        canvas.addEventListener('mousemove', function(e) {
-            if (drawing) {
-                ctx.lineTo(e.offsetX, e.offsetY);
-                ctx.stroke();
+        function drawGoal() {
+            ctx.fillStyle = goalPlatform.color;
+            ctx.fillRect(goalPlatform.x, goalPlatform.y, goalPlatform.width, goalPlatform.height);
+        }
+
+        function drawHealth() {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Health: ' + health, canvas.width - 100, 20); // Display health
+        }
+
+        function checkPlatformCollision() {
+            platforms.forEach(platform => {
+                if (player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y + player.height < platform.y + platform.height &&
+                    player.y + player.height + player.velocityY >= platform.y) {
+                    player.y = platform.y - player.height;
+                    player.velocityY = 0;
+                    isJumping = false;
+                }
+            });
+        }
+
+        function checkCollectibleCollision() {
+            collectibles.forEach(coin => {
+                if (!coin.collected &&
+                    player.x < coin.x + coin.width &&
+                    player.x + player.width > coin.x &&
+                    player.y < coin.y + coin.height &&
+                    player.y + player.height > coin.y) {
+                    coin.collected = true;
+                    score += 10; // Increase score
+                }
+            });
+        }
+
+        function checkEnemyCollision() {
+            enemies.forEach(enemy => {
+                if (player.x < enemy.x + enemy.width &&
+                    player.x + player.width > enemy.x &&
+                    player.y < enemy.y + enemy.height &&
+                    player.y + player.height > enemy.y) {
+                    health--; // Decrease health on collision
+                    if (health <= 0) {
+                        alert("Game Over! Your score: " + score);
+                        document.location.reload(); // Restart the game
+                    }
+                }
+            });
+        }
+
+        function checkGoalCollision() {
+            if (player.x < goalPlatform.x + goalPlatform.width &&
+                player.x + player.width > goalPlatform.x &&
+                player.y < goalPlatform.y + goalPlatform.height &&
+                player.y + player.height > goalPlatform.y) {
+                alert("You reached the goal! Your score: " + score);
+                document.location.reload(); // Restart the game
+            }
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                if (enemy.type === 'patrol') {
+                    enemy.x += enemy.direction * 2;
+                    if (enemy.x < enemy.startX - enemy.range || enemy.x > enemy.startX + enemy.range) {
+                        enemy.direction *= -1; // Change direction on reach range
+                    }
+                } else if (enemy.type === 'vertical') {
+                    enemy.y += enemy.direction * 2;
+                    if (enemy.y < 250 || enemy.y > 400) {
+                        enemy.direction *= -1; // Change direction for vertical movement
+                    }
+                } else if (enemy.type === 'bouncing') {
+                    enemy.y += enemy.direction * 2;
+                    if (enemy.y < enemy.bounceHeight) {
+                        enemy.direction = 1; // Move down
+                    } else if (enemy.y >= 300) {
+                        enemy.direction = -1; // Move up
+                    }
+                }
+            });
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            player.update();
+            checkPlatformCollision();
+            checkCollectibleCollision();
+            checkEnemyCollision();
+            checkGoalCollision();
+            updateEnemies();
+            player.draw();
+            drawPlatforms();
+            drawCollectibles();
+            drawEnemies();
+            drawGoal(); // Draw the goal platform
+            drawHealth(); // Draw health on screen
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText('Score: ' + score, 10, 20); // Display score
+            requestAnimationFrame(update);
+        }
+
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                player.jump();
+            }
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                leftPressed = true;
+            }
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                rightPressed = true;
             }
         });
 
-        // Stop drawing
-        canvas.addEventListener('mouseup', function() {
-            drawing = false;
-            ctx.beginPath(); // Start a new path for next drawing
+        window.addEventListener('keyup', function(e) {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                leftPressed = false;
+            }
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                rightPressed = false;
+            }
         });
 
-        // Clear canvas button
-        document.getElementById('clearButton').addEventListener('click', function() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-        });
+        update();
     </script>
 </body>
 </html>
+
+
 
 
 
