@@ -97,7 +97,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Falling Blocks</title>
+    <title>Falling Pink Blocks</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -110,10 +110,13 @@
             position: absolute;
             width: 50px;
             height: 50px;
-            background-color: red;
+            background-color: pink; /* Changed color to pink */
             animation: fall 2s forwards; /* Makes the block fall */
         }
         @keyframes fall {
+            from {
+                top: -50px; /* Start above the viewport */
+            }
             to {
                 transform: translateY(100vh); /* Move the block to the bottom */
             }
@@ -121,18 +124,18 @@
     </style>
 </head>
 <body>
-    <h1>Click to Make Blocks Fall!</h1>
+    <h1>Click to Make Pink Blocks Fall!</h1>
     <input type="button" value="Make Blocks Fall" id="fallButton">
 
     <script>
         document.getElementById('fallButton').addEventListener('click', function() {
-            const numberOfBlocks = 10; // Number of blocks to create each time
+            const numberOfBlocks = 5; // Number of blocks to create each time
             for (let i = 0; i < numberOfBlocks; i++) {
                 // Create a new block
                 const block = document.createElement('div');
                 block.className = 'block';
                 
-                // Set a random position for the block to start falling from
+                // Set a random horizontal position for the block
                 const randomX = Math.random() * (window.innerWidth - 50); // 50 is the width of the block
                 block.style.left = randomX + 'px';
                 
@@ -143,6 +146,79 @@
     </script>
 </body>
 </html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Pixel Explosion</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        .pixel {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            opacity: 1;
+            animation: explode 1s forwards; /* Animation for explosion */
+        }
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y));
+                opacity: 0; /* Fade out */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="position: absolute; top: 20px;">Click for a Rainbow Pixel Explosion!</h1>
+    <input type="button" value="Explosion" id="explosionButton">
+
+    <script>
+        const colors = ['#FF5733', '#FFBD33', '#75FF33', '#33FF57', '#33FFBD', '#3375FF', '#3357FF', '#A133FF'];
+
+        document.getElementById('explosionButton').addEventListener('click', function() {
+            const numberOfPixels = 100; // Number of pixels to create each time
+            const centerX = window.innerWidth / 2; // Center of the screen
+            const centerY = window.innerHeight / 2; // Center of the screen
+            
+            for (let i = 0; i < numberOfPixels; i++) {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                
+                // Set random color
+                pixel.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Position the pixel in the center
+                pixel.style.left = `${centerX}px`;
+                pixel.style.top = `${centerY}px`;
+
+                // Set random explosion direction
+                const angle = Math.random() * 2 * Math.PI; // Random angle
+                const distance = Math.random() * 200 + 50; // Random distance
+                pixel.style.setProperty('--x', `${Math.cos(angle) * distance}px`);
+                pixel.style.setProperty('--y', `${Math.sin(angle) * distance}px`);
+
+                document.body.appendChild(pixel);
+            }
+        });
+    </script>
+</body>
+</html>
+
 
 
 
