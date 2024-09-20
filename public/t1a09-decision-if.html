@@ -29,3 +29,32 @@
 </body>
 </html>
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show Name Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Input Your Name</h1>
+    <input type="text" id="myFirstName" value="Name">
+    <input type="button" value="Show on page" onclick="showName()">
+
+    <div id="myDiv01">...</div>
+
+    <script>
+        function showName() {
+            const firstName = document.getElementById('myFirstName').value;
+            document.getElementById('myDiv01').innerHTML = 'Your name is ' + firstName;
+        }
+    </script>
+</body>
+</html>
