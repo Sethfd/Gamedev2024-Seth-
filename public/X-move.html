@@ -36,6 +36,7 @@
             color: 'blue',
             health: 100,
             speed: 3,
+            keys: 0, // Number of keys collected
             draw() {
                 ctx.fillStyle = this.color;
                 ctx.fillRect(this.x, this.y, this.size, this.size);
@@ -69,7 +70,7 @@
             });
         }
 
-        // Maze walls (more complex layout)
+        // Maze walls
         const walls = [
             { x: 0, y: 0, width: 20, height: 600 },
             { x: 780, y: 0, width: 20, height: 600 },
@@ -87,10 +88,15 @@
             { x: 400, y: 400, width: 200, height: 20 }
         ];
 
-        // Doors
+        // Doors (locked or unlocked)
         const doors = [
-            { x: 100, y: 350, width: 20, height: 20, isOpen: false },
-            { x: 400, y: 300, width: 20, height: 20, isOpen: false }
+            { x: 100, y: 350, width: 20, height: 20, isOpen: false, locked: true, attachedTo: { x: 100, y: 300, width: 20, height: 20 } },
+            { x: 400, y: 300, width: 20, height: 20, isOpen: false, locked: false, attachedTo: { x: 400, y: 250, width: 20, height: 20 } }
+        ];
+
+        // Keys
+        const keys = [
+            { x: 200, y: 200, width: 15, height: 15, collected: false },
         ];
 
         // Goal
@@ -116,8 +122,18 @@
         // Draw the doors
         function drawDoors() {
             doors.forEach(door => {
-                ctx.fillStyle = door.isOpen ? 'lightgreen' : 'brown';
+                ctx.fillStyle = door.isOpen ? 'lightgreen' : (door.locked ? 'darkgray' : 'brown');
                 ctx.fillRect(door.x, door.y, door.width, door.height);
+            });
+        }
+
+        // Draw the keys
+        function drawKeys() {
+            keys.forEach(key => {
+                if (!key.collected) {
+                    ctx.fillStyle = 'gold';
+                    ctx.fillRect(key.x, key.y, key.width, key.height);
+                }
             });
         }
 
@@ -126,6 +142,7 @@
             ctx.fillStyle = 'white';
             ctx.font = '20px Arial';
             ctx.fillText('Health: ' + player.health, 10, 20);
+            ctx.fillText('Keys: ' + player.keys, 10, 40); // Display number of keys
         }
 
         // Check collisions with walls
@@ -179,6 +196,20 @@
             }
         }
 
+        // Check collision with keys
+        function checkKeyCollision() {
+            keys.forEach(key => {
+                if (!key.collected &&
+                    player.x < key.x + key.width &&
+                    player.x + player.size > key.x &&
+                    player.y < key.y + key.height &&
+                    player.y + player.size > key.y) {
+                    key.collected = true;
+                    player.keys++; // Increase key count
+                }
+            });
+        }
+
         // Check collision with doors
         function checkDoorCollision() {
             doors.forEach(door => {
@@ -186,7 +217,15 @@
                     player.x + player.size > door.x &&
                     player.y < door.y + door.height &&
                     player.y + player.size > door.y) {
-                    door.isOpen = true; // Open the door when colliding
+                    // Check if the door is attached to a wall
+                    if (walls.some(wall => wall.x === door.attachedTo.x && wall.y === door.attachedTo.y)) {
+                        if (door.locked && player.keys > 0) {
+                            door.locked = false; // Unlock the door
+                            player.keys--; // Use one key
+                        } else if (!door.locked) {
+                            door.isOpen = !door.isOpen; // Toggle door state
+                        }
+                    }
                 }
             });
         }
@@ -201,39 +240,11 @@
             });
             drawWalls();
             drawDoors();
+            drawKeys();
             goal.draw();
             drawHealth();
-            checkWallCollisions();
-            checkCollisions();
-            checkGoalCollision();
-            requestAnimationFrame(update);
-        }
+            checkWallCollisions
 
-        // Handle key presses
-        window.addEventListener('keydown', function (e) {
-            const step = player.speed;
-            if (e.code === 'ArrowUp' && player.y > 0) {
-                player.y -= step;
-            }
-            if (e.code === 'ArrowDown' && player.y < canvas.height - player.size) {
-                player.y += step;
-            }
-            if (e.code === 'ArrowLeft' && player.x > 0) {
-                player.x -= step;
-            }
-            if (e.code === 'ArrowRight' && player.x < canvas.width - player.size) {
-                player.x += step;
-            }
-            if (e.code === 'KeyE') {
-                // Check for door interactions when pressing "E"
-                checkDoorCollision();
-            }
-        });
-
-        update();
-    </script>
-</body>
-</html>
 
 
 
