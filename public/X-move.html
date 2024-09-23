@@ -34,6 +34,7 @@
         let isJumping = false;
         let leftPressed = false;
         let rightPressed = false;
+        let scrollOffset = 0; // For side scrolling
 
         const player = {
             x: 50,
@@ -60,6 +61,11 @@
                 }
                 if (rightPressed && this.x < canvas.width - this.width) {
                     this.x += this.speed;
+                }
+
+                // Adjust scroll offset
+                if (rightPressed) {
+                    scrollOffset += this.speed;
                 }
             },
             jump() {
@@ -98,12 +104,12 @@
             { x: 800, y: 300, width: 40, height: 40, color: 'black', direction: 1 }
         ];
 
-        const goalPlatform = { x: 950, y: 500, width: 40, height: 40, color: 'blue' };
+        const goalPlatform = { x: 950, y: 480, width: 40, height: 40, color: 'blue' }; // Adjusted height
 
         function drawPlatforms() {
             ctx.fillStyle = 'green';
             platforms.forEach(platform => {
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                ctx.fillRect(platform.x - scrollOffset, platform.y, platform.width, platform.height);
             });
         }
 
@@ -111,7 +117,7 @@
             collectibles.forEach(coin => {
                 if (!coin.collected) {
                     ctx.fillStyle = coin.color;
-                    ctx.fillRect(coin.x, coin.y, coin.width, coin.height);
+                    ctx.fillRect(coin.x - scrollOffset, coin.y, coin.width, coin.height);
                 }
             });
         }
@@ -119,13 +125,13 @@
         function drawEnemies() {
             enemies.forEach(enemy => {
                 ctx.fillStyle = enemy.color;
-                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                ctx.fillRect(enemy.x - scrollOffset, enemy.y, enemy.width, enemy.height);
             });
         }
 
         function drawGoal() {
             ctx.fillStyle = goalPlatform.color;
-            ctx.fillRect(goalPlatform.x, goalPlatform.y, goalPlatform.width, goalPlatform.height);
+            ctx.fillRect(goalPlatform.x - scrollOffset, goalPlatform.y, goalPlatform.width, goalPlatform.height);
         }
 
         function drawHealth() {
@@ -185,6 +191,13 @@
             }
         }
 
+        function regenerateHealth() {
+            if (health < 3) {
+                health += 0.01; // Regenerate health gradually
+                if (health > 3) health = 3; // Cap health at 3
+            }
+        }
+
         function updateEnemies() {
             enemies.forEach(enemy => {
                 enemy.x += enemy.direction * 2; // Move enemies
@@ -201,6 +214,7 @@
             checkCollectibleCollision();
             checkEnemyCollision();
             checkGoalCollision();
+            regenerateHealth();
             updateEnemies();
             player.draw();
             drawPlatforms();
@@ -239,3 +253,4 @@
     </script>
 </body>
 </html>
+
