@@ -87,9 +87,15 @@
             { x: 400, y: 400, width: 200, height: 20 }
         ];
 
+        // Doors
+        const doors = [
+            { x: 100, y: 350, width: 20, height: 20, isOpen: false },
+            { x: 400, y: 300, width: 20, height: 20, isOpen: false }
+        ];
+
         // Goal
         const goal = {
-            x: 20, // Bottom left corner
+            x: 20,
             y: 550,
             size: 30,
             color: 'yellow',
@@ -104,6 +110,14 @@
             ctx.fillStyle = 'gray';
             walls.forEach(wall => {
                 ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+            });
+        }
+
+        // Draw the doors
+        function drawDoors() {
+            doors.forEach(door => {
+                ctx.fillStyle = door.isOpen ? 'lightgreen' : 'brown';
+                ctx.fillRect(door.x, door.y, door.width, door.height);
             });
         }
 
@@ -165,6 +179,18 @@
             }
         }
 
+        // Check collision with doors
+        function checkDoorCollision() {
+            doors.forEach(door => {
+                if (player.x < door.x + door.width &&
+                    player.x + player.size > door.x &&
+                    player.y < door.y + door.height &&
+                    player.y + player.size > door.y) {
+                    door.isOpen = true; // Open the door when colliding
+                }
+            });
+        }
+
         // Update the game
         function update() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -174,6 +200,7 @@
                 enemy.draw();
             });
             drawWalls();
+            drawDoors();
             goal.draw();
             drawHealth();
             checkWallCollisions();
@@ -197,12 +224,17 @@
             if (e.code === 'ArrowRight' && player.x < canvas.width - player.size) {
                 player.x += step;
             }
+            if (e.code === 'KeyE') {
+                // Check for door interactions when pressing "E"
+                checkDoorCollision();
+            }
         });
 
         update();
     </script>
 </body>
 </html>
+
 
 
 
