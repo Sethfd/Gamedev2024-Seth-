@@ -18,15 +18,21 @@
             font-size: 20px;
             cursor: pointer;
         }
+        #timerDisplay {
+            font-size: 24px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>CPS Counter</h1>
     <button id="clickButton">Click Me!</button>
     <h2 id="cpsDisplay">CPS: 0</h2>
+    <div id="timerDisplay">Time Left: 5</div>
     <script>
         let clickCount = 0;
         let cps = 0;
+        let timer = 5;
 
         document.getElementById('clickButton').addEventListener('click', () => {
             clickCount++;
@@ -34,16 +40,29 @@
 
         function calculateCPS() {
             cps = clickCount; // Get the current click count
-            clickCount = 0;   // Reset click count for the next second
+            clickCount = 0;   // Reset click count for the next interval
             document.getElementById('cpsDisplay').innerText = `CPS: ${cps}`;
         }
 
-        // Start the CPS calculation every second
-        setInterval(calculateCPS, 1000);
+        function startTimer() {
+            const countdown = setInterval(() => {
+                timer--;
+                document.getElementById('timerDisplay').innerText = `Time Left: ${timer}`;
+
+                if (timer <= 0) {
+                    clearInterval(countdown);
+                    clearInterval(calculateInterval);
+                    document.getElementById('clickButton').disabled = true; // Disable button
+                    document.getElementById('timerDisplay').innerText = "Time's Up!";
+                }
+            }, 1000);
+        }
+
+        const calculateInterval = setInterval(calculateCPS, 1000);
+        startTimer();
     </script>
 </body>
 </html>
-
 
 
 
