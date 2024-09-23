@@ -1,3 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPS Counter</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>CPS Counter</h1>
+    <button id="clickButton">Click Me!</button>
+    <h2 id="cpsDisplay">CPS: 0</h2>
+    <script>
+        let clickCount = 0;
+        let cps = 0;
+
+        document.getElementById('clickButton').addEventListener('click', () => {
+            clickCount++;
+        });
+
+        function calculateCPS() {
+            cps = clickCount; // Get the current click count
+            clickCount = 0;   // Reset click count for the next second
+            document.getElementById('cpsDisplay').innerText = `CPS: ${cps}`;
+        }
+
+        // Start the CPS calculation every second
+        setInterval(calculateCPS, 1000);
+    </script>
+</body>
+</html>
 
 
 
