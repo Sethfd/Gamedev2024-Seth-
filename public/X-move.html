@@ -69,19 +69,35 @@
             });
         }
 
-        // Maze walls
+        // Maze walls (more complex layout)
         const walls = [
-            { x: 100, y: 0, width: 20, height: 300 },
-            { x: 200, y: 100, width: 20, height: 300 },
-            { x: 300, y: 0, width: 20, height: 300 },
-            { x: 400, y: 200, width: 20, height: 300 },
-            { x: 500, y: 0, width: 20, height: 300 },
-            { x: 600, y: 100, width: 20, height: 400 },
-            { x: 700, y: 0, width: 20, height: 300 },
-            { x: 0, y: 400, width: 800, height: 20 },
-            { x: 0, y: 300, width: 100, height: 20 },
-            { x: 700, y: 400, width: 100, height: 20 },
+            { x: 0, y: 0, width: 20, height: 600 },
+            { x: 780, y: 0, width: 20, height: 600 },
+            { x: 0, y: 0, width: 800, height: 20 },
+            { x: 0, y: 580, width: 800, height: 20 },
+            { x: 100, y: 100, width: 20, height: 200 },
+            { x: 300, y: 0, width: 20, height: 400 },
+            { x: 500, y: 50, width: 20, height: 400 },
+            { x: 200, y: 300, width: 300, height: 20 },
+            { x: 400, y: 250, width: 20, height: 100 },
+            { x: 600, y: 150, width: 100, height: 20 },
+            { x: 600, y: 350, width: 20, height: 100 },
+            { x: 650, y: 400, width: 20, height: 200 },
+            { x: 200, y: 400, width: 100, height: 20 },
+            { x: 400, y: 400, width: 200, height: 20 }
         ];
+
+        // Goal
+        const goal = {
+            x: 20, // Bottom left corner
+            y: 550,
+            size: 30,
+            color: 'yellow',
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        };
 
         // Draw the walls
         function drawWalls() {
@@ -138,6 +154,17 @@
             });
         }
 
+        // Check collision with the goal
+        function checkGoalCollision() {
+            if (player.x < goal.x + goal.size &&
+                player.x + player.size > goal.x &&
+                player.y < goal.y + goal.size &&
+                player.y + player.size > goal.y) {
+                alert('Congratulations! You reached the goal!');
+                document.location.reload(); // Restart the game
+            }
+        }
+
         // Update the game
         function update() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -147,9 +174,11 @@
                 enemy.draw();
             });
             drawWalls();
+            goal.draw();
             drawHealth();
             checkWallCollisions();
             checkCollisions();
+            checkGoalCollision();
             requestAnimationFrame(update);
         }
 
@@ -174,5 +203,6 @@
     </script>
 </body>
 </html>
+
 
 
