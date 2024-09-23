@@ -58,14 +58,13 @@
                 // Move left and right
                 if (leftPressed && this.x > 0) {
                     this.x -= this.speed;
+                    if (scrollOffset > 0) {
+                        scrollOffset -= this.speed; // Scroll back when moving left
+                    }
                 }
-                if (rightPressed && this.x < canvas.width - this.width) {
-                    this.x += this.speed;
-                }
-
-                // Adjust scroll offset
                 if (rightPressed) {
-                    scrollOffset += this.speed;
+                    this.x += this.speed;
+                    scrollOffset += this.speed; // Scroll forward when moving right
                 }
             },
             jump() {
@@ -89,22 +88,27 @@
             { x: 800, y: 400, width: 150, height: 20 },
             { x: 300, y: 150, width: 200, height: 20 },
             { x: 500, y: 100, width: 200, height: 20 },
-            { x: 900, y: 200, width: 100, height: 20 }
+            { x: 900, y: 200, width: 100, height: 20 },
+            { x: 1100, y: 500, width: 300, height: 20 }, // New platform
+            { x: 1400, y: 400, width: 200, height: 20 }, // New platform
+            { x: 1650, y: 300, width: 250, height: 20 }  // New platform
         ];
 
         const collectibles = [
             { x: 200, y: 420, width: 20, height: 20, collected: false, color: 'gold' },
             { x: 600, y: 320, width: 20, height: 20, collected: false, color: 'gold' },
-            { x: 750, y: 180, width: 20, height: 20, collected: false, color: 'gold' }
+            { x: 750, y: 180, width: 20, height: 20, collected: false, color: 'gold' },
+            { x: 1200, y: 480, width: 20, height: 20, collected: false, color: 'gold' } // New collectible
         ];
 
         const enemies = [
             { x: 300, y: 500, width: 40, height: 40, color: 'black', direction: 1 },
             { x: 600, y: 400, width: 40, height: 40, color: 'black', direction: -1 },
-            { x: 800, y: 300, width: 40, height: 40, color: 'black', direction: 1 }
+            { x: 800, y: 300, width: 40, height: 40, color: 'black', direction: 1 },
+            { x: 1400, y: 480, width: 40, height: 40, color: 'black', direction: 1 } // New enemy
         ];
 
-        const goalPlatform = { x: 950, y: 480, width: 40, height: 40, color: 'blue' }; // Adjusted height
+        const goalPlatform = { x: 1650, y: 280, width: 40, height: 40, color: 'blue' }; // Adjusted position
 
         function drawPlatforms() {
             ctx.fillStyle = 'green';
@@ -253,4 +257,6 @@
     </script>
 </body>
 </html>
+
+
 
