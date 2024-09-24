@@ -16,10 +16,32 @@
             margin: 0 auto;
             border: 1px solid white;
         }
+        #homeScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #startButton {
+            padding: 10px 20px;
+            font-size: 20px;
+            color: black;
+            background: white;
+            border: none;
+            cursor: pointer;
+        }
+        #startButton:hover {
+            background: lightgray;
+        }
     </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="homeScreen">
+    <h1>Asteroid Shooter</h1>
+    <button id="startButton">Start Game</button>
+</div>
+<canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -45,15 +67,17 @@ let asteroids = [];
 let score = 0;
 let lives = 3;
 let gameOver = false;
+let isPaused = false;
 
 // Game loop
 function gameLoop() {
-    if (!gameOver) {
+    if (!gameOver && !isPaused) {
         update();
         draw();
         requestAnimationFrame(gameLoop);
     } else {
-        drawGameOver();
+        if (gameOver) drawGameOver();
+        if (isPaused) drawPause();
     }
 }
 
@@ -125,7 +149,7 @@ function draw() {
         ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
     });
 
-    // Draw score
+    // Draw score and lives
     ctx.fillStyle = 'white';
     ctx.font = '20px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
@@ -143,17 +167,32 @@ function drawGameOver() {
     ctx.fillText('Press R to Restart', canvas.width / 2 - 100, canvas.height / 2 + 40);
 }
 
+// Draw pause screen
+function drawPause() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.font = '40px Arial';
+    ctx.fillText('Paused', canvas.width / 2 - 70, canvas.height / 2 - 20);
+    ctx.font = '20px Arial';
+    ctx.fillText('Press P to Resume', canvas.width / 2 - 100, canvas.height / 2 + 10);
+}
+
 // Handle keyboard input
 window.addEventListener('keydown', (e) => {
     if (gameOver) {
         if (e.key === 'r' || e.key === 'R') {
             resetGame();
         }
+    } else if (isPaused) {
+        if (e.key === 'p' || e.key === 'P') {
+            isPaused = false;
+            gameLoop(); // Resume the game loop
+        }
     } else {
         if (e.key === 'a') player.dx = -5; // Move left
         else if (e.key === 'd') player.dx = 5; // Move right
-        else if (e.key === ' ') {
-            bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
+        else if (e.key === 'p' || e.key === 'P') {
+            isPaused = true; // Pause the game
         }
     }
 });
@@ -161,6 +200,23 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
     if (e.key === 'a' || e.key === 'd') player.dx = 0;
 });
+
+// Handle mouse input
+canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault(); // Prevent the context menu from appearing
+    if (!gameOver && !isPaused) {
+        bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
+    }
+});
+
+// Start the game
+document.getElementById('startButton').addEventListener('click', startGame);
+
+function startGame() {
+    document.getElementById('homeScreen').style.display = 'none';
+    canvas.style.display = 'block';
+    resetGame();
+}
 
 // Reset game
 function resetGame() {
@@ -171,11 +227,14 @@ function resetGame() {
     score = 0;
     lives = 3;
     gameOver = false;
+    isPaused = false;
     gameLoop();
 }
 
-// Start the game
-gameLoop();
+// Start the game loop initially
+// gameLoop(); // Commented out to prevent immediate game start
 </script>
 </body>
 </html>
+
+
