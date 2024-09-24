@@ -1,0 +1,96 @@
+<h2 align=center>t1a10-loops.html</h2>
+
+<a herf="https://www.w3schools.com/js/js_loop_for.asp"><w3schools.loops></a><br>
+
+
+<h4> Example input output code </h4>
+<pre> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Input Output</title>
+    <script>
+        function greetUser() {
+            const name = document.getElementById("nameInput").value;
+            const greeting = `Hello, ${name}! Nice to meet you!`;
+            document.getElementById("greetingOutput").innerText = greeting;
+        }
+    </script>
+</head>
+<body>
+    <h1>Welcome!</h1>
+    <label for="nameInput">What is your name?</label>
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <button onclick="greetUser()">Submit</button>
+
+    <p id="greetingOutput"></p>
+</body>
+</html>
+</pre>
+
+<h4> Example working code </h4>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Loop Example</title>
+    <script>
+        function basicForLoop() {
+            const maxLoops = document.getElementById("myNum01").value;
+            let output = '';
+
+            for (let i = 1; i <= maxLoops; i++) {
+                output += `Loop iteration: ${i}<br>`;
+            }
+
+            document.getElementById("loopOutput").innerHTML = output;
+        }
+    </script>
+</head>
+<body>
+    <h1>For Loop Example</h1>
+    <label for="myNum01">Max loops:</label>
+    <input id="myNum01" type="number" value="4"><br>
+
+    <input type="button" value="Basic For Loop" onclick="basicForLoop()">
+
+    <div id="loopOutput"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
