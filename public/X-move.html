@@ -8,6 +8,10 @@
         body {
             margin: 0;
             overflow: hidden;
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
         }
         canvas {
             background: #000;
@@ -15,15 +19,32 @@
             margin: auto;
             border: 1px solid #fff;
         }
-        h1 {
-            text-align: center;
-            color: white;
+        .menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        .menu button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Maze Dungeon Crawler</h1>
+    <div class="menu" id="menu">
+        <h1>Select Level</h1>
+        <button onclick="startLevel(0)">Level 1</button>
+        <button onclick="startLevel(1)">Level 2</button>
+        <button onclick="startLevel(2)">Level 3</button>
+        <button onclick="startGame()">Start Game</button>
+    </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -36,24 +57,86 @@
             color: 'blue',
             health: 100,
             speed: 3,
-            keys: 0, // Number of keys collected
+            keys: 0,
             draw() {
                 ctx.fillStyle = this.color;
                 ctx.fillRect(this.x, this.y, this.size, this.size);
             }
         };
 
-        const enemies = [];
-        const numEnemies = 5;
+        let currentLevel = 0; // Track the current level
+        let enemies = [];
+        
+        // Levels data
+        const levels = [
+            {
+                walls: [
+                    { x: 0, y: 0, width: 20, height: 600 },
+                    { x: 780, y: 0, width: 20, height: 600 },
+                    { x: 0, y: 0, width: 800, height: 20 },
+                    { x: 0, y: 580, width: 800, height: 20 },
+                    { x: 100, y: 100, width: 20, height: 200 }
+                ],
+                enemies: [
+                    { x: 300, y: 300, size: 20, color: 'red', speed: 1.5 }
+                ],
+                keys: [{ x: 200, y: 200, width: 15, height: 15, collected: false }],
+                doors: [
+                    { x: 100, y: 350, width: 20, height: 20, isOpen: false, locked: true },
+                ],
+                traps: [
+                    { x: 250, y: 250, width: 30, height: 30, type: 'damage' }, // Damage trap
+                    { x: 400, y: 200, width: 30, height: 30, type: 'slow' }    // Slow trap
+                ],
+                goal: { x: 20, y: 550, size: 30, color: 'yellow' }
+            },
+            {
+                walls: [
+                    { x: 0, y: 0, width: 20, height: 600 },
+                    { x: 780, y: 0, width: 20, height: 600 },
+                    { x: 0, y: 0, width: 800, height: 20 },
+                    { x: 0, y: 580, width: 800, height: 20 },
+                    { x: 150, y: 150, width: 20, height: 300 },
+                    { x: 300, y: 0, width: 20, height: 300 }
+                ],
+                enemies: [
+                    { x: 400, y: 400, size: 20, color: 'red', speed: 2 }
+                ],
+                keys: [{ x: 300, y: 300, width: 15, height: 15, collected: false }],
+                doors: [
+                    { x: 200, y: 350, width: 20, height: 20, isOpen: false, locked: true }
+                ],
+                traps: [
+                    { x: 500, y: 300, width: 30, height: 30, type: 'damage' },
+                    { x: 600, y: 200, width: 30, height: 30, type: 'slow' }
+                ],
+                goal: { x: 20, y: 550, size: 30, color: 'yellow' }
+            },
+            // Add more levels as needed
+        ];
 
-        // Create enemies
-        for (let i = 0; i < numEnemies; i++) {
-            enemies.push({
-                x: Math.random() * (canvas.width - 30) + 30,
-                y: Math.random() * (canvas.height - 30) + 30,
-                size: 20,
-                color: 'red',
-                speed: 1.5,
+        // Start the game with the selected level
+        function startLevel(levelIndex) {
+            currentLevel = levelIndex;
+            initLevel();
+            document.getElementById('menu').style.display = 'none'; // Hide the menu
+            update();
+        }
+
+        // Start the game
+        function startGame() {
+            document.getElementById('menu').style.display = 'block'; // Show the menu
+        }
+
+        // Initialize the level
+        function initLevel() {
+            const level = levels[currentLevel];
+            player.x = 50;
+            player.y = 50;
+            player.keys = 0;
+            player.health = 100;
+            enemies = level.enemies.map(enemy => ({
+                ...enemy,
                 draw() {
                     ctx.fillStyle = this.color;
                     ctx.fillRect(this.x, this.y, this.size, this.size);
@@ -62,74 +145,33 @@
                     const dx = player.x - this.x;
                     const dy = player.y - this.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 150) { // Enemy will chase if within range
+                    if (distance < 150) {
                         this.x += (dx / distance) * this.speed;
                         this.y += (dy / distance) * this.speed;
                     }
                 }
-            });
+            }));
         }
 
-        // Maze walls
-        const walls = [
-            { x: 0, y: 0, width: 20, height: 600 },
-            { x: 780, y: 0, width: 20, height: 600 },
-            { x: 0, y: 0, width: 800, height: 20 },
-            { x: 0, y: 580, width: 800, height: 20 },
-            { x: 100, y: 100, width: 20, height: 200 },
-            { x: 300, y: 0, width: 20, height: 400 },
-            { x: 500, y: 50, width: 20, height: 400 },
-            { x: 200, y: 300, width: 300, height: 20 },
-            { x: 400, y: 250, width: 20, height: 100 },
-            { x: 600, y: 150, width: 100, height: 20 },
-            { x: 600, y: 350, width: 20, height: 100 },
-            { x: 650, y: 400, width: 20, height: 200 },
-            { x: 200, y: 400, width: 100, height: 20 },
-            { x: 400, y: 400, width: 200, height: 20 }
-        ];
-
-        // Doors (locked or unlocked)
-        const doors = [
-            { x: 100, y: 350, width: 20, height: 20, isOpen: false, locked: true, attachedTo: { x: 100, y: 300, width: 20, height: 20 } },
-            { x: 400, y: 300, width: 20, height: 20, isOpen: false, locked: false, attachedTo: { x: 400, y: 250, width: 20, height: 20 } }
-        ];
-
-        // Keys
-        const keys = [
-            { x: 200, y: 200, width: 15, height: 15, collected: false },
-        ];
-
-        // Goal
-        const goal = {
-            x: 20,
-            y: 550,
-            size: 30,
-            color: 'yellow',
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-            }
-        };
-
-        // Draw the walls
-        function drawWalls() {
+        // Draw walls
+        function drawWalls(level) {
             ctx.fillStyle = 'gray';
-            walls.forEach(wall => {
+            level.walls.forEach(wall => {
                 ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
             });
         }
 
-        // Draw the doors
-        function drawDoors() {
-            doors.forEach(door => {
+        // Draw doors
+        function drawDoors(level) {
+            level.doors.forEach(door => {
                 ctx.fillStyle = door.isOpen ? 'lightgreen' : (door.locked ? 'darkgray' : 'brown');
                 ctx.fillRect(door.x, door.y, door.width, door.height);
             });
         }
 
-        // Draw the keys
-        function drawKeys() {
-            keys.forEach(key => {
+        // Draw keys
+        function drawKeys(level) {
+            level.keys.forEach(key => {
                 if (!key.collected) {
                     ctx.fillStyle = 'gold';
                     ctx.fillRect(key.x, key.y, key.width, key.height);
@@ -137,17 +179,26 @@
             });
         }
 
-        // Draw the health
+        // Draw traps
+        function drawTraps(level) {
+            level.traps.forEach(trap => {
+                ctx.fillStyle = trap.type === 'damage' ? 'red' : 'orange'; // Color based on trap type
+                ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+            });
+        }
+
+        // Draw health
         function drawHealth() {
             ctx.fillStyle = 'white';
             ctx.font = '20px Arial';
             ctx.fillText('Health: ' + player.health, 10, 20);
-            ctx.fillText('Keys: ' + player.keys, 10, 40); // Display number of keys
+            ctx.fillText('Keys: ' + player.keys, 10, 40);
         }
 
-        // Check collisions with walls
-        function checkWallCollisions() {
-            walls.forEach(wall => {
+        // Check collisions
+        function checkCollisions(level) {
+            // Wall collisions
+            level.walls.forEach(wall => {
                 if (player.x < wall.x + wall.width &&
                     player.x + player.size > wall.x &&
                     player.y < wall.y + wall.height &&
@@ -165,10 +216,8 @@
                     }
                 }
             });
-        }
 
-        // Check collisions with enemies
-        function checkCollisions() {
+            // Enemy collisions
             enemies.forEach((enemy, index) => {
                 if (player.x < enemy.x + enemy.size &&
                     player.x + player.size > enemy.x &&
@@ -179,14 +228,12 @@
                         alert('Game Over!');
                         document.location.reload();
                     }
-                    // Remove enemy after collision
                     enemies.splice(index, 1);
                 }
             });
-        }
 
-        // Check collision with the goal
-        function checkGoalCollision() {
+            // Goal collision
+            const goal = level.goal;
             if (player.x < goal.x + goal.size &&
                 player.x + player.size > goal.x &&
                 player.y < goal.y + goal.size &&
@@ -194,37 +241,47 @@
                 alert('Congratulations! You reached the goal!');
                 document.location.reload(); // Restart the game
             }
-        }
 
-        // Check collision with keys
-        function checkKeyCollision() {
-            keys.forEach(key => {
+            // Key collisions
+            level.keys.forEach(key => {
                 if (!key.collected &&
                     player.x < key.x + key.width &&
                     player.x + player.size > key.x &&
                     player.y < key.y + key.height &&
                     player.y + player.size > key.y) {
                     key.collected = true;
-                    player.keys++; // Increase key count
+                    player.keys++;
                 }
             });
-        }
 
-        // Check collision with doors
-        function checkDoorCollision() {
-            doors.forEach(door => {
+            // Door collisions
+            level.doors.forEach(door => {
                 if (player.x < door.x + door.width &&
                     player.x + player.size > door.x &&
                     player.y < door.y + door.height &&
                     player.y + player.size > door.y) {
-                    // Check if the door is attached to a wall
-                    if (walls.some(wall => wall.x === door.attachedTo.x && wall.y === door.attachedTo.y)) {
-                        if (door.locked && player.keys > 0) {
-                            door.locked = false; // Unlock the door
-                            player.keys--; // Use one key
-                        } else if (!door.locked) {
-                            door.isOpen = !door.isOpen; // Toggle door state
-                        }
+                    if (door.locked && player.keys > 0) {
+                        door.locked = false; // Unlock the door
+                        player.keys--;
+                    } else if (!door.locked) {
+                        door.isOpen = !door.isOpen; // Toggle door state
+                    }
+                }
+            });
+
+            // Trap collisions
+            level.traps.forEach(trap => {
+                if (player.x < trap.x + trap.width &&
+                    player.x + player.size > trap.x &&
+                    player.y < trap.y + trap.height &&
+                    player.y + player.size > trap.y) {
+                    if (trap.type === 'damage') {
+                        player.health -= 5; // Damage player
+                    } else if (trap.type === 'slow') {
+                        player.speed = 1.5; // Slow down player
+                        setTimeout(() => {
+                            player.speed = 3; // Reset speed after 2 seconds
+                        }, 2000);
                     }
                 }
             });
@@ -233,17 +290,46 @@
         // Update the game
         function update() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const level = levels[currentLevel];
             player.draw();
             enemies.forEach(enemy => {
                 enemy.moveTowardsPlayer();
                 enemy.draw();
             });
-            drawWalls();
-            drawDoors();
-            drawKeys();
-            goal.draw();
+            drawWalls(level);
+            drawDoors(level);
+            drawKeys(level);
+            drawTraps(level);
             drawHealth();
-            checkWallCollisions
+            checkCollisions(level);
+            requestAnimationFrame(update);
+        }
+
+        // Handle keyboard input
+        window.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'ArrowUp':
+                    player.y -= player.speed;
+                    break;
+                case 'ArrowDown':
+                    player.y += player.speed;
+                    break;
+                case 'ArrowLeft':
+                    player.x -= player.speed;
+                    break;
+                case 'ArrowRight':
+                    player.x += player.speed;
+                    break;
+            }
+            checkCollisions(levels[currentLevel]); // Check for collisions after moving
+        });
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>
+
 
 
 
