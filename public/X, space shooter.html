@@ -48,11 +48,15 @@ const ctx = canvas.getContext('2d');
 
 const PLAYER_WIDTH = 50;
 const PLAYER_HEIGHT = 50;
-const ASTEROID_SIZE = 50;
 const BULLET_WIDTH = 4;
 const BULLET_HEIGHT = 10;
 const BULLET_SPEED = 5;
-const ASTEROID_SPEED = 2;
+
+const ASTEROID_TYPES = [
+    { size: 70, speed: 1, points: 1 },  // Large asteroid
+    { size: 50, speed: 2, points: 2 },  // Medium asteroid
+    { size: 30, speed: 3, points: 3 }   // Small asteroid
+];
 
 let player = {
     x: canvas.width / 2 - PLAYER_WIDTH / 2,
@@ -65,7 +69,7 @@ let player = {
 let bullets = [];
 let asteroids = [];
 let score = 0;
-let lives = 3;
+let lives = 5;
 let gameOver = false;
 let isPaused = false;
 
@@ -98,12 +102,19 @@ function update() {
 
     // Create new asteroids
     if (Math.random() < 0.02) {
-        asteroids.push({ x: Math.random() * (canvas.width - ASTEROID_SIZE), y: 0, width: ASTEROID_SIZE, height: ASTEROID_SIZE });
+        const type = ASTEROID_TYPES[Math.floor(Math.random() * ASTEROID_TYPES.length)];
+        asteroids.push({ 
+            x: Math.random() * (canvas.width - type.size), 
+            y: 0, 
+            size: type.size, 
+            speed: type.speed, 
+            points: type.points 
+        });
     }
 
     // Move asteroids
     for (let i = asteroids.length - 1; i >= 0; i--) {
-        asteroids[i].y += ASTEROID_SPEED;
+        asteroids[i].y += asteroids[i].speed;
 
         // Check if asteroid reached the bottom
         if (asteroids[i].y > canvas.height) {
@@ -116,13 +127,24 @@ function update() {
 
         // Check collision with bullets
         for (let j = bullets.length - 1; j >= 0; j--) {
-            if (bullets[j].x < asteroids[i].x + asteroids[i].width &&
+            if (bullets[j].x < asteroids[i].x + asteroids[i].size &&
                 bullets[j].x + BULLET_WIDTH > asteroids[i].x &&
-                bullets[j].y < asteroids[i].y + asteroids[i].height &&
+                bullets[j].y < asteroids[i].y + asteroids[i].size &&
                 bullets[j].y + BULLET_HEIGHT > asteroids[i].y) {
+                
                 bullets.splice(j, 1);
-                asteroids.splice(i, 1);
-                score++;
+                // Handle asteroid splitting
+                if (asteroids[i].size === 70) {
+                    // Split large into two medium
+                    asteroids.push({ x: asteroids[i].x, y: asteroids[i].y, size: 50, speed: 2, points: 2 });
+                    asteroids.push({ x: asteroids[i].x + 20, y: asteroids[i].y, size: 50, speed: 2, points: 2 });
+                } else if (asteroids[i].size === 50) {
+                    // Split medium into two small
+                    asteroids.push({ x: asteroids[i].x, y: asteroids[i].y, size: 30, speed: 3, points: 3 });
+                    asteroids.push({ x: asteroids[i].x + 10, y: asteroids[i].y, size: 30, speed: 3, points: 3 });
+                }
+                score += asteroids[i].points; // Add points based on asteroid type
+                asteroids.splice(i, 1); // Remove the destroyed asteroid
                 break;
             }
         }
@@ -134,23 +156,23 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw player
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = 'gray';
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
     // Draw bullets
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'lightblue';
     bullets.forEach(bullet => {
         ctx.fillRect(bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT);
     });
 
     // Draw asteroids
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = 'brown';
     asteroids.forEach(asteroid => {
-        ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+        ctx.fillRect(asteroid.x, asteroid.y, asteroid.size, asteroid.size);
     });
 
     // Draw score and lives
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = 'green';
     ctx.font = '20px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
     ctx.fillText('Lives: ' + lives, 10, 40);
@@ -225,7 +247,7 @@ function resetGame() {
     bullets = [];
     asteroids = [];
     score = 0;
-    lives = 3;
+    lives = 5;
     gameOver = false;
     isPaused = false;
     gameLoop();
