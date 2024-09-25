@@ -1,57 +1,92 @@
-<h1 align=center>t1a06-in-out.html</h1>
-
-<script>
-funtion myvar(myin){
-raturn document.getElementbyid(myin)
-
-}
-    
-</script>
-
-
-
-
-
-
-
-input:<input type=text id="myFirstName" value="Name">
-<Input type=button value="Show on page" onclick="{
-
-    myvar('myDiv01').innerhtml = 'your name is' + myvar('myFirstName').value
-
-}">
-
-<div id="myDiv01">...</div>
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Guessing Game</title>
+    <title>Fun Interactive Games</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        section {
+            margin: 40px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         input, button {
-            margin: 10px;
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin: 20px auto;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border: 1px solid #333;
+            cursor: pointer;
+            background-color: #eaeaea;
+            transition: background-color 0.3s;
+        }
+        .cell:hover {
+            background-color: #d0d0d0;
         }
     </style>
 </head>
 <body>
-    <h1>Guess the Number!</h1>
-    <p>Guess a number between 1 and 100:</p>
-    <input type="number" id="userGuess" min="1" max="100">
-    <button onclick="checkGuess()">Guess</button>
-    <p id="result"></p>
+    <h1>Fun Interactive Games</h1>
+
+    <!-- Name Display Section -->
+    <section>
+        <h2>Display Your Name</h2>
+        <input type="text" id="myFirstName" placeholder="Enter your name">
+        <button onclick="displayName()">Show on page</button>
+        <div id="myDiv01">...</div>
+    </section>
+
+    <!-- Number Guessing Game Section -->
+    <section>
+        <h2>Guess the Number!</h2>
+        <p>Guess a number between 1 and 100:</p>
+        <input type="number" id="userGuess" min="1" max="100" placeholder="Your guess">
+        <button onclick="checkGuess()">Guess</button>
+        <p id="result"></p>
+    </section>
+
+    <!-- Tic-Tac-Toe Section -->
+    <section>
+        <h2>Tic-Tac-Toe</h2>
+        <div class="board" id="board"></div>
+        <p id="message"></p>
+    </section>
 
     <script>
-        // Generate a random number between 1 and 10
+        // Name Display Functionality
+        function displayName() {
+            const myDiv = document.getElementById('myDiv01');
+            const myFirstName = document.getElementById('myFirstName').value;
+            myDiv.innerHTML = 'Your name is ' + myFirstName;
+        }
+
+        // Number Guessing Game Functionality
         const randomNumber = Math.floor(Math.random() * 100) + 1;
 
         function checkGuess() {
@@ -66,48 +101,12 @@ input:<input type=text id="myFirstName" value="Name">
                 result.textContent = 'Too low! Try again.';
             }
         }
-    </script>
-</body>
-</html>
 
-
-
-
-<center>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe</title>
-    <style>
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 5px;
-        }
-        .cell {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            border: 1px solid #000;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <div class="board" id="board"></div>
-    <p id="message"></p>
-    <script>
+        // Tic-Tac-Toe Game Functionality
         const board = document.getElementById('board');
         const message = document.getElementById('message');
         let cells = Array(9).fill(null);
         let currentPlayer = 'X';
-        let attempts = 0;
 
         function checkWinner() {
             const winningCombinations = [
@@ -135,13 +134,8 @@ input:<input type=text id="myFirstName" value="Name">
                 return;
             }
             if (!cells.includes(null)) {
-                attempts++;
-                if (attempts >= 10) {
-                    message.textContent = `You win after ${attempts} tries!`;
-                } else {
-                    message.textContent = `Draw! Try again. Attempts: ${attempts}`;
-                    resetBoard();
-                }
+                message.textContent = 'Draw! Try again.';
+                resetBoard();
                 return;
             }
             currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
@@ -157,10 +151,12 @@ input:<input type=text id="myFirstName" value="Name">
                 cell.addEventListener('click', handleClick);
                 board.appendChild(cell);
             }
+            message.textContent = '';
+            currentPlayer = 'X';
         }
 
         resetBoard();
     </script>
 </body>
 </html>
-</center>
+
