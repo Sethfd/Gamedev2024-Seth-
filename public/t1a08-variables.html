@@ -1,17 +1,84 @@
-<h1 align
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sum Multiple Inputs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+        }
+        input[type="text"] {
+            width: 50px;
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="button"] {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="button"]:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e2e3e5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Sum of Multiple Inputs</h1>
 
 <a href="https://www.w3schools.com/js/js_variables.asp">Portal</a><br>
 
+<!-- Input fields for 9 variables -->
+<div>
+    input: <input type="text" id="myInput1" value="6">
+    input: <input type="text" id="myInput2" value="9">
+    input: <input type="text" id="myInput3" value="1">
+    input: <input type="text" id="myInput4" value="2">
+    input: <input type="text" id="myInput5" value="3">
+    input: <input type="text" id="myInput6" value="4">
+    input: <input type="text" id="myInput7" value="5">
+    input: <input type="text" id="myInput8" value="7">
+    input: <input type="text" id="myInput9" value="8"><br>
+</div>
 
-  input:<input type=text id="myFirstName" value="6"> 
-  input:<input type=text id="myFirstName" value="9"><br>
-<Input type=button value="Show on page" onclick="{
+<input type="button" value="Show Total" onclick="showSum()">
 
- myTotal = document.getElementById('myDiv01').value = document.getElementById('myIn02').value
-document.getElementById('myDiv01').innerHTML = 'your anwser is' + myTotal
-}">
+<div id="result">Your answer is: <span id="total"></span></div>
 
-<div id="myDiv01">...</div>
+<script>
+    function showSum() {
+        let sum = 0;
 
-  
- 
+        // Loop through the input fields and sum their values
+        for (let i = 1; i <= 9; i++) {
+            const value = parseFloat(document.getElementById(`myInput${i}`).value) || 0;
+            sum += value;
+        }
+
+        // Display the result
+        document.getElementById('total').innerText = sum;
+    }
+</script>
+
+</body>
+</html>
