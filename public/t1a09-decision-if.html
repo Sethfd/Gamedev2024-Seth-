@@ -3,76 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPS Counter</title>
+    <title>Decision Maker</title>
     <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        #timerDisplay {
-            font-size: 24px;
-            margin-top: 20px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; font-size: 16px; }
+        p { font-size: 20px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>CPS Counter</h1>
-    <button id="clickButton">Click Me!</button>
-    <h2 id="cpsDisplay">CPS: 0</h2>
-    <div id="timerDisplay">Time Left: 5</div>
+
+    <h1>Decision Maker</h1>
+    <button onclick="makeDecision()">Make a Decision</button>
+    <p id="decision"></p>
+
     <script>
-        let clickCount = 0;
-        let cps = 0;
-        let timer = 5;
+        const decisions = [
+            "Stay in your current job for stability.",
+            "Pursue a passion project that could lead to a new career.",
+            "Go on a spontaneous trip with friends.",
+            "Plan a relaxing solo retreat to recharge.",
+            "Invest in the stock market for potential growth.",
+            "Join a workshop or seminar for hands-on experience.",
+            "Attend a large social event to meet new people.",
+            "Volunteer regularly with a local organization."
+        ];
 
-        document.getElementById('clickButton').addEventListener('click', () => {
-            clickCount++;
-        });
-
-        function calculateCPS() {
-            cps = clickCount; // Get the current click count
-            clickCount = 0;   // Reset click count for the next interval
-            document.getElementById('cpsDisplay').innerText = `CPS: ${cps}`;
+        function makeDecision() {
+            const randomIndex = Math.floor(Math.random() * decisions.length);
+            document.getElementById("decision").innerText = decisions[randomIndex];
         }
-
-        function startTimer() {
-            const countdown = setInterval(() => {
-                timer--;
-                document.getElementById('timerDisplay').innerText = `Time Left: ${timer}`;
-
-                if (timer <= 0) {
-                    clearInterval(countdown);
-                    clearInterval(calculateInterval);
-                    document.getElementById('clickButton').disabled = true; // Disable button
-                    document.getElementById('timerDisplay').innerText = "Time's Up!";
-                }
-            }, 1000);
-        }
-
-        const calculateInterval = setInterval(calculateCPS, 1000);
-        startTimer();
     </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
