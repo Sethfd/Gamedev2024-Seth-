@@ -51,6 +51,7 @@ const PLAYER_HEIGHT = 50;
 const BULLET_WIDTH = 4;
 const BULLET_HEIGHT = 10;
 const BULLET_SPEED = 5;
+const BOMB_RADIUS = 20;
 
 const ASTEROID_TYPES = [
     { size: 70, speed: 1, points: 1 },  // Large asteroid
@@ -67,6 +68,7 @@ let player = {
 };
 
 let bullets = [];
+let bombs = []; // Array to store bombs
 let asteroids = [];
 let score = 0;
 let lives = 5;
@@ -76,6 +78,7 @@ let isPaused = false;
 // Ability variables
 let abilityActive = false;
 let abilityCooldown = false;
+let bombCooldown = false; // New cooldown for bomb ability
 
 // Game loop
 function gameLoop() {
@@ -99,6 +102,12 @@ function update() {
         bullet.y -= BULLET_SPEED; // Straight up for now
         return bullet.y >= 0; // Keep only bullets that are on-screen
     });
+
+    // Move bombs
+    bombs.forEach(bomb => {
+        bomb.y += bomb.speed;
+    });
+    bombs = bombs.filter(bomb => bomb.y < canvas.height); // Remove off-screen bombs
 
     // Create new asteroids
     if (Math.random() < 0.02) {
@@ -140,6 +149,22 @@ function update() {
             }
         }
     }
+
+    // Bomb collision check
+    for (let i = bombs.length - 1; i >= 0; i--) {
+        for (let j = asteroids.length - 1; j >= 0; j--) {
+            if (bombs[i].x < asteroids[j].x + asteroids[j].size &&
+                bombs[i].x + BOMB_RADIUS > asteroids[j].x &&
+                bombs[i].y < asteroids[j].y + asteroids[j].size &&
+                bombs[i].y + BOMB_RADIUS > asteroids[j].y) {
+                // Remove both bomb and asteroid
+                bombs.splice(i, 1);
+                handleAsteroidDestruction(asteroids[j]);
+                asteroids.splice(j, 1);
+                break;
+            }
+        }
+    }
 }
 
 function handleAsteroidDestruction(asteroid) {
@@ -167,6 +192,14 @@ function draw() {
         ctx.fillRect(bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT);
     });
 
+    // Draw bombs
+    ctx.fillStyle = 'red';
+    bombs.forEach(bomb => {
+        ctx.beginPath();
+        ctx.arc(bomb.x, bomb.y, BOMB_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
     // Draw asteroids
     ctx.fillStyle = 'brown';
     asteroids.forEach(asteroid => {
@@ -189,6 +222,11 @@ function draw() {
         ctx.fillStyle = 'red';
         ctx.font = '20px Arial';
         ctx.fillText('Ability Cooldown!', canvas.width - 180, 40);
+    }
+    if (bombCooldown) {
+        ctx.fillStyle = 'red';
+        ctx.font = '20px Arial';
+        ctx.fillText('Bomb Cooldown!', canvas.width - 180, 60);
     }
 }
 
@@ -216,17 +254,24 @@ function drawPause() {
 // Handle keyboard input
 window.addEventListener('keydown', (e) => {
     if (gameOver) {
-        if (e.key.toLowerCase() === 'r') resetGame();
+        if (e.key === 'r' || e.key === 'R') {
+            resetGame();
+        }
     } else if (isPaused) {
-        if (e.key.toLowerCase() === 'p') {
+        if (e.key === 'p' || e.key === 'P') {
             isPaused = false;
-            gameLoop();
+            gameLoop(); // Resume the game loop
         }
     } else {
         if (e.key === 'a') player.dx = -5; // Move left
         else if (e.key === 'd') player.dx = 5; // Move right
-        else if (e.key.toLowerCase() === 'p') isPaused = true; // Pause the game
-        else if (e.key === ' ') activateAbility(); // Activate ability with space bar
+        else if (e.key === 'p' || e.key === 'P') {
+            isPaused = true; // Pause the game
+        } else if (e.key === ' ') {
+            activateAbility(); // Activate multi-shot ability
+        } else if (e.key === 'b' || e.key === 'B') {
+            shootBomb(); // Shoot a bomb
+        }
     }
 });
 
@@ -268,6 +313,17 @@ function shootBullets() {
     bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2 + 10, y: player.y, direction: -1 }); // Right
 }
 
+// Bomb shooting function
+function shootBomb() {
+    if (!bombCooldown) {
+        bombs.push({ x: player.x + PLAYER_WIDTH / 2, y: player.y, speed: 3 }); // Add bomb
+        bombCooldown = true; // Start cooldown
+        setTimeout(() => {
+            bombCooldown = false; // End cooldown after 60 seconds
+        }, 60000);
+    }
+}
+
 // Start the game
 document.getElementById('startButton').addEventListener('click', startGame);
 
@@ -282,6 +338,7 @@ function resetGame() {
     player.x = canvas.width / 2 - PLAYER_WIDTH / 2;
     player.y = canvas.height - PLAYER_HEIGHT - 10;
     bullets = [];
+    bombs = []; // Reset bombs
     asteroids = [];
     score = 0;
     lives = 5;
@@ -289,6 +346,7 @@ function resetGame() {
     isPaused = false;
     abilityActive = false;
     abilityCooldown = false;
+    bombCooldown = false; // Reset bomb cooldown
     gameLoop();
 }
 
@@ -297,3 +355,4 @@ function resetGame() {
 </script>
 </body>
 </html>
+
