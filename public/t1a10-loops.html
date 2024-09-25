@@ -1,96 +1,140 @@
-<h2 align=center>t1a10-loops.html</h2>
-
-<a herf="https://www.w3schools.com/js/js_loop_for.asp"><w3schools.loops></a><br>
-
-
-<h4> Example input output code </h4>
-<pre> 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Input Output</title>
+    <title>Loop Examples</title>
     <script>
         function greetUser() {
             const name = document.getElementById("nameInput").value;
             const greeting = `Hello, ${name}! Nice to meet you!`;
             document.getElementById("greetingOutput").innerText = greeting;
         }
-    </script>
-</head>
-<body>
-    <h1>Welcome!</h1>
-    <label for="nameInput">What is your name?</label>
-    <input type="text" id="nameInput" placeholder="Enter your name">
-    <button onclick="greetUser()">Submit</button>
 
-    <p id="greetingOutput"></p>
-</body>
-</html>
-</pre>
-
-<h4> Example working code </h4>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Loop Example</title>
-    <script>
         function basicForLoop() {
             const maxLoops = document.getElementById("myNum01").value;
             let output = '';
-
             for (let i = 1; i <= maxLoops; i++) {
                 output += `Loop iteration: ${i}<br>`;
             }
-
             document.getElementById("loopOutput").innerHTML = output;
+        }
+
+        function whileLoop() {
+            const maxLoops = document.getElementById("myNum02").value;
+            let output = '';
+            let i = 1;
+            while (i <= maxLoops) {
+                output += `While loop iteration: ${i}<br>`;
+                i++;
+            }
+            document.getElementById("whileOutput").innerHTML = output;
+        }
+
+        function doWhileLoop() {
+            const maxLoops = document.getElementById("myNum03").value;
+            let output = '';
+            let i = 1;
+            do {
+                output += `Do-While loop iteration: ${i}<br>`;
+                i++;
+            } while (i <= maxLoops);
+            document.getElementById("doWhileOutput").innerHTML = output;
+        }
+
+        function nestedForLoop() {
+            const rows = document.getElementById("myNum04").value;
+            let output = '';
+            for (let i = 1; i <= rows; i++) {
+                for (let j = 1; j <= i; j++) {
+                    output += '*';
+                }
+                output += '<br>';
+            }
+            document.getElementById("nestedOutput").innerHTML = output;
+        }
+
+        function forOfLoop() {
+            const fruits = ['Apple', 'Banana', 'Cherry', 'Date'];
+            let output = '';
+            for (const fruit of fruits) {
+                output += `Fruit: ${fruit}<br>`;
+            }
+            document.getElementById("forOfOutput").innerHTML = output;
+        }
+
+        function forInLoop() {
+            const person = { name: 'Alice', age: 30, city: 'Wonderland' };
+            let output = '';
+            for (const key in person) {
+                output += `${key}: ${person[key]}<br>`;
+            }
+            document.getElementById("forInOutput").innerHTML = output;
+        }
+
+        function breakContinueExample() {
+            const maxLoops = document.getElementById("myNum05").value;
+            let output = '';
+            for (let i = 1; i <= maxLoops; i++) {
+                if (i === 3) {
+                    output += "Skipping number 3<br>";
+                    continue; // Skip the rest of this loop iteration
+                }
+                if (i === 5) {
+                    output += "Stopping at number 5<br>";
+                    break; // Exit the loop
+                }
+                output += `Number: ${i}<br>`;
+            }
+            document.getElementById("breakContinueOutput").innerHTML = output;
         }
     </script>
 </head>
 <body>
-    <h1>For Loop Example</h1>
+    <h1>Loop Examples</h1>
+    
+    <h2>Greeting Example</h2>
+    <label for="nameInput">What is your name?</label>
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <button onclick="greetUser()">Submit</button>
+    <p id="greetingOutput"></p>
+
+    <h2>For Loop Example</h2>
     <label for="myNum01">Max loops:</label>
     <input id="myNum01" type="number" value="4"><br>
-
     <input type="button" value="Basic For Loop" onclick="basicForLoop()">
-
     <div id="loopOutput"></div>
+
+    <h2>While Loop Example</h2>
+    <label for="myNum02">Max loops:</label>
+    <input id="myNum02" type="number" value="4"><br>
+    <input type="button" value="While Loop" onclick="whileLoop()">
+    <div id="whileOutput"></div>
+
+    <h2>Do-While Loop Example</h2>
+    <label for="myNum03">Max loops:</label>
+    <input id="myNum03" type="number" value="4"><br>
+    <input type="button" value="Do-While Loop" onclick="doWhileLoop()">
+    <div id="doWhileOutput"></div>
+
+    <h2>Nested For Loop Example</h2>
+    <label for="myNum04">Number of rows:</label>
+    <input id="myNum04" type="number" value="4"><br>
+    <input type="button" value="Nested For Loop" onclick="nestedForLoop()">
+    <div id="nestedOutput"></div>
+
+    <h2>For...of Loop Example</h2>
+    <input type="button" value="For...of Loop" onclick="forOfLoop()">
+    <div id="forOfOutput"></div>
+
+    <h2>For...in Loop Example</h2>
+    <input type="button" value="For...in Loop" onclick="forInLoop()">
+    <div id="forInOutput"></div>
+
+    <h2>Break and Continue Example</h2>
+    <label for="myNum05">Max loops:</label>
+    <input id="myNum05" type="number" value="6"><br>
+    <input type="button" value="Break and Continue" onclick="breakContinueExample()">
+    <div id="breakContinueOutput"></div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
