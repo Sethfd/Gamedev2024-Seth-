@@ -73,6 +73,10 @@ let lives = 5;
 let gameOver = false;
 let isPaused = false;
 
+// Ability variables
+let abilityActive = false;
+let abilityCooldown = false;
+
 // Game loop
 function gameLoop() {
     if (!gameOver && !isPaused) {
@@ -80,8 +84,7 @@ function gameLoop() {
         draw();
         requestAnimationFrame(gameLoop);
     } else {
-        if (gameOver) drawGameOver();
-        if (isPaused) drawPause();
+        gameOver ? drawGameOver() : drawPause();
     }
 }
 
@@ -89,16 +92,13 @@ function gameLoop() {
 function update() {
     // Move player
     player.x += player.dx;
-    if (player.x < 0) player.x = 0;
-    if (player.x > canvas.width - PLAYER_WIDTH) player.x = canvas.width - PLAYER_WIDTH;
+    player.x = Math.max(0, Math.min(canvas.width - PLAYER_WIDTH, player.x));
 
     // Move bullets
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        bullets[i].y -= BULLET_SPEED;
-        if (bullets[i].y < 0) {
-            bullets.splice(i, 1);
-        }
-    }
+    bullets = bullets.filter(bullet => {
+        bullet.y -= BULLET_SPEED; // Straight up for now
+        return bullet.y >= 0; // Keep only bullets that are on-screen
+    });
 
     // Create new asteroids
     if (Math.random() < 0.02) {
@@ -119,10 +119,11 @@ function update() {
         // Check if asteroid reached the bottom
         if (asteroids[i].y > canvas.height) {
             asteroids.splice(i, 1);
-            lives--; // Lose a life
+            lives--;
             if (lives <= 0) {
-                gameOver = true; // Set game over
+                gameOver = true;
             }
+            continue; // Skip collision check if asteroid is out of bounds
         }
 
         // Check collision with bullets
@@ -133,22 +134,23 @@ function update() {
                 bullets[j].y + BULLET_HEIGHT > asteroids[i].y) {
                 
                 bullets.splice(j, 1);
-                // Handle asteroid splitting
-                if (asteroids[i].size === 70) {
-                    // Split large into two medium
-                    asteroids.push({ x: asteroids[i].x, y: asteroids[i].y, size: 50, speed: 2, points: 2 });
-                    asteroids.push({ x: asteroids[i].x + 20, y: asteroids[i].y, size: 50, speed: 2, points: 2 });
-                } else if (asteroids[i].size === 50) {
-                    // Split medium into two small
-                    asteroids.push({ x: asteroids[i].x, y: asteroids[i].y, size: 30, speed: 3, points: 3 });
-                    asteroids.push({ x: asteroids[i].x + 10, y: asteroids[i].y, size: 30, speed: 3, points: 3 });
-                }
-                score += asteroids[i].points; // Add points based on asteroid type
+                handleAsteroidDestruction(asteroids[i]);
                 asteroids.splice(i, 1); // Remove the destroyed asteroid
                 break;
             }
         }
     }
+}
+
+function handleAsteroidDestruction(asteroid) {
+    if (asteroid.size === 70) {
+        asteroids.push({ x: asteroid.x, y: asteroid.y, size: 50, speed: 2, points: 2 });
+        asteroids.push({ x: asteroid.x + 20, y: asteroid.y, size: 50, speed: 2, points: 2 });
+    } else if (asteroid.size === 50) {
+        asteroids.push({ x: asteroid.x, y: asteroid.y, size: 30, speed: 3, points: 3 });
+        asteroids.push({ x: asteroid.x + 10, y: asteroid.y, size: 30, speed: 3, points: 3 });
+    }
+    score += asteroid.points; // Add points based on asteroid type
 }
 
 // Draw everything
@@ -176,6 +178,18 @@ function draw() {
     ctx.font = '20px Arial';
     ctx.fillText('Score: ' + score, 10, 20);
     ctx.fillText('Lives: ' + lives, 10, 40);
+
+    // Draw ability status
+    if (abilityActive) {
+        ctx.fillStyle = 'yellow';
+        ctx.font = '20px Arial';
+        ctx.fillText('Ability Active!', canvas.width - 150, 20);
+    }
+    if (abilityCooldown) {
+        ctx.fillStyle = 'red';
+        ctx.font = '20px Arial';
+        ctx.fillText('Ability Cooldown!', canvas.width - 180, 40);
+    }
 }
 
 // Draw game over screen
@@ -202,20 +216,17 @@ function drawPause() {
 // Handle keyboard input
 window.addEventListener('keydown', (e) => {
     if (gameOver) {
-        if (e.key === 'r' || e.key === 'R') {
-            resetGame();
-        }
+        if (e.key.toLowerCase() === 'r') resetGame();
     } else if (isPaused) {
-        if (e.key === 'p' || e.key === 'P') {
+        if (e.key.toLowerCase() === 'p') {
             isPaused = false;
-            gameLoop(); // Resume the game loop
+            gameLoop();
         }
     } else {
         if (e.key === 'a') player.dx = -5; // Move left
         else if (e.key === 'd') player.dx = 5; // Move right
-        else if (e.key === 'p' || e.key === 'P') {
-            isPaused = true; // Pause the game
-        }
+        else if (e.key.toLowerCase() === 'p') isPaused = true; // Pause the game
+        else if (e.key === ' ') activateAbility(); // Activate ability with space bar
     }
 });
 
@@ -227,9 +238,35 @@ window.addEventListener('keyup', (e) => {
 canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault(); // Prevent the context menu from appearing
     if (!gameOver && !isPaused) {
-        bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
+        if (abilityActive) {
+            shootBullets();
+        } else {
+            bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
+        }
     }
 });
+
+// Ability functions
+function activateAbility() {
+    if (!abilityCooldown) {
+        abilityActive = true;
+        shootBullets(); // Immediately shoot bullets
+        setTimeout(() => {
+            abilityActive = false; // Deactivate ability after 30 seconds
+            abilityCooldown = true; // Start cooldown
+            setTimeout(() => {
+                abilityCooldown = false; // End cooldown after 45 seconds
+            }, 45000);
+        }, 30000);
+    }
+}
+
+// Shooting bullets in three directions
+function shootBullets() {
+    bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
+    bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2 - 10, y: player.y, direction: 1 }); // Left
+    bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2 + 10, y: player.y, direction: -1 }); // Right
+}
 
 // Start the game
 document.getElementById('startButton').addEventListener('click', startGame);
@@ -250,6 +287,8 @@ function resetGame() {
     lives = 5;
     gameOver = false;
     isPaused = false;
+    abilityActive = false;
+    abilityCooldown = false;
     gameLoop();
 }
 
@@ -258,5 +297,3 @@ function resetGame() {
 </script>
 </body>
 </html>
-
-
