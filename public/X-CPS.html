@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPS Counter</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        #timerDisplay {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CPS Counter</h1>
+    <button id="clickButton">Click Me!</button>
+    <button id="resetButton">Reset</button>
+    <h2 id="cpsDisplay">CPS: 0</h2>
+    <div id="timerDisplay">Time Left: 5</div>
+    <script>
+        let clickCount = 0;
+        let cps = 0;
+        let timer = 5;
+        let countdown;
+        let calculateInterval;
+
+        function resetGame() {
+            clickCount = 0;
+            cps = 0;
+            timer = 5;
+            document.getElementById('cpsDisplay').innerText = `CPS: 0`;
+            document.getElementById('timerDisplay').innerText = `Time Left: 5`;
+            document.getElementById('clickButton').disabled = false;
+            clearInterval(countdown);
+            clearInterval(calculateInterval);
+            startTimer();
+            calculateInterval = setInterval(calculateCPS, 1000);
+        }
+
+        document.getElementById('clickButton').addEventListener('click', () => {
+            clickCount++;
+        });
+
+        function calculateCPS() {
+            cps = clickCount; 
+            clickCount = 0;   
+            document.getElementById('cpsDisplay').innerText = `CPS: ${cps}`;
+        }
+
+        function startTimer() {
+            countdown = setInterval(() => {
+                timer--;
+                document.getElementById('timerDisplay').innerText = `Time Left: ${timer}`;
+
+                if (timer <= 0) {
+                    clearInterval(countdown);
+                    clearInterval(calculateInterval);
+                    document.getElementById('clickButton').disabled = true;
+                    document.getElementById('timerDisplay').innerText = "Time's Up!";
+                }
+            }, 1000);
+        }
+
+        document.getElementById('resetButton').addEventListener('click', resetGame);
+        startTimer();
+        calculateInterval = setInterval(calculateCPS, 1000);
+    </script>
+</body>
+</html>
