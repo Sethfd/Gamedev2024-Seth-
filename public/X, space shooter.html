@@ -182,9 +182,14 @@ function handleAsteroidDestruction(asteroid) {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw player
+    // Draw player (triangle shape)
     ctx.fillStyle = 'gray';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    ctx.beginPath();
+    ctx.moveTo(player.x + PLAYER_WIDTH / 2, player.y); // Top point of triangle
+    ctx.lineTo(player.x, player.y + PLAYER_HEIGHT); // Bottom left point
+    ctx.lineTo(player.x + PLAYER_WIDTH, player.y + PLAYER_HEIGHT); // Bottom right point
+    ctx.closePath();
+    ctx.fill();
 
     // Draw bullets
     ctx.fillStyle = 'lightblue';
@@ -355,4 +360,5 @@ function resetGame() {
 </script>
 </body>
 </html>
+
 
