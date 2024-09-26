@@ -16,13 +16,21 @@
         canvas {
             border: 2px solid #000;
         }
+        #message {
+            position: absolute;
+            top: 20px;
+            font-size: 24px;
+            color: red;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="message"></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const messageDiv = document.getElementById('message');
 
         const GRID_SIZE = 30;
         const ROWS = 20;
@@ -45,6 +53,7 @@
         ];
 
         let playerPos = { x: 1, y: 1 };
+        let gameActive = true;
 
         function drawMaze() {
             for (let row = 0; row < ROWS; row++) {
@@ -80,6 +89,8 @@
         }
 
         function movePlayer(dx, dy) {
+            if (!gameActive) return;
+
             const newX = playerPos.x + dx;
             const newY = playerPos.y + dy;
 
@@ -89,12 +100,15 @@
                 playerPos.y = newY;
             } else if (maze[newY] && maze[newY][newX] === 10) {
                 alert("Congratulations! You've reached the goal!");
-                resetGame();
+                gameActive = false;
+                messageDiv.textContent = "You Win!";
             }
         }
 
         function resetGame() {
             playerPos = { x: 1, y: 1 }; // Reset player position
+            gameActive = true;
+            messageDiv.textContent = ""; // Clear win message
         }
 
         function gameLoop() {
@@ -105,6 +119,7 @@
         }
 
         window.addEventListener('keydown', (event) => {
+            if (!gameActive) return; // Ignore key events if the game is over
             switch (event.key) {
                 case 'ArrowUp':
                     movePlayer(0, -1);
@@ -127,6 +142,3 @@
     </script>
 </body>
 </html>
-
-
-
