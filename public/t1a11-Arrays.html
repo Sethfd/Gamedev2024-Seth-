@@ -3,80 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>t1a11-Arrays</title>
+    <title>Complex Array Example</title>
 </head>
 <body>
 
-<h1 align="center">t1a11-Arrays.html</h1>
-
-<script> 
-    // Set Global Variables
-    const myMax = 6;
-    let stringArray = new Array(myMax); // Array of strings
-    let numberArray = new Array(myMax); // Array of numbers
-    let booleanArray = new Array(myMax); // Array of booleans
-    let objectArray = new Array(myMax); // Array of objects
-    let functionArray = new Array(myMax); // Array of functions
-    let mixedArray = new Array(myMax); // Array with mixed types
-    let nestedArray = new Array(myMax); // Array of arrays
-    let dateArray = new Array(myMax); // Array of dates
-</script>
-
-<p>Input your first name:</p>
-<input type="text" id="myFirstname" placeholder="Enter your first name" />
-<button onclick="addToArrays()">Submit</button>
+<h1 align="center">Complex Array Example</h1>
 
 <script>
-    function addToArrays() {
-        const input = document.getElementById('myFirstname').value;
+    // Define a complex array structure
+    const complexArray = [
+        {
+            category: 'Fiction',
+            books: [
+                { title: '1984', author: 'George Orwell', year: 1949 },
+                { title: 'Brave New World', author: 'Aldous Huxley', year: 1932 },
+            ],
+            getBookTitles: function() {
+                return this.books.map(book => book.title);
+            }
+        },
+        {
+            category: 'Non-Fiction',
+            books: [
+                { title: 'Sapiens', author: 'Yuval Noah Harari', year: 2011 },
+                { title: 'Educated', author: 'Tara Westover', year: 2018 },
+            ],
+            getBookCount: function() {
+                return this.books.length;
+            }
+        },
+        {
+            category: 'Science',
+            books: [
+                { title: 'The Gene', author: 'Siddhartha Mukherjee', year: 2016 },
+                { title: 'Astrophysics for People in a Hurry', author: 'Neil deGrasse Tyson', year: 2017 },
+            ],
+            getAuthors: function() {
+                return this.books.map(book => book.author);
+            }
+        },
+        {
+            category: 'Fantasy',
+            books: [
+                { title: 'The Hobbit', author: 'J.R.R. Tolkien', year: 1937 },
+                { title: 'Harry Potter and the Sorcerer\'s Stone', author: 'J.K. Rowling', year: 1997 },
+            ],
+            getTitlesAndYears: function() {
+                return this.books.map(book => `${book.title} (${book.year})`);
+            }
+        },
+    ];
 
-        // Check if there's space in the string array
-        for (let i = 0; i < myMax; i++) {
-            if (!stringArray[i]) {
-                stringArray[i] = input; // Store the input in the string array
-                alert(`Added "${input}" to the string array at position ${i}`);
-                break;
-            } else if (i === myMax - 1) {
-                alert("String array is full!");
-            }
-        }
-
-        // Example of adding to other arrays (for demonstration purposes)
-        for (let j = 0; j < myMax; j++) {
-            if (!numberArray[j]) {
-                numberArray[j] = j + 1; // Adding numbers 1-6 to numberArray
-                break;
-            }
-            if (!booleanArray[j]) {
-                booleanArray[j] = (j % 2 === 0); // Alternating true/false in booleanArray
-                break;
-            }
-            if (!objectArray[j]) {
-                objectArray[j] = { name: input, id: j + 1 }; // Creating an object
-                break;
-            }
-            if (!functionArray[j]) {
-                functionArray[j] = function() { return `Function ${j + 1}`; }; // Adding functions
-                break;
-            }
-            if (!mixedArray[j]) {
-                mixedArray[j] = (j % 2 === 0) ? input : j + 1; // Mixing types
-                break;
-            }
-            if (!nestedArray[j]) {
-                nestedArray[j] = [input, j + 1]; // Nested array example
-                break;
-            }
-            if (!dateArray[j]) {
-                dateArray[j] = new Date(); // Adding current date
-                break;
-            }
-        }
-
-        document.getElementById('myFirstname').value = ''; // Clear the input
-    }
+    // Example usage
+    console.log('Fiction Books:', complexArray[0].getBookTitles());
+    console.log('Non-Fiction Book Count:', complexArray[1].getBookCount());
+    console.log('Science Authors:', complexArray[2].getAuthors());
+    console.log('Fantasy Titles and Years:', complexArray[3].getTitlesAndYears());
 </script>
 
 </body>
 </html>
+
 
