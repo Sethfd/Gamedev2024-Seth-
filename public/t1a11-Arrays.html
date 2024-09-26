@@ -3,65 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complex Array Example</title>
+    <title>Book Categories</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
 
-<h1 align="center">Complex Array Example</h1>
+<h1>Book Categories</h1>
+
+<label for="genreInput">Enter Genre:</label>
+<input type="text" id="genreInput" placeholder="e.g., Fiction, Fantasy">
+<button onclick="searchBooks()">Search</button>
+
+<div class="result" id="result"></div>
 
 <script>
-    // Define a complex array structure
-    const complexArray = [
-        {
-            category: 'Fiction',
-            books: [
-                { title: '1984', author: 'George Orwell', year: 1949 },
-                { title: 'Brave New World', author: 'Aldous Huxley', year: 1932 },
-            ],
-            getBookTitles: function() {
-                return this.books.map(book => book.title);
-            }
-        },
-        {
-            category: 'Non-Fiction',
-            books: [
-                { title: 'Sapiens', author: 'Yuval Noah Harari', year: 2011 },
-                { title: 'Educated', author: 'Tara Westover', year: 2018 },
-            ],
-            getBookCount: function() {
-                return this.books.length;
-            }
-        },
-        {
-            category: 'Science',
-            books: [
-                { title: 'The Gene', author: 'Siddhartha Mukherjee', year: 2016 },
-                { title: 'Astrophysics for People in a Hurry', author: 'Neil deGrasse Tyson', year: 2017 },
-            ],
-            getAuthors: function() {
-                return this.books.map(book => book.author);
-            }
-        },
-        {
-            category: 'Fantasy',
-            books: [
-                { title: 'The Hobbit', author: 'J.R.R. Tolkien', year: 1937 },
-                { title: 'Harry Potter and the Sorcerer\'s Stone', author: 'J.K. Rowling', year: 1997 },
-            ],
-            getTitlesAndYears: function() {
-                return this.books.map(book => `${book.title} (${book.year})`);
-            }
-        },
+    const books = [
+        { title: "To Kill a Mockingbird", author: "Harper Lee", genre: "Fiction" },
+        { title: "1984", author: "George Orwell", genre: "Dystopian" },
+        { title: "The Great Gatsby", author: "F. Scott Fitzgerald", genre: "Classic" },
+        { title: "A Brief History of Time", author: "Stephen Hawking", genre: "Non-Fiction" },
+        { title: "The Hobbit", author: "J.R.R. Tolkien", genre: "Fantasy" }
     ];
 
-    // Example usage
-    console.log('Fiction Books:', complexArray[0].getBookTitles());
-    console.log('Non-Fiction Book Count:', complexArray[1].getBookCount());
-    console.log('Science Authors:', complexArray[2].getAuthors());
-    console.log('Fantasy Titles and Years:', complexArray[3].getTitlesAndYears());
+    function searchBooks() {
+        const genreInput = document.getElementById('genreInput').value;
+        const resultDiv = document.getElementById('result');
+        const filteredBooks = books.filter(book => book.genre.toLowerCase() === genreInput.toLowerCase());
+
+        resultDiv.innerHTML = ''; // Clear previous results
+
+        if (filteredBooks.length > 0) {
+            filteredBooks.forEach(book => {
+                resultDiv.innerHTML += `<p><strong>${book.title}</strong> by ${book.author}</p>`;
+            });
+        } else {
+            resultDiv.innerHTML = `<p>No books found in the "${genreInput}" genre.</p>`;
+        }
+    }
 </script>
 
 </body>
 </html>
-
-
