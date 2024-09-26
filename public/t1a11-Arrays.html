@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>t1a11-Arrays</title>
+</head>
+<body>
+
+<h1 align="center">t1a11-Arrays.html</h1>
+
+<script> 
+    // Set Global Variables
+    const myMax = 6;
+    let stringArray = new Array(myMax); // Array of strings
+    let numberArray = new Array(myMax); // Array of numbers
+    let booleanArray = new Array(myMax); // Array of booleans
+    let objectArray = new Array(myMax); // Array of objects
+    let functionArray = new Array(myMax); // Array of functions
+    let mixedArray = new Array(myMax); // Array with mixed types
+    let nestedArray = new Array(myMax); // Array of arrays
+    let dateArray = new Array(myMax); // Array of dates
+</script>
+
+<p>Input your first name:</p>
+<input type="text" id="myFirstname" placeholder="Enter your first name" />
+<button onclick="addToArrays()">Submit</button>
+
+<script>
+    function addToArrays() {
+        const input = document.getElementById('myFirstname').value;
+
+        // Check if there's space in the string array
+        for (let i = 0; i < myMax; i++) {
+            if (!stringArray[i]) {
+                stringArray[i] = input; // Store the input in the string array
+                alert(`Added "${input}" to the string array at position ${i}`);
+                break;
+            } else if (i === myMax - 1) {
+                alert("String array is full!");
+            }
+        }
+
+        // Example of adding to other arrays (for demonstration purposes)
+        for (let j = 0; j < myMax; j++) {
+            if (!numberArray[j]) {
+                numberArray[j] = j + 1; // Adding numbers 1-6 to numberArray
+                break;
+            }
+            if (!booleanArray[j]) {
+                booleanArray[j] = (j % 2 === 0); // Alternating true/false in booleanArray
+                break;
+            }
+            if (!objectArray[j]) {
+                objectArray[j] = { name: input, id: j + 1 }; // Creating an object
+                break;
+            }
+            if (!functionArray[j]) {
+                functionArray[j] = function() { return `Function ${j + 1}`; }; // Adding functions
+                break;
+            }
+            if (!mixedArray[j]) {
+                mixedArray[j] = (j % 2 === 0) ? input : j + 1; // Mixing types
+                break;
+            }
+            if (!nestedArray[j]) {
+                nestedArray[j] = [input, j + 1]; // Nested array example
+                break;
+            }
+            if (!dateArray[j]) {
+                dateArray[j] = new Date(); // Adding current date
+                break;
+            }
+        }
+
+        document.getElementById('myFirstname').value = ''; // Clear the input
+    }
+</script>
+
+</body>
+</html>
 
