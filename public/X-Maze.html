@@ -21,6 +21,9 @@
         #output {
             margin-top: 20px;
         }
+        #inventory {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -29,34 +32,102 @@
     <div>
         <button class="button" id="moveBtn">Move</button>
         <button class="button" id="fightBtn">Fight</button>
+        <button class="button" id="dodgeBtn">Dodge</button>
+        <button class="button" id="searchBtn">Search</button>
+        <button class="button" id="inventoryBtn">View Inventory</button>
+        <button class="button" id="useItemBtn">Use Item</button>
     </div>
+    <div id="inventory"></div>
 
     <script>
-        const maze = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 1, 1, 1, 1, 0, 0, 3, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-            [1, 0, 1, 1, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1],
-            [1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-            [1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 3, 0, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 2, 1],
-            [1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        ];
-
         const rooms = {
             0: { description: "You are in the Entrance. A dark hallway stretches ahead.", exits: [1, 2] },
             1: { description: "You are in the Hallway. You see doors to the left and right.", exits: [0, 3, 4] },
             2: { description: "You are in the Treasure Room. It's filled with gold!", exits: [1] },
-            3: { description: "You are in a Monster Room! Prepare to fight!", exits: [1] },
-            4: { description: "You are in a Hidden Room. There's something strange here.", exits: [1] }
+            3: { description: "You are in a Monster Room! Prepare to fight!", exits: [1, 5] },
+            4: { description: "You are in a Hidden Room. There's something strange here.", exits: [1, 6] },
+            5: { description: "You enter a dark storage room. It's dusty and old.", exits: [3, 7] },
+            6: { description: "You are in a library filled with ancient books.", exits: [4, 8] },
+            7: { description: "This room is filled with old weapons and armor.", exits: [5] },
+            8: { description: "You discover a small chapel. It's eerily quiet.", exits: [6, 9] },
+            9: { description: "You enter a room with a large fountain. Water flows gently.", exits: [8, 10] },
+            10: { description: "You are in a dark cave. Sounds of dripping water echo around.", exits: [9, 11] },
+            11: { description: "You find a small exit leading to the outside.", exits: [10, 12] },
+            12: { description: "You enter a courtyard filled with strange plants.", exits: [11, 13] },
+            13: { description: "You are in a room filled with treasure chests.", exits: [12, 14] },
+            14: { description: "You are in a workshop filled with magical artifacts.", exits: [13, 15] },
+            15: { description: "You enter a room with an altar. It feels powerful here.", exits: [14, 16] },
+            16: { description: "This room has strange glowing symbols on the walls.", exits: [15, 17] },
+            17: { description: "You find yourself in a room full of illusions.", exits: [16, 18] },
+            18: { description: "You are in a dark room where shadows dance.", exits: [17, 19] },
+            19: { description: "You find a room with a mysterious portal.", exits: [18, 20] },
+            20: { description: "You are in a hall of mirrors. It’s confusing.", exits: [19, 21] },
+            21: { description: "You enter a room filled with gems and jewels.", exits: [20, 22] },
+            22: { description: "This room has an ancient throne. It feels regal.", exits: [21, 23] },
+            23: { description: "You find a locked door here. It won’t budge.", exits: [22] },
+            24: { description: "You are in a fiery room. Be careful!", exits: [23, 25] },
+            25: { description: "You find a room filled with mystical runes.", exits: [24, 26] },
+            26: { description: "This room has a bubbling cauldron.", exits: [25, 27] },
+            27: { description: "You enter a hall of warriors. Statues line the walls.", exits: [26, 28] },
+            28: { description: "You find yourself in a dungeon cell. It smells damp.", exits: [27, 29] },
+            29: { description: "You are in a chamber filled with ancient scrolls.", exits: [28, 30] },
+            30: { description: "You find a room with a giant statue. It watches you.", exits: [29, 31] },
+            31: { description: "You enter a dark room filled with whispers.", exits: [30, 32] },
+            32: { description: "You are in a room of puzzles. Solve them to progress.", exits: [31, 33] },
+            33: { description: "You find a room filled with forgotten memories.", exits: [32, 34] },
+            34: { description: "You enter the final room, filled with a warm light. You've made it!", exits: [33] },
+        };
+
+        const searchResponses = {
+            0: { item: "dusty old map", message: "You find a dusty old map of the dungeon in the Entrance." },
+            1: { item: "footprints", message: "You discover some footprints leading further into the Hallway." },
+            2: { item: "ancient coins", message: "You find a hidden compartment filled with ancient coins!" },
+            3: { item: "trapdoor", message: "You spot a hidden trapdoor in the Monster Room." },
+            4: { item: "strange tome", message: "You find an old tome with strange symbols in the Hidden Room." },
+            5: { item: "rusty sword", message: "You uncover a rusty sword buried under the dust in the storage room." },
+            6: { item: "whispering book", message: "You find a book that whispers secrets when opened in the library." },
+            7: { item: "mystical shield", message: "You find a shield engraved with mystical runes among the armor." },
+            8: { item: "prayer scroll", message: "You discover a hidden prayer scroll behind a broken pew." },
+            9: { item: "gemstone", message: "You find a beautiful gemstone at the bottom of the fountain." },
+            10: { item: "lost souls", message: "You hear the echoes of lost souls in the dark cave." },
+            11: { item: "small key", message: "You find a small key hidden in the exit's wall." }, // Key for the locked door
+            12: { item: "glowing flower", message: "You discover a strange flower that glows in the courtyard." },
+            13: { item: "treasure map", message: "You find a map leading to more treasure in one of the chests." },
+            14: { item: "magic orb", message: "You discover a magical orb that pulses with energy." },
+            15: { item: "ancient relic", message: "You find an ancient relic on the altar that hums with power." },
+            16: { item: "hidden scroll", message: "You discover a scroll hidden behind one of the symbols." },
+            17: { item: "fear mirror", message: "You find a mirror that shows you your greatest fear." },
+            18: { item: "hidden passage", message: "You discover a hidden passage behind the shadows." },
+            19: { item: "old compass", message: "You find an old compass that points towards the portal." },
+            20: { item: "false mirror", message: "You discover a false mirror that opens to another room." },
+            21: { item: "warm gem", message: "You find a gem that radiates warmth in the room of jewels." },
+            22: { item: "throne inscription", message: "You discover an inscription on the throne that tells a story." },
+            23: { item: "frozen artifact", message: "You find a strange artifact frozen in the ice." },
+            24: { item: "fireproof amulet", message: "You discover a fireproof amulet that protects against flames." },
+            25: { item: "insight rune", message: "You find a mystical rune that grants insight into the next room." },
+            26: { item: "bubbling potion", message: "You discover a potion bubbling in the cauldron." },
+            27: { item: "hidden weapon", message: "You find a hidden weapon among the statues in the hall." },
+            28: { item: "scratched message", message: "You discover a hidden message scratched into the cell wall." },
+            29: { item: "ancient scroll", message: "You find an ancient scroll that reveals a secret spell." },
+            30: { item: "hidden lever", message: "You discover a hidden lever behind the statue." },
+            31: { item: "lost soul", message: "You find a lost soul trapped in the whispers." },
+            32: { item: "puzzle piece", message: "You discover a puzzle piece that fits into the wall." },
+            33: { item: "memory shard", message: "You find a memory shard that shows a glimpse of the past." },
+            34: { item: "dungeon essence", message: "You discover a final treasure, the essence of the dungeon itself." },
         };
 
         let currentRoom = 0;
         let playerHealth = 100;
+        let monsterHealth = 0;
+        let inCombat = false;
+        let inventory = [];
+        let keyFound = false; // Track if the key is found
+        const usableItems = {
+            "rusty sword": { type: "damage", value: 10 },
+            "fireproof amulet": { type: "dodge", value: 5 },
+            "bubbling potion": { type: "heal", value: 20 },
+            "small key": { type: "unlock", value: null } // Key for the locked door
+        };
 
         function updateOutput(message) {
             const output = document.getElementById('output');
@@ -67,56 +138,182 @@
             const room = rooms[currentRoom];
             let description = room.description + "<br>";
             description += "You can go to: " + room.exits.join(", ") + ".<br>";
+            if (currentRoom === 23 && !keyFound) {
+                description += "The door is locked. You need a key to enter.";
+            }
             updateOutput(description);
+        }
+
+        function addItemToInventory(item) {
+            inventory.push(item);
+            if (item === "small key") keyFound = true; // Mark key as found
+            updateOutput(`You added "${item}" to your inventory.`);
         }
 
         document.getElementById('moveBtn').addEventListener('click', () => {
             const room = rooms[currentRoom];
             const direction = parseInt(prompt("Which room do you want to enter? (" + room.exits.join(", ") + ")"));
             if (room.exits.includes(direction)) {
-                currentRoom = direction;
-                describeRoom();
+                if (direction === 23 && !keyFound) { // If trying to enter the locked room
+                    updateOutput("The door is locked. You need a key to enter.");
+                } else {
+                    currentRoom = direction;
+                    describeRoom();
+                }
             } else {
                 updateOutput("You can't go that way.");
             }
         });
 
         document.getElementById('fightBtn').addEventListener('click', () => {
-            if (currentRoom === 3) {
-                fightMonster();
+            if (currentRoom === 3 || currentRoom === 5 || currentRoom === 19 || currentRoom === 24) {
+                startFight();
             } else {
                 updateOutput("There is nothing to fight here.");
             }
         });
 
-        function fightMonster() {
-            let monsterHealth = Math.floor(Math.random() * 30) + 20; // Random monster health between 20 and 50
+        document.getElementById('dodgeBtn').addEventListener('click', () => {
+            if (inCombat) {
+                dodge();
+            } else {
+                updateOutput("You can't dodge right now.");
+            }
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            searchRoom();
+        });
+
+        document.getElementById('inventoryBtn').addEventListener('click', () => {
+            viewInventory();
+        });
+
+        document.getElementById('useItemBtn').addEventListener('click', () => {
+            useItem();
+        });
+
+        function searchRoom() {
+            const { item, message } = searchResponses[currentRoom];
+            updateOutput(message);
+            addItemToInventory(item);
+        }
+
+        function viewInventory() {
+            if (inventory.length === 0) {
+                updateOutput("Your inventory is empty.");
+            } else {
+                updateOutput("Inventory: " + inventory.join(", "));
+            }
+        }
+
+        function startFight() {
+            monsterHealth = Math.floor(Math.random() * 30) + 20; // Random monster health
+            inCombat = true;
             updateOutput(`A monster with ${monsterHealth} health appears!`);
+            fightTurn(); // Start the turn-based battle
+        }
 
-            const interval = setInterval(() => {
-                if (monsterHealth <= 0) {
-                    clearInterval(interval);
-                    updateOutput("You defeated the monster!");
-                    currentRoom = 1; // Return to hallway after defeating the monster
-                    describeRoom();
-                    return;
+        function fightTurn() {
+            if (monsterHealth <= 0) {
+                updateOutput("You defeated the monster!");
+                currentRoom = 1; // Return to hallway after defeating the monster
+                inCombat = false;
+                describeRoom();
+                return;
+            }
+
+            const playerDamage = Math.floor(Math.random() * 10) + 5; // Player damage
+            monsterHealth -= playerDamage;
+            updateOutput(`You dealt ${playerDamage} damage to the monster! Monster health: ${monsterHealth}`);
+
+            if (monsterHealth > 0) {
+                const monsterDamage = Math.floor(Math.random() * 10) + 5; // Monster damage
+                playerHealth -= monsterDamage;
+                updateOutput(`The monster dealt ${monsterDamage} damage to you! Your health: ${playerHealth}`);
+
+                if (playerHealth <= 0) {
+                    updateOutput("You have been defeated by the monster!");
+                    inCombat = false;
+                } else {
+                    setTimeout(() => {
+                        updateOutput("It's your turn again. What will you do?");
+                    }, 2000); // Proceed to next turn
                 }
+            } else {
+                updateOutput("You defeated the monster!");
+                currentRoom = 1; // Return to hallway after defeating the monster
+                inCombat = false;
+                describeRoom();
+            }
+        }
 
-                const damage = Math.floor(Math.random() * 10) + 5; // Random player damage
-                monsterHealth -= damage;
-                updateOutput(`You dealt ${damage} damage to the monster! Monster health: ${monsterHealth}`);
+        function dodge() {
+            const dodgeSuccess = Math.random() < 0.5; // 50% chance to dodge
+            if (dodgeSuccess) {
+                updateOutput("You successfully dodged the monster's attack!");
+                return; // Skip the monster's attack
+            } else {
+                const monsterDamage = Math.floor(Math.random() * 10) + 5; // Monster damage
+                playerHealth -= monsterDamage;
+                updateOutput(`You failed to dodge! The monster dealt ${monsterDamage} damage to you! Your health: ${playerHealth}`);
+                if (playerHealth <= 0) {
+                    updateOutput("You have been defeated by the monster!");
+                    inCombat = false;
+                } else {
+                    fightTurn(); // Proceed to next turn
+                }
+            }
+        }
 
-                if (monsterHealth > 0) {
-                    const monsterDamage = Math.floor(Math.random() * 10) + 5; // Monster damage
-                    playerHealth -= monsterDamage;
-                    updateOutput(`The monster dealt ${monsterDamage} damage to you! Your health: ${playerHealth}`);
+        function useItem() {
+            if (inventory.length === 0) {
+                updateOutput("Your inventory is empty. You have no items to use.");
+                return;
+            }
 
-                    if (playerHealth <= 0) {
-                        clearInterval(interval);
-                        updateOutput("You have been defeated by the monster!");
+            const itemToUse = prompt("Which item do you want to use? (" + inventory.join(", ") + ")");
+            if (inventory.includes(itemToUse) && usableItems[itemToUse]) {
+                const item = usableItems[itemToUse];
+                if (item.type === "damage") {
+                    const damage = item.value;
+                    monsterHealth -= damage;
+                    updateOutput(`You used ${itemToUse} and dealt ${damage} damage! Monster health: ${monsterHealth}`);
+                } else if (item.type === "heal") {
+                    playerHealth += item.value;
+                    updateOutput(`You used ${itemToUse} and healed ${item.value} health! Your health: ${playerHealth}`);
+                } else if (item.type === "unlock") {
+                    if (itemToUse === "small key") {
+                        if (currentRoom === 23) { // Unlock the door
+                            updateOutput("You used the small key to unlock the door.");
+                            currentRoom = 24; // Move to the next room after unlocking
+                            describeRoom();
+                            return;
+                        } else {
+                            updateOutput("You can't use the key here.");
+                        }
+                    } else {
+                        updateOutput(`You used ${itemToUse}, increasing your chance to dodge by ${item.value}.`);
                     }
                 }
-            }, 2000); // Fight every 2 seconds
+
+                // Remove the item from inventory after use
+                inventory.splice(inventory.indexOf(itemToUse), 1);
+            } else {
+                updateOutput("You can't use that item.");
+            }
+
+            // Check if the monster is still alive
+            if (monsterHealth > 0) {
+                setTimeout(() => {
+                    fightTurn(); // Proceed to next turn if monster is still alive
+                }, 2000);
+            } else {
+                updateOutput("You defeated the monster!");
+                currentRoom = 1; // Return to hallway after defeating the monster
+                inCombat = false;
+                describeRoom();
+            }
         }
 
         // Start the game
@@ -124,4 +321,3 @@
     </script>
 </body>
 </html>
-
