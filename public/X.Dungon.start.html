@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Maze Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e0f7fa;
+            font-family: Arial, sans-serif;
+        }
+        #startButton {
+            padding: 15px 30px;
+            font-size: 20px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #startButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
 
+    <button id="startButton">Start X-Maze Game</button>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', function() {
+            window.location.href = 'game.js'; // Link to your game file
+            // Alternatively, you can link to an HTML file if your game is in an HTML format
+            // window.location.href = 'yourGame.html';
+        });
+    </script>
+
+</body>
+</html>
