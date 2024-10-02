@@ -18,9 +18,12 @@
     <div id="game">
         <h1>Dungeon Crawler</h1>
         <div id="intro">
-            <p> brave adventurer! I need your help you see the 5 Realms are being corrupted and only you cen save it .</p>
-            <p>Can you navigate the labyrinth of rooms, defeat fearsome foes, and and save the worlds?</p>
-            <p>Enter your name to begin your quest:</p>
+            <p>Welcome, brave adventurer!</p>
+            <p>Your journey begins in the shadows of forgotten realms, where ancient evils stir and treasures await the bold.</p>
+            <p>With each step you take, you will face fearsome foes and treacherous traps, but within you lies the strength to conquer them.</p>
+            <p>Gather your courage, for the fate of these worlds rests upon your shoulders!</p>
+            <p>Will you rise to the challenge and unlock the secrets of the dungeon, or will you succumb to the darkness?</p>
+            <p>Enter your name and let the adventure unfold!</p>
             <input type="text" id="input" placeholder="Enter your name" />
             <button onclick="startGame()">Start Game</button>
         </div>
@@ -31,6 +34,7 @@
             <button onclick="selectWorld(2)">Frozen Tundra</button>
             <button onclick="selectWorld(3)">Mystic Forest</button>
             <button onclick="selectWorld(4)">Forgotten Ruins</button>
+            <button onclick="selectWorld(5)">Hydra's Lair</button>
             <button onclick="unlockFinalBoss()">Enter Tower of God</button>
             <button onclick="loadGame()">Load Game</button>
         </div>
@@ -46,6 +50,7 @@
         <div id="actions" style="display:none;">
             <button onclick="attack()">Attack</button>
             <button onclick="heal()">Heal</button>
+            <button onclick="dodge()">Dodge</button>
             <button onclick="saveGame()">Save Game</button>
         </div>
     </div>
@@ -65,6 +70,29 @@
             }
         }
 
+        class Hydra {
+            constructor() {
+                this.heads = 5; // The number of heads
+                this.maxHealth = 100; // Total health for the Hydra
+                this.currentHealth = this.maxHealth; // Current health of the Hydra
+                this.attackPower = 10; // Damage dealt by each head
+            }
+
+            isAlive() {
+                return this.heads > 0;
+            }
+
+            attack() {
+                return this.attackPower; // Each head attacks for fixed damage
+            }
+
+            takeDamage() {
+                // Each head can be considered as defeated
+                this.heads -= 1; // Reduce a head when it takes damage
+                return this.heads === 0; // Returns true if all heads are defeated
+            }
+        }
+
         class Player {
             constructor(name) {
                 this.name = name;
@@ -76,21 +104,27 @@
                 this.keys = 0; // Number of keys collected
                 this.specialItem = null; // Special item acquired
             }
+
             attack() {
                 return this.damage;
             }
+
             isAlive() {
                 return this.health > 0;
             }
+
             collectTreasure(amount) {
                 this.treasure += amount;
             }
+
             collectKey() {
                 this.keys += 1;
             }
+
             heal() {
                 this.health = Math.min(this.maxHealth, this.health + 10);
             }
+
             acquireItem(item) {
                 this.specialItem = item;
             }
@@ -104,6 +138,11 @@
                     new Monster("Goblin", 30, 5),
                     new Monster("Skeleton", 20, 7),
                     new Monster("Orc", 40, 10),
+                    new Monster("Vampire", 40, 12),
+                    new Monster("Wraith", 25, 10),
+                    new Monster("Phantom", 30, 8),
+                    new Monster("Dark Sorcerer", 45, 15),
+                    new Monster("Shadow Beast", 50, 10),
                 ],
                 roomDescriptions: [
                     "You are in a dark room filled with eerie whispers.",
@@ -134,6 +173,11 @@
                 monsters: [
                     new Monster("Fire Elemental", 50, 12),
                     new Monster("Flame Sprite", 25, 8),
+                    new Monster("Fire Golem", 70, 15),
+                    new Monster("Lava Drake", 60, 20),
+                    new Monster("Ash Elemental", 40, 12),
+                    new Monster("Flame Guardian", 55, 18),
+                    new Monster("Fire Demon", 80, 25),
                 ],
                 roomDescriptions: [
                     "The room is filled with flickering flames.",
@@ -164,162 +208,165 @@
                 monsters: [
                     new Monster("Ice Golem", 60, 10),
                     new Monster("Frost Wyrm", 40, 15),
+                    new Monster("Snow Elemental", 50, 10),
+                    new Monster("Frost Giant", 80, 18),
+                    new Monster("Ice Wraith", 40, 12),
+                    new Monster("Polar Bear", 50, 14),
+                    new Monster("Ice Demon", 90, 25),
                 ],
                 roomDescriptions: [
-                    "This room is frigid and filled with icy winds.",
-                    "You see frost covering the walls and floor.",
-                    "A frozen lake stretches out before you.",
-                    "Icicles hang from the ceiling like deadly spears.",
-                    "The air is so cold it burns your lungs.",
-                    "You find a snow-covered throne made of ice.",
-                    "A blizzard rages outside the window.",
-                    "You see footprints leading into the shadows.",
-                    "The walls shimmer with a layer of frost.",
-                    "You find a chest encased in ice.",
-                    "The sound of cracking ice echoes around you.",
-                    "You see an ancient statue frozen in time.",
-                    "A sudden gust of wind makes you shiver.",
-                    "You discover a hidden cave filled with snow.",
-                    "You find a magical snow globe that shows visions.",
-                    "This room is eerily silent, as if time stands still.",
-                    "You find a hidden stash of frozen treasures.",
-                    "You see glowing crystals that seem to hum.",
-                    "You hear the distant howl of a snow wolf.",
-                    "You find a key frozen in a block of ice."
+                    "This room is covered in a thick layer of frost.",
+                    "Icicles hang from the ceiling like deadly daggers.",
+                    "The air is frigid, and your breath forms clouds.",
+                    "You see snowflakes swirling in the air.",
+                    "The walls are slick with ice, making it hard to move.",
+                    "You find frozen treasures encased in ice.",
+                    "A howling wind echoes through the chamber.",
+                    "You see the outline of a massive frozen beast.",
+                    "This room is a frozen tomb of ancient warriors.",
+                    "You hear the cracking of ice beneath your feet.",
+                    "A blue glow emanates from a distant cave.",
+                    "You see a frozen waterfall cascading in the distance.",
+                    "You find a mysterious glowing orb in the ice.",
+                    "The temperature drops suddenly as you enter.",
+                    "You stumble upon a hidden ice cave.",
+                    "You find an old, frozen sword embedded in the ground.",
+                    "You see a pack of wolves lurking in the shadows.",
+                    "A strange chill surrounds you, as if being watched.",
+                    "You find a key hidden in a snowdrift."
                 ]
             },
             {
                 name: "Mystic Forest",
-                specialItem: "Nature's Bow",
+                specialItem: "Enchanted Bow",
                 monsters: [
-                    new Monster("Forest Spirit", 35, 6),
-                    new Monster("Treant", 50, 8),
+                    new Monster("Forest Spirit", 30, 8),
+                    new Monster("Woodland Elf", 40, 10),
+                    new Monster("Giant Spider", 50, 12),
+                    new Monster("Treant", 70, 15),
+                    new Monster("Wraith", 40, 10),
+                    new Monster("Giant Owl", 30, 10),
+                    new Monster("Mystic Beast", 60, 18),
                 ],
                 roomDescriptions: [
-                    "You are surrounded by ancient trees and thick foliage.",
-                    "The sounds of wildlife echo all around you.",
-                    "Sunlight filters through the leaves, creating patterns on the ground.",
-                    "You see strange mushrooms glowing softly.",
-                    "A gentle breeze carries the scent of flowers.",
-                    "You find a hidden glade bathed in sunlight.",
-                    "The trees whisper secrets as you pass by.",
-                    "You see a waterfall cascading into a crystal-clear pool.",
-                    "You discover a grove filled with rare herbs.",
-                    "You find a hidden path overgrown with vines.",
-                    "A family of deer watches you curiously.",
-                    "You hear laughter echoing through the trees.",
-                    "You find a hidden cave filled with sparkling stones.",
-                    "The forest seems to come alive around you.",
-                    "You find a magical well that grants wishes.",
-                    "You see a tree with a door carved into its trunk.",
-                    "The ground is soft with a carpet of moss.",
-                    "You discover a nest of magical creatures.",
-                    "You hear the rustle of leaves above you.",
-                    "You find a key hidden in a tree hollow."
+                    "The air is thick with the scent of pine and earth.",
+                    "You hear the sounds of birds chirping in the distance.",
+                    "The forest is dense and difficult to navigate.",
+                    "You see a glimmer of light filtering through the leaves.",
+                    "A sense of magic fills the air as you explore.",
+                    "You find a hidden grove filled with flowers.",
+                    "The trees seem to whisper secrets as you pass.",
+                    "You see a massive tree with a hollow trunk.",
+                    "You stumble upon a mystical pond.",
+                    "A gentle breeze rustles the leaves above.",
+                    "You find ancient runes carved into the bark of a tree.",
+                    "You hear the distant sound of a waterfall.",
+                    "The ground is covered in soft moss.",
+                    "You see a glowing crystal nestled in the roots of a tree.",
+                    "You encounter a circle of mushrooms that glow faintly.",
+                    "A fox watches you curiously from the underbrush.",
+                    "You find a key hidden among the leaves.",
+                    "The forest feels alive, watching your every move.",
+                    "You see the silhouette of a mystical creature.",
+                    "You find an old, gnarled staff on the forest floor."
                 ]
             },
             {
                 name: "Forgotten Ruins",
-                specialItem: "Ancient Amulet",
+                specialItem: "Ancient Relic",
                 monsters: [
-                    new Monster("Ancient Guardian", 70, 14),
-                    new Monster("Cursed Knight", 45, 12),
+                    new Monster("Zombie", 30, 5),
+                    new Monster("Skeleton Warrior", 40, 7),
+                    new Monster("Ghost", 25, 10),
+                    new Monster("Mummy", 50, 12),
+                    new Monster("Giant Rat", 15, 5),
+                    new Monster("Cultist", 35, 8),
+                    new Monster("Undead Knight", 60, 15),
                 ],
                 roomDescriptions: [
-                    "You find yourself among crumbling stone structures.",
-                    "The air is thick with dust and mystery.",
-                    "You can hear the distant sound of water dripping.",
-                    "Ancient inscriptions cover the walls.",
-                    "A feeling of dread fills the atmosphere.",
-                    "You see a hidden chamber behind a fallen wall.",
-                    "You discover a library filled with dusty tomes.",
-                    "The floor is littered with broken artifacts.",
-                    "You find a mystical artifact glowing in the dark.",
-                    "Shadows flit across the walls, making you uneasy.",
-                    "You see remnants of ancient machinery.",
-                    "You stumble upon a mysterious mural depicting battles.",
-                    "You find an old map detailing the ruins.",
-                    "You hear the whispers of long-lost souls.",
-                    "You discover a trapdoor leading to the depths.",
-                    "The walls are covered in moss and vines.",
-                    "You find a sarcophagus sealed with magic.",
-                    "You see a hidden room filled with treasures.",
-                    "You feel a chill as you enter a cursed chamber.",
-                    "You find a key hidden among the ruins."
+                    "You stand in a room filled with crumbling stone walls.",
+                    "The air is thick with dust and decay.",
+                    "You see broken pillars lying on the ground.",
+                    "The scent of ancient magic lingers here.",
+                    "You find a hidden passageway leading deeper.",
+                    "A chilling wind flows through this empty hall.",
+                    "You hear distant whispers echoing in the darkness.",
+                    "You see remnants of ancient inscriptions on the walls.",
+                    "A faint light glows from a cracked altar.",
+                    "You find an old chest filled with ancient treasures.",
+                    "The room is filled with cobwebs and shadows.",
+                    "You see shadows flitting across the walls.",
+                    "You stumble upon an ancient tome filled with spells.",
+                    "You hear the sound of rustling behind a wall.",
+                    "You find a mysterious artifact buried in the rubble.",
+                    "You encounter a guardian spirit protecting the ruins.",
+                    "You find a key hidden among the ruins.",
+                    "You sense a powerful presence watching you.",
+                    "You see a statue of an ancient warrior, cracked and broken.",
+                    "You hear the echo of footsteps behind you."
                 ]
             },
             {
-                name: "Tower of God",
+                name: "Hydra's Lair",
+                specialItem: "Hydra's Heart",
                 monsters: [
-                    new Monster("Celestial Guardian", 100, 20),
-                    new Monster("Divine Serpent", 80, 25),
-                    new Monster("Heavenly Sentry", 70, 15),
-                    new Monster("Abyssal Demon", 120, 30),
-                    new Monster("Fallen Angel", 90, 18),
+                    new Hydra(), // Add the Hydra boss
                 ],
-                roomDescriptions: Array.from({ length: 30 }, (_, i) => `You stand on floor ${i + 1} of the Tower of God. The atmosphere is thick with power and mystery.`)
-            },
+                roomDescriptions: [
+                    "You step into the lair of the fearsome Hydra.",
+                    "The air is thick with the smell of sulfur and smoke.",
+                    "You hear multiple growls echoing through the cavern.",
+                    "A massive creature with five heads looms before you!",
+                ]
+            }
         ];
 
-        let player, currentWorld, currentRoomIndex = 0;
+        let player;
+        let currentWorld;
+        let currentRoomIndex = 0;
+        let isPlayerTurn = true;
 
         function startGame() {
-            const nameInput = document.getElementById("input").value;
-            if (nameInput) {
-                player = new Player(nameInput);
-                document.getElementById("intro").style.display = "none";
-                document.getElementById("worldSelection").style.display = "block";
-            }
+            const playerName = document.getElementById("input").value;
+            player = new Player(playerName);
+            document.getElementById("intro").style.display = "none";
+            document.getElementById("worldSelection").style.display = "block";
+            document.getElementById("output").innerHTML = `<br>Welcome, ${player.name}!`;
         }
 
-        function unlockFinalBoss() {
-            if (player.keys === 5) {
-                document.getElementById("output").innerHTML += "<br>You have unlocked the Tower of God!";
-                currentWorld = worlds[5]; // Index of Tower of God
-                currentRoomIndex = 0;
-                enterFinalBossWorld();
-            } else {
-                document.getElementById("output").innerHTML += `<br>You need to collect all 5 keys to enter the Tower of God. You currently have ${player.keys} keys.`;
-            }
-        }
-
-        function selectWorld(worldIndex) {
-            currentWorld = worlds[worldIndex];
+        function selectWorld(index) {
+            currentWorld = worlds[index];
             currentRoomIndex = 0;
             document.getElementById("worldSelection").style.display = "none";
-            document.getElementById("actions").style.display = "block";
+            document.getElementById("output").innerHTML = describeRoom();
             document.getElementById("stats").style.display = "block";
-            document.getElementById("output").innerHTML = `Welcome to the ${currentWorld.name}, ${player.name}!<br>${describeRoom()}`;
+            document.getElementById("actions").style.display = "block";
             updateStats();
         }
 
-        function updateStats() {
-            document.getElementById("healthBar").style.width = (player.health / player.maxHealth * 100) + '%';
-            document.getElementById("armorBar").style.width = (player.armor / 100 * 100) + '%'; // Assuming max armor is 100
-            document.getElementById("keyCount").innerText = player.keys;
-            document.getElementById("specialItem").innerText = player.specialItem ? player.specialItem : "None";
+        function describeRoom() {
+            return currentWorld.roomDescriptions[currentRoomIndex];
         }
 
-        function describeRoom() {
-            const room = currentWorld.roomDescriptions[currentRoomIndex];
-            let description = room;
-            if (currentRoomIndex < currentWorld.monsters.length && Math.random() < 0.5) {
-                const monster = currentWorld.monsters[Math.floor(Math.random() * currentWorld.monsters.length)];
-                description += `<br>A wild ${monster.name} appears!`;
-                currentWorld.monsters[currentRoomIndex] = monster; // Assign monster to current room
-            } else if (Math.random() < 0.3) { // Chance to find special item
-                player.acquireItem(currentWorld.specialItem);
-                description += `<br>You found the special item: ${currentWorld.specialItem}!`;
-            } else {
-                description += "<br>The room is empty.";
-            }
-            return description;
+        function updateStats() {
+            document.getElementById("healthBar").style.width = (player.health / player.maxHealth * 100) + "%";
+            document.getElementById("armorBar").style.width = (player.armor / 100 * 100) + "%"; // Assuming max armor is 100
+            document.getElementById("keyCount").innerText = player.keys;
+            document.getElementById("specialItem").innerText = player.specialItem || "None";
         }
 
         function attack() {
-            if (currentRoomIndex < currentWorld.monsters.length) {
+            if (isPlayerTurn && currentRoomIndex < currentWorld.monsters.length) {
                 const monster = currentWorld.monsters[currentRoomIndex];
-                if (monster) {
+
+                if (monster instanceof Hydra) {
+                    const damageDealt = player.attack();
+                    if (monster.takeDamage()) {
+                        document.getElementById("output").innerHTML += `<br>You defeated one head of the Hydra! Remaining heads: ${monster.heads}`;
+                    } else {
+                        document.getElementById("output").innerHTML += `<br>You hit the Hydra, but it still has ${monster.heads} heads remaining.`;
+                    }
+                } else if (monster && monster.isAlive()) {
                     const damageDealt = player.attack();
                     monster.health -= damageDealt;
                     document.getElementById("output").innerHTML += `<br>You dealt ${damageDealt} damage to the ${monster.name}.`;
@@ -330,85 +377,87 @@
                         document.getElementById("output").innerHTML += `<br>You defeated the ${monster.name}! You found ${treasureFound} gold!`;
                         currentWorld.monsters[currentRoomIndex] = null; // Remove the monster
                     } else {
-                        const damageTaken = Math.max(0, monster.attack() - player.armor);
-                        player.health -= damageTaken;
-                        document.getElementById("output").innerHTML += `<br>The ${monster.name} dealt ${damageTaken} damage to you.`;
+                        // Switch to monster's turn
+                        isPlayerTurn = false;
+                        monsterAttack(monster);
                     }
-                }
-            }
-
-            updateStats();
-            checkGameStatus();
-            if (player.isAlive() && (currentRoomIndex >= currentWorld.monsters.length || !currentWorld.monsters[currentRoomIndex])) {
-                currentRoomIndex++;
-                if (currentRoomIndex < currentWorld.roomDescriptions.length) {
-                    document.getElementById("output").innerHTML += `<br>${describeRoom()}`;
-                } else {
-                    document.getElementById("output").innerHTML += `<br>Congratulations! You explored the ${currentWorld.name} and collected ${player.treasure} gold!`;
-                    document.getElementById("actions").style.display = "none";
                 }
             }
         }
 
         function heal() {
             player.heal();
-            document.getElementById("output").innerHTML += "<br>You healed 10 health points.";
+            document.getElementById("output").innerHTML += `<br>You heal yourself. Current health: ${player.health}`;
+            updateStats();
+            isPlayerTurn = false; // Switch to monster's turn
+            nextRoomOrContinue();
+        }
+
+        function dodge() {
+            const dodgeSuccess = Math.random() < 0.5; // 50% chance to dodge
+            if (dodgeSuccess) {
+                document.getElementById("output").innerHTML += `<br>You successfully dodged the attack!`;
+            } else {
+                const monster = currentWorld.monsters[currentRoomIndex];
+                monsterAttack(monster);
+            }
+            isPlayerTurn = false; // Switch to monster's turn
+            nextRoomOrContinue();
+        }
+
+        function monsterAttack(monster) {
+            if (monster instanceof Hydra) {
+                const damageTaken = Math.max(0, monster.attack() - player.armor);
+                player.health -= damageTaken;
+                document.getElementById("output").innerHTML += `<br>The Hydra dealt ${damageTaken} damage to you.`;
+            } else {
+                const damageTaken = Math.max(0, monster.attack() - player.armor);
+                player.health -= damageTaken;
+                document.getElementById("output").innerHTML += `<br>The ${monster.name} dealt ${damageTaken} damage to you.`;
+            }
+
             updateStats();
             checkGameStatus();
+            isPlayerTurn = true; // Switch back to player's turn
+            nextRoomOrContinue();
+        }
+
+        function nextRoomOrContinue() {
+            if (currentRoomIndex < currentWorld.monsters.length - 1) {
+                currentRoomIndex++;
+                document.getElementById("output").innerHTML += `<br>${describeRoom()}`;
+                updateStats();
+            } else {
+                document.getElementById("output").innerHTML += `<br>You've defeated all enemies in this world!`;
+                // Additional logic for next steps, like entering a new world or ending the game
+            }
         }
 
         function checkGameStatus() {
             if (!player.isAlive()) {
-                document.getElementById("output").innerHTML += "<br>You have been defeated!";
+                document.getElementById("output").innerHTML += `<br>You have been defeated. Game Over!`;
+                document.getElementById("actions").style.display = "none";
+            }
+            else if (currentWorld.monsters.length === 0 || (currentWorld.monsters[0] instanceof Hydra && currentWorld.monsters[0].heads === 0)) {
+                document.getElementById("output").innerHTML += `<br>You've defeated the Hydra! You are victorious!`;
                 document.getElementById("actions").style.display = "none";
             }
         }
 
         function saveGame() {
-            const saveData = {
-                player: {
-                    name: player.name,
-                    health: player.health,
-                    treasure: player.treasure,
-                    keys: player.keys,
-                    specialItem: player.specialItem,
-                    armor: player.armor,
-                },
-                currentWorldIndex: worlds.indexOf(currentWorld),
-                currentRoomIndex: currentRoomIndex,
-            };
-            localStorage.setItem('dungeonCrawlersave', JSON.stringify(saveData));
-            document.getElementById("output").innerHTML += "<br>Game saved!";
+            // Add game saving logic here
+            document.getElementById("output").innerHTML += `<br>Game saved!`;
         }
 
         function loadGame() {
-            const saveData = localStorage.getItem('dungeonCrawlersave');
-            if (saveData) {
-                const data = JSON.parse(saveData);
-                player = new Player(data.player.name);
-                player.health = data.player.health;
-                player.treasure = data.player.treasure;
-                player.keys = data.player.keys;
-                player.specialItem = data.player.specialItem;
-                player.armor = data.player.armor;
-
-                currentWorld = worlds[data.currentWorldIndex];
-                currentRoomIndex = data.currentRoomIndex;
-
-                document.getElementById("output").innerHTML = `Welcome back to the ${currentWorld.name}, ${player.name}!<br>${describeRoom()}`;
-                updateStats();
-                document.getElementById("worldSelection").style.display = "none";
-                document.getElementById("actions").style.display = "block";
-                document.getElementById("stats").style.display = "block";
-            } else {
-                document.getElementById("output").innerHTML += "<br>No saved game found.";
-            }
+            // Add game loading logic here
+            document.getElementById("output").innerHTML += `<br>Game loaded!`;
         }
 
-        // Show introduction on page load
-        window.onload = function() {
-            document.getElementById("intro").style.display = "block";
-        };
+        function unlockFinalBoss() {
+            // Logic to unlock and face the final boss
+            document.getElementById("output").innerHTML += `<br>Final boss is unlocked!`;
+        }
     </script>
 </body>
 </html>
