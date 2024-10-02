@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Object code </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .toy {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            position: relative;
+            display: inline-block;
+        }
+        .car {
+            background-color: red;
+        }
+        .ball {
+            background-color: blue;
+            border-radius: 50%;
+        }
+        .doll {
+            background-color: pink;
+        }
+        .robot {
+            background-color: gray;
+        }
+        .train {
+            background-color: yellow;
+        }
+        .plane {
+            background-color: lightblue;
+        }
+        .teddy {
+            background-color: brown;
+        }
+        .message {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>My Toy Collection</h1>
+
+    <div class="toy car" onclick="interact('Car')"></div>
+    <div class="toy ball" onclick="interact('Ball')"></div>
+    <div class="toy doll" onclick="interact('Doll')"></div>
+    <div class="toy robot" onclick="interact('Robot')"></div>
+    <div class="toy train" onclick="interact('Train')"></div>
+    <div class="toy plane" onclick="interact('Plane')"></div>
+    <div class="toy teddy" onclick="interact('Teddy Bear')"></div>
+
+    <div class="message" id="message">Click on a toy!</div>
+
+    <script>
+        function interact(toy) {
+            const actions = [
+                `${toy} goes vroom!`,
+                `${toy} bounces!`,
+                `${toy} says hello!`,
+                `${toy} is dancing!`,
+                `${toy} is choo-chooing!`,
+                `${toy} flies high!`,
+                `${toy} gives a hug!`
+            ];
+            const randomAction = actions[Math.floor(Math.random() * actions.length)];
+            document.getElementById("message").innerText = randomAction;
+        }
+    </script>
+
+</body>
+</html>
