@@ -8,12 +8,14 @@
         body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
         button { padding: 10px 20px; margin: 10px; }
         .hidden { display: none; }
+        #message { color: red; }
     </style>
 </head>
 <body>
     <h1>Welcome to The Ancient Ruins!</h1>
     <p id="room-description">You have discovered ruins filled with history!</p>
-    
+    <p id="message" class="hidden"></p>
+
     <div id="battle" class="hidden">
         <h2>Enemy: Mummy</h2>
         <p id="enemy-health">Enemy Health: 35</p>
@@ -22,14 +24,14 @@
         <button onclick="dodge()">Dodge</button>
         <button onclick="heal()">Heal</button>
     </div>
-    
+
     <button id="continue-button" class="hidden" onclick="nextRoom()">Continue</button>
 
-    <ul>
+    <ul id="room-list">
         <li>Room 1: The Crumbling Temple</li>
         <li>Room 2: The Pillared Hall</li>
         <li>Room 3: The Mosaic Room</li>
-        <li>Room 4: The Sacrificial Altar</li>
+        <li>Room 4: The Sacrificial Altar</li> <!-- Trap Room -->
         <li>Room 5: The Forgotten Chamber</li>
         <li>Room 6: The Ancient Library</li>
         <li>Room 7: The Guardian's Rest</li>
@@ -37,7 +39,7 @@
         <li>Room 9: The Hall of Echoes</li>
         <li>Room 10: The Underground Cavern</li>
         <li>Room 11: The Ritual Circle</li>
-        <li>Room 12: The Ancient Tomb</li>
+        <li>Room 12: The Ancient Tomb</li> <!-- Trap Room -->
         <li>Room 13: The Oracle's Room</li>
         <li>Room 14: The Hall of Kings</li>
         <li>Room 15: The Chamber of Secrets</li>
@@ -56,6 +58,7 @@
         let playerHealth = 100;
         let enemyHealth = 35;
         let inBattle = false;
+        let visitedRooms = [];
 
         function startFight() {
             inBattle = true;
@@ -69,7 +72,7 @@
             enemyHealth -= damage;
             document.getElementById('enemy-health').innerText = `Enemy Health: ${enemyHealth}`;
             if (enemyHealth <= 0) {
-                alert('You defeated the enemy!');
+                setMessage('You defeated the enemy!');
                 inBattle = false;
                 document.getElementById('continue-button').classList.remove('hidden');
                 document.getElementById('battle').classList.add('hidden');
@@ -79,7 +82,7 @@
         }
 
         function dodge() {
-            alert('You dodged the attack!');
+            setMessage('You dodged the attack!');
             enemyAttack();
         }
 
@@ -102,9 +105,51 @@
             }
         }
 
+        function setMessage(msg) {
+            const messageElement = document.getElementById('message');
+            messageElement.innerText = msg;
+            messageElement.classList.remove('hidden');
+            setTimeout(() => {
+                messageElement.classList.add('hidden');
+            }, 3000);
+        }
+
         function nextRoom() {
-            alert('You move to the next room!');
+            let nextRoomNumber;
+            do {
+                nextRoomNumber = Math.floor(Math.random() * 20) + 1;
+            } while (visitedRooms.includes(nextRoomNumber));
+            
+            visitedRooms.push(nextRoomNumber);
+            
+            if (nextRoomNumber === 4 || nextRoomNumber === 12) {
+                trapRoom(nextRoomNumber);
+            } else {
+                alert(`You move to Room ${nextRoomNumber}!`);
+            }
+        }
+
+        function trapRoom(roomNumber) {
+            let trapMessage = '';
+            switch(roomNumber) {
+                case 4:
+                    playerHealth -= 20; // Damage from the trap
+                    trapMessage = 'You fell into a pit trap! You lost 20 health.';
+                    break;
+                case 12:
+                    playerHealth -= 30; // Damage from the trap
+                    trapMessage = 'You triggered a deadly poison gas! You lost 30 health.';
+                    break;
+            }
+            document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
+            setMessage(trapMessage);
+            
+            if (playerHealth <= 0) {
+                alert('You were defeated! Game Over.');
+                location.href = 'index.html';
+            }
         }
     </script>
 </body>
 </html>
+
