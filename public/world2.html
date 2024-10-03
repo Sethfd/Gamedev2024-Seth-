@@ -22,8 +22,11 @@
         <button onclick="dodge()">Dodge</button>
         <button onclick="heal()">Heal</button>
     </div>
-    
+
     <button id="continue-button" class="hidden" onclick="nextRoom()">Continue</button>
+    <button id="wish-button" class="hidden" onclick="makeWish()">Make a Wish</button>
+
+    <audio id="whisper-sound" src="whispers.mp3" loop></audio>
 
     <ul>
         <li>Room 1: The Foggy Clearing</li>
@@ -56,12 +59,15 @@
         let playerHealth = 100;
         let enemyHealth = 25;
         let inBattle = false;
+        const whisperSound = document.getElementById('whisper-sound');
 
         function startFight() {
             inBattle = true;
             document.getElementById('battle').classList.remove('hidden');
             document.getElementById('start-fight').classList.add('hidden');
             document.getElementById('continue-button').classList.add('hidden');
+            document.getElementById('wish-button').classList.add('hidden'); // Hide wish button during battle
+            stopWhisper(); // Stop whisper sound during battle
         }
 
         function attack() {
@@ -103,8 +109,46 @@
         }
 
         function nextRoom() {
-            alert('You move to the next room!');
+            const roomDescription = document.getElementById('room-description');
+            if (roomDescription.innerText.includes("Wishing Well")) {
+                document.getElementById('wish-button').classList.remove('hidden'); // Show wish button in Wishing Well
+            } else {
+                document.getElementById('wish-button').classList.add('hidden'); // Hide it in other rooms
+            }
+
+            if (roomDescription.innerText.includes("Whispering Trees")) {
+                playWhisper(); // Play whisper sound in Whispering Trees
+            } else {
+                stopWhisper(); // Stop whisper sound in other rooms
+            }
+        }
+
+        function makeWish() {
+            const wish = prompt("What is your wish? (You can wish for health, power, or luck)");
+            if (wish.toLowerCase() === "health") {
+                const healAmount = Math.floor(Math.random() * 30) + 10;
+                playerHealth += healAmount;
+                alert(`Your wish for health is granted! You healed for ${healAmount} points.`);
+            } else if (wish.toLowerCase() === "power") {
+                alert("Your wish for power is granted! You feel stronger!");
+                // Implement any power-up logic here if needed
+            } else if (wish.toLowerCase() === "luck") {
+                alert("Your wish for luck is granted! Good things are coming your way!");
+                // Implement luck-related enhancements here if desired
+            } else {
+                alert("The well cannot grant that wish.");
+            }
+        }
+
+        function playWhisper() {
+            whisperSound.play();
+        }
+
+        function stopWhisper() {
+            whisperSound.pause();
+            whisperSound.currentTime = 0; // Reset to start
         }
     </script>
 </body>
 </html>
+
