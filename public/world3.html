@@ -25,30 +25,33 @@
     
     <button id="continue-button" class="hidden" onclick="nextRoom()">Continue</button>
 
-    <ul>
-        <li>Room 1: The Grand Hall</li>
-        <li>Room 2: The Library of Shadows</li>
-        <li>Room 3: The Armory of Ghosts</li>
-        <li>Room 4: The Dining Room of Spirits</li>
-        <li>Room 5: The Secret Passage</li>
-        <li>Room 6: The Tower of Secrets</li>
-        <li>Room 7: The Chamber of Whispers</li>
-        <li>Room 8: The Balcony of Night</li>
-        <li>Room 9: The Enchanted Gallery</li>
-        <li>Room 10: The Throne Room</li>
-        <li>Room 11: The Hidden Vault</li>
-        <li>Room 12: The Cursed Portraits</li>
-        <li>Room 13: The Forgotten Cellar</li>
-        <li>Room 14: The Crypt of the Ancients</li>
-        <li>Room 15: The Chamber of Illusions</li>
-        <li>Room 16: The Hall of Mirrors</li>
-        <li>Room 17: The Rooftop Garden</li>
-        <li>Room 18: The Banshee's Lair</li>
-        <li>Room 19: The Hidden Stairway</li>
-        <li>Room 20: The Exit</li>
+    <ul id="room-list">
+        <li>The Grand Hall</li>
+        <li>The Library of Shadows</li>
+        <li>The Armory of Ghosts</li>
+        <li>The Dining Room of Spirits</li>
+        <li>The Secret Passage</li>
+        <li>The Tower of Secrets</li>
+        <li>The Chamber of Whispers</li>
+        <li>The Balcony of Night</li>
+        <li>The Enchanted Gallery</li>
+        <li>The Throne Room</li>
+        <li>The Hidden Vault</li>
+        <li>The Cursed Portraits</li>
+        <li>The Forgotten Cellar</li>
+        <li>The Crypt of the Ancients</li>
+        <li>The Chamber of Illusions</li>
+        <li>The Hall of Mirrors</li>
+        <li>The Rooftop Garden</li>
+        <li>The Banshee's Lair</li>
+        <li>The Hidden Stairway</li>
+        <li>The Exit</li>
+        <li>The Pit of Despair (Trap Room)</li>
+        <li>The Hall of Shadows (Trap Room)</li>
     </ul>
 
     <button id="start-fight" onclick="startFight()">Start Fight</button>
+    <button onclick="nextRoom()">Next Room</button>
     <button onclick="location.href='world4.html'">Next World</button>
     <button onclick="location.href='index.html'">Back to Menu</button>
 
@@ -56,9 +59,34 @@
         let playerHealth = 100;
         let enemyHealth = 40;
         let inBattle = false;
+        const rooms = [
+            "The Grand Hall",
+            "The Library of Shadows",
+            "The Armory of Ghosts",
+            "The Dining Room of Spirits",
+            "The Secret Passage",
+            "The Tower of Secrets",
+            "The Chamber of Whispers",
+            "The Balcony of Night",
+            "The Enchanted Gallery",
+            "The Throne Room",
+            "The Hidden Vault",
+            "The Cursed Portraits",
+            "The Forgotten Cellar",
+            "The Crypt of the Ancients",
+            "The Chamber of Illusions",
+            "The Hall of Mirrors",
+            "The Rooftop Garden",
+            "The Banshee's Lair",
+            "The Hidden Stairway",
+            "The Exit",
+            "The Pit of Despair (Trap Room)",
+            "The Hall of Shadows (Trap Room)"
+        ];
 
         function startFight() {
             inBattle = true;
+            enemyHealth = 40; // Reset enemy health for each fight
             document.getElementById('battle').classList.remove('hidden');
             document.getElementById('start-fight').classList.add('hidden');
             document.getElementById('continue-button').classList.add('hidden');
@@ -103,8 +131,12 @@
         }
 
         function nextRoom() {
-            alert('You move to the next room!');
+            const randomIndex = Math.floor(Math.random() * rooms.length);
+            const newRoom = rooms[randomIndex];
+            document.getElementById('room-description').innerText = `You've entered: ${newRoom}`;
+            alert(`You move to the ${newRoom}!`);
         }
     </script>
 </body>
 </html>
+
