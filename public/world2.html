@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Haunted Woods</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        button { padding: 10px 20px; margin: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to The Haunted Woods!</h1>
+    <p id="room-description">You've stumbled into a forest filled with spirits!</p>
+    
+    <div id="battle" class="hidden">
+        <h2>Enemy: Forest Spirit</h2>
+        <p id="enemy-health">Enemy Health: 25</p>
+        <p id="player-health">Your Health: 100</p>
+        <button onclick="attack()">Attack</button>
+        <button onclick="dodge()">Dodge</button>
+        <button onclick="heal()">Heal</button>
+    </div>
+    
+    <button id="continue-button" class="hidden" onclick="nextRoom()">Continue</button>
+
+    <ul>
+        <li>Room 1: The Foggy Clearing</li>
+        <li>Room 2: The Whispering Trees</li>
+        <li>Room 3: The Ghostly Glade</li>
+        <li>Room 4: The Cursed Path</li>
+        <li>Room 5: The Ruined Cabin</li>
+        <li>Room 6: The Wishing Well</li>
+        <li>Room 7: The Howling Wind</li>
+        <li>Room 8: The Phantom Bridge</li>
+        <li>Room 9: The Lost Soul's Grave</li>
+        <li>Room 10: The Enchanted Pond</li>
+        <li>Room 11: The Twilight Thicket</li>
+        <li>Room 12: The Shadow's Den</li>
+        <li>Room 13: The Moonlit Glade</li>
+        <li>Room 14: The Spirit's Hearth</li>
+        <li>Room 15: The Echoing Cavern</li>
+        <li>Room 16: The Witch's Hut</li>
+        <li>Room 17: The Enchanted Forest</li>
+        <li>Room 18: The Hidden Path</li>
+        <li>Room 19: The Forgotten Shrine</li>
+        <li>Room 20: The Exit</li>
+    </ul>
+
+    <button id="start-fight" onclick="startFight()">Start Fight</button>
+    <button onclick="location.href='world3.html'">Next World</button>
+    <button onclick="location.href='index.html'">Back to Menu</button>
+
+    <script>
+        let playerHealth = 100;
+        let enemyHealth = 25;
+        let inBattle = false;
+
+        function startFight() {
+            inBattle = true;
+            document.getElementById('battle').classList.remove('hidden');
+            document.getElementById('start-fight').classList.add('hidden');
+            document.getElementById('continue-button').classList.add('hidden');
+        }
+
+        function attack() {
+            const damage = Math.floor(Math.random() * 20) + 5;
+            enemyHealth -= damage;
+            document.getElementById('enemy-health').innerText = `Enemy Health: ${enemyHealth}`;
+            if (enemyHealth <= 0) {
+                alert('You defeated the enemy!');
+                inBattle = false;
+                document.getElementById('continue-button').classList.remove('hidden');
+                document.getElementById('battle').classList.add('hidden');
+            } else {
+                enemyAttack();
+            }
+        }
+
+        function dodge() {
+            alert('You dodged the attack!');
+            enemyAttack();
+        }
+
+        function heal() {
+            const healAmount = Math.floor(Math.random() * 15) + 5;
+            playerHealth += healAmount;
+            document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
+            enemyAttack();
+        }
+
+        function enemyAttack() {
+            if (inBattle) {
+                const damage = Math.floor(Math.random() * 10) + 5;
+                playerHealth -= damage;
+                document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
+                if (playerHealth <= 0) {
+                    alert('You were defeated! Game Over.');
+                    location.href = 'index.html';
+                }
+            }
+        }
+
+        function nextRoom() {
+            alert('You move to the next room!');
+        }
+    </script>
+</body>
+</html>
