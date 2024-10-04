@@ -6,35 +6,34 @@
     <title>Dungeon Explorer</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             background-color: #222;
             color: #fff;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 20px;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
-        #dungeon {
-            white-space: pre;
-            font-family: monospace;
-            margin-bottom: 20px;
-        }
-        input {
-            padding: 10px;
-            font-size: 16px;
+        canvas {
+            border: 2px solid #fff;
         }
     </style>
 </head>
 <body>
 
-<h1>Dungeon Explorer</h1>
-<pre id="dungeon"></pre>
-<input type="text" id="command" placeholder="Enter move (w/a/s/d) or 'q' to quit" autofocus>
+<canvas id="dungeonCanvas" width="300" height="500"></canvas>
 
 <script>
-    // Create a 100-line dungeon layout with rooms and doors
+    const canvas = document.getElementById('dungeonCanvas');
+    const ctx = canvas.getContext('2d');
+
     const dungeon = [];
-    for (let y = 0; y < 100; y++) {
+    const width = 6;
+    const height = 100;
+
+    // Create a 100-line dungeon layout with rooms and doors
+    for (let y = 0; y < height; y++) {
         if (y % 10 === 0 || y % 10 === 9) {
             dungeon.push([1, 1, 1, 1, 1, 1]); // Wall lines
         } else if (y % 10 === 1 || y % 10 === 3 || y % 10 === 5 || y % 10 === 7) {
@@ -44,60 +43,62 @@
         }
     }
 
-    let playerPos = [1, 1];
+    let playerPos = { x: 1, y: 1 };
 
-    function printDungeon() {
-        let output = '';
+    function drawDungeon() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cellWidth = canvas.width / width;
+        const cellHeight = canvas.height / height;
+
         for (let y = 0; y < dungeon.length; y++) {
             for (let x = 0; x < dungeon[y].length; x++) {
-                if (playerPos[0] === x && playerPos[1] === y) {
-                    output += 'P '; // Player position
-                } else {
-                    output += dungeon[y][x] + ' ';
+                switch (dungeon[y][x]) {
+                    case 1: // Wall
+                        ctx.fillStyle = 'gray';
+                        break;
+                    case 0: // Path
+                        ctx.fillStyle = 'black';
+                        break;
+                    case 2: // Door
+                        ctx.fillStyle = 'brown';
+                        break;
                 }
+                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
-            output += '\n';
         }
-        document.getElementById('dungeon').textContent = output;
+
+        // Draw player
+        ctx.fillStyle = 'white';
+        ctx.fillRect(playerPos.x * cellWidth, playerPos.y * cellHeight, cellWidth, cellHeight);
     }
 
     function isValidMove(pos) {
-        const [x, y] = pos;
-        return x >= 0 && x < dungeon[0].length && y >= 0 && y < dungeon.length && dungeon[y][x] !== 1;
+        return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height && dungeon[pos.y][pos.x] !== 1;
     }
 
-    document.getElementById('command').addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            const command = this.value.toLowerCase();
-            this.value = ''; // Clear input
+    window.addEventListener('keydown', (event) => {
+        let newPos = { x: playerPos.x, y: playerPos.y };
 
-            if (command === 'q') {
-                alert("Thanks for playing!");
-                return;
+        if (event.key === 'w') newPos.y--;
+        else if (event.key === 's') newPos.y++;
+        else if (event.key === 'a') newPos.x--;
+        else if (event.key === 'd') newPos.x++;
+
+        if (isValidMove(newPos)) {
+            playerPos = newPos;
+            if (dungeon[playerPos.y][playerPos.x] === 2) {
+                alert("You found a door!");
             }
-
-            let newPos = [...playerPos];
-
-            if (command === 'w') newPos[1]--;
-            else if (command === 's') newPos[1]++;
-            else if (command === 'a') newPos[0]--;
-            else if (command === 'd') newPos[0]++;
-
-            if (isValidMove(newPos)) {
-                playerPos = newPos;
-                if (dungeon[playerPos[1]][playerPos[0]] === 2) {
-                    alert("You found a door!");
-                }
-            } else {
-                alert("You hit a wall!");
-            }
-
-            printDungeon();
+        } else {
+            alert("You hit a wall!");
         }
+
+        drawDungeon();
     });
 
-    printDungeon(); // Initial display
+    drawDungeon(); // Initial draw
 </script>
 
 </body>
 </html>
+
