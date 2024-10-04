@@ -1,21 +1,65 @@
-<h1 align=center>t1a13-json.html </a>
 
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON vs JavaScript Objects</title>
+    <script>
+        function fetchJson() {
+            const url = document.getElementById('mytext1').value;
 
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    alert('JSON fetched successfully! Check the console for details.');
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    alert('Error fetching JSON: ' + error.message);
+                });
+        }
+    </script>
+</head>
+<body>
 
+<h1 align="center">JSON vs JavaScript Objects</h1>
 
+<textarea cols="70" rows="10" readonly>
+JSON (JavaScript Object Notation) is a lightweight data interchange format that's easy for humans to read and write, and easy for machines to parse and generate.
 
-  
-</script>
+1. **Syntax Differences**:
+   - **JSON**: Uses double quotes for keys and string values.
+     Example: {"name": "Alice", "age": 30}
+   - **JavaScript Objects**: Can use both single and double quotes.
+     Example: {name: 'Alice', age: 30}
 
-  Explantion of JSON compared to Javascript object formatted for this textarea
+2. **Data Types**:
+   - **JSON**: Supports strings, numbers, arrays, objects, booleans, and null.
+   - **JavaScript Objects**: Supports the same data types but can also include functions and undefined values.
 
+3. **Use Cases**:
+   - **JSON**: Primarily used for data interchange between a server and a web application.
+   - **JavaScript Objects**: Used for representing structured data within a JavaScript program.
 
-  <textarea cols=70 ROWS=5>
+4. **Parsing and Stringifying**:
+   - **JSON**: Use `JSON.parse()` to convert JSON strings into JavaScript objects and `JSON.stringify()` to convert objects into JSON strings.
+   - **JavaScript Objects**: No need for parsing or stringifying when working within JavaScript itself.
 
+In summary, JSON is a subset of JavaScript object syntax, specifically designed for data interchange, while JavaScript objects can encompass more complex types and behaviors.
+</textarea><br>
 
-  </textarea>
+Enter a JSON returning URL: <input type="text" id="mytext1">
+<button onclick="fetchJson()">Fetch JSON</button>
 
+</body>
+</html>
 
 
 
