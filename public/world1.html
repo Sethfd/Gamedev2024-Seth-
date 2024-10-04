@@ -29,25 +29,48 @@
     const ctx = canvas.getContext('2d');
 
     const dungeon = [];
-    const width = 6;
-    const height = 100;
+    const width = 6;  // Number of columns
+    const height = 100; // Number of rows
+    let hasKey = false; // Key status
 
-    // Create a 100-line dungeon layout with rooms and doors
+    // Create a dungeon layout with paths and rooms of width 2
     for (let y = 0; y < height; y++) {
-        if (y % 10 === 0 || y % 10 === 9) {
-            dungeon.push([1, 1, 1, 1, 1, 1]); // Wall lines
-        } else if (y % 10 === 1 || y % 10 === 3 || y % 10 === 5 || y % 10 === 7) {
-            dungeon.push([1, 0, 0, 2, 0, 1]); // Path with door leading to room
-        } else if (y % 10 === 2 || y % 10 === 4 || y % 10 === 6 || y % 10 === 8) {
-            dungeon.push([1, 0, 1, 1, 0, 1]); // Path with wall
+        if (y % 5 === 0) {
+            dungeon.push([1, 1, 1, 1, 1, 1]); // Wall line
+        } else if (y % 5 === 1) {
+            dungeon.push([1, 0, 0, 2, 0, 1]); // Room with door
+        } else if (y % 5 === 2) {
+            dungeon.push([1, 0, 1, 1, 0, 1]); // Path with walls
+        } else if (y % 5 === 3) {
+            dungeon.push([1, 0, 0, 2, 0, 1]); // Room with door
+        } else {
+            dungeon.push([1, 1, 1, 1, 1, 1]); // Wall line
         }
     }
+
+    // Add a locked door at the end of the dungeon
+    dungeon[height - 1] = [1, 1, 1, 3, 1, 1]; // Row with locked door
+
+    // Function to randomly place the key in one of the rooms
+    function placeKeyRandomly() {
+        const roomPositions = [
+            { x: 1, y: 1 },
+            { x: 2, y: 1 },
+            { x: 1, y: 3 },
+            { x: 2, y: 3 }
+        ];
+
+        const randomRoom = roomPositions[Math.floor(Math.random() * roomPositions.length)];
+        dungeon[randomRoom.y][randomRoom.x] = 9; // Place the key in the random room
+    }
+
+    placeKeyRandomly(); // Randomly place the key
 
     let playerPos = { x: 1, y: 1 };
 
     function drawDungeon() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const cellWidth = canvas.width / width;
+        const cellWidth = (canvas.width / width) * 2; // Each cell takes double width
         const cellHeight = canvas.height / height;
 
         for (let y = 0; y < dungeon.length; y++) {
@@ -60,7 +83,13 @@
                         ctx.fillStyle = 'black';
                         break;
                     case 2: // Door
-                        ctx.fillStyle = 'brown';
+                        ctx.fillStyle = 'orange'; // Door color
+                        break;
+                    case 3: // Locked door
+                        ctx.fillStyle = 'red'; // Locked door color
+                        break;
+                    case 9: // Key
+                        ctx.fillStyle = 'yellow'; // Key color
                         break;
                 }
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
@@ -88,6 +117,17 @@
             playerPos = newPos;
             if (dungeon[playerPos.y][playerPos.x] === 2) {
                 alert("You found a door!");
+            } else if (dungeon[playerPos.y][playerPos.x] === 3) {
+                if (hasKey) {
+                    alert("The door is unlocked! You can pass through.");
+                    playerPos.y = height - 1; // Move player through the locked door
+                } else {
+                    alert("The door is locked! You need a key.");
+                }
+            } else if (dungeon[playerPos.y][playerPos.x] === 9) {
+                hasKey = true; // Player collects the key
+                alert("You found a key!");
+                dungeon[playerPos.y][playerPos.x] = 0; // Remove the key from the dungeon
             }
         } else {
             alert("You hit a wall!");
@@ -101,4 +141,3 @@
 
 </body>
 </html>
-
