@@ -1,13 +1,40 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JSON vs JavaScript Objects</title>
+    <style>
+        #jsonOutput {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            white-space: pre-wrap; /* Preserves whitespace and line breaks */
+            background-color: #f9f9f9;
+            max-height: 300px;
+            overflow-y: auto; /* Scroll if content exceeds height */
+        }
+        #loading {
+            display: none;
+            margin-top: 10px;
+        }
+        #error {
+            color: red;
+        }
+    </style>
     <script>
         function fetchJson() {
-            const url = document.getElementById('mytext1').value;
+            const url = document.getElementById('urlSelect').value;
+            const outputDiv = document.getElementById('jsonOutput');
+            const loadingMessage = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+
+            // Clear previous output and error messages
+            outputDiv.textContent = '';
+            errorDiv.textContent = '';
+
+            // Show loading message
+            loadingMessage.style.display = 'block';
 
             fetch(url)
                 .then(response => {
@@ -17,13 +44,47 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log(data);
-                    alert('JSON fetched successfully! Check the console for details.');
+                    loadingMessage.style.display = 'none'; // Hide loading message
+                    outputDiv.textContent = JSON.stringify(data, null, 2); // Format JSON
+                    displayAsTable(data); // Optional: display JSON as a table
                 })
                 .catch(error => {
+                    loadingMessage.style.display = 'none'; // Hide loading message
                     console.error('There was a problem with the fetch operation:', error);
-                    alert('Error fetching JSON: ' + error.message);
+                    errorDiv.textContent = 'Error fetching JSON: ' + error.message;
                 });
+        }
+
+        function clearOutput() {
+            document.getElementById('urlSelect').selectedIndex = 0; // Reset select box
+            document.getElementById('jsonOutput').textContent = '';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = '';
+        }
+
+        function displayAsTable(data) {
+            const outputDiv = document.getElementById('jsonOutput');
+            outputDiv.innerHTML = ''; // Clear previous output
+            const table = document.createElement('table');
+            table.border = '1';
+            const keys = Object.keys(data);
+            
+            const headerRow = document.createElement('tr');
+            keys.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+            
+            const dataRow = document.createElement('tr');
+            keys.forEach(key => {
+                const td = document.createElement('td');
+                td.textContent = data[key];
+                dataRow.appendChild(td);
+            });
+            table.appendChild(dataRow);
+            outputDiv.appendChild(table);
         }
     </script>
 </head>
@@ -55,11 +116,24 @@ JSON (JavaScript Object Notation) is a lightweight data interchange format that'
 In summary, JSON is a subset of JavaScript object syntax, specifically designed for data interchange, while JavaScript objects can encompass more complex types and behaviors.
 </textarea><br>
 
-Enter a JSON returning URL: <input type="text" id="mytext1">
+<label for="urlSelect">Select a JSON returning URL:</label>
+<select id="urlSelect">
+    <option value="">--Select a URL--</option>
+    <option value="https://jsonplaceholder.typicode.com/posts/1">Post 1</option>
+    <option value="https://jsonplaceholder.typicode.com/posts/2">Post 2</option>
+    <option value="https://jsonplaceholder.typicode.com/users/1">User 1</option>
+    <option value="https://jsonplaceholder.typicode.com/comments/1">Comment 1</option>
+</select>
 <button onclick="fetchJson()">Fetch JSON</button>
+<button onclick="clearOutput()">Clear</button>
+
+<div id="loading">Loading...</div>
+<div id="error"></div>
+<div id="jsonOutput"></div>
 
 </body>
 </html>
+
 
 
 
