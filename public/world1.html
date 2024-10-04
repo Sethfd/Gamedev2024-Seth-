@@ -46,13 +46,9 @@
         for (let y = 0; y < height; y++) {
             if (y % 5 === 0) {
                 dungeon.push([1, 1, 1, 1, 1, 1]); // Wall line
-            } else if (y % 5 === 1) {
                 dungeon.push([1, 0, 0, 2, 0, 1]); // Room with door
-            } else if (y % 5 === 2) {
                 dungeon.push([1, 0, 1, 1, 0, 1]); // Path with walls
-            } else if (y % 5 === 3) {
                 dungeon.push([1, 0, 0, 2, 0, 1]); // Room with door
-            } else {
                 dungeon.push([1, 1, 1, 1, 1, 1]); // Wall line
             }
         }
