@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+V<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -41,15 +41,15 @@
 
     const dungeon = [
         [1, 1, 1, 1, 1, 1, 1, 1], // Wall
-        [1, 1, 1, 0, 0, 1, 1, 1], // Room with door
-        [1, 0, 2, 0, 0, 2, 0, 1], // Room with key
-        [1, 0, 1, 0, 0, 1, 1, 1], // Wall with locked door
-        [1, 0, 2, 0, 0, 2, 0, 1], // Wall
-        [1, 1, 1, 0, 0, 1, 1, 1], // Key
-        [1, 9, 2, 0, 0, 2, 0, 1], // Locked door
-        [1, 1, 1, 0, 0, 1, 1, 1], // Wall
-        [1, 0, 2, 0, 0, 2, 0, 1], // Path
-        [0, 0, 1, 1, 3, 1, 1, 1]  // Exit
+        [1, 1, 1, 0, 5, 4, 1, 1], // Entry Room: trap (5) and enemy (4)
+        [1, 0, 2, 5, 0, 2, 0, 1], // Key Room: keys (2) and traps (5)
+        [1, 0, 4, 0, 5, 1, 1, 1], // Room with enemy (4) and trap (5)
+        [1, 0, 2, 0, 0, 4, 0, 1], // Key Room: more keys (2) and an enemy (4)
+        [1, 5, 1, 0, 5, 1, 1, 1], // Room with traps (5) and a key (9)
+        [1, 9, 2, 0, 4, 2, 0, 1], // Locked Door Room: requires keys
+        [1, 1, 1, 5, 0, 1, 1, 1], // Wall with traps (5)
+        [1, 0, 5, 0, 0, 2, 0, 1], // Path with traps (5)
+        [0, 0, 1, 1, 3, 1, 1, 1]  // Treasure Room: exit (3)
     ];
     
     const width = dungeon[0].length; 
@@ -76,9 +76,10 @@
                 switch (dungeon[y][x]) {
                     case 1: ctx.fillStyle = '#555'; break; // Wall
                     case 0: ctx.fillStyle = '#222'; break; // Path
-                    case 2: ctx.fillStyle = '#8B4513'; break; // Door
-                    case 3: ctx.fillStyle = '#FF0000'; break; // Locked door
-                    case 9: ctx.fillStyle = '#FFFF00'; break; // Key
+                    case 2: ctx.fillStyle = '#8B4513'; break; // Key
+                    case 3: ctx.fillStyle = '#FF0000'; break; // Exit
+                    case 4: ctx.fillStyle = '#FF4500'; break; // Enemy
+                    case 5: ctx.fillStyle = '#FFD700'; break; // Trap
                 }
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
@@ -157,20 +158,24 @@
 
         if (isValidMove(newPos)) {
             playerPos = newPos;
+
             if (dungeon[playerPos.y][playerPos.x] === 2) {
-                displayMessage("You found a door!");
-            } else if (dungeon[playerPos.y][playerPos.x] === 3) {
-                if (hasKey) {
-                    won = true;
-                    displayMessage("The door is unlocked! You win!");
-                } else {
-                    gameOver = true;
-                    displayMessage("The door is locked! You need a key.");
-                }
-            } else if (dungeon[playerPos.y][playerPos.x] === 9) {
                 hasKey = true;
                 displayMessage("You found a key!");
                 dungeon[playerPos.y][playerPos.x] = 0; // Remove key from the dungeon
+            } else if (dungeon[playerPos.y][playerPos.x] === 4) {
+                gameOver = true; // Player hit an enemy
+                displayMessage("You were defeated by an enemy!");
+            } else if (dungeon[playerPos.y][playerPos.x] === 5) {
+                gameOver = true; // Player triggered a trap
+                displayMessage("You triggered a trap!");
+            } else if (dungeon[playerPos.y][playerPos.x] === 3) {
+                if (hasKey) {
+                    won = true; // Player wins by exiting
+                    displayMessage("You escaped! You win!");
+                } else {
+                    displayMessage("You need a key to escape!");
+                }
             }
         } else {
             displayMessage("You hit a wall!");
@@ -185,3 +190,4 @@
 
 </body>
 </html>
+
