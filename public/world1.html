@@ -40,13 +40,16 @@
     const messageDiv = document.getElementById('message');
 
     const dungeon = [
-        [1, 1, 1, 1, 1], // Wall
-        [1, 0, 0, 0, 1], // Room with door
-        [1, 0, 0, 0, 1], // Room with key
-        [1, 2, 1, 0, 1], // Wall with locked door
-        [1, 0, 1, 0, 1], // Wall
-        [1, 9, 1, 0, 1], // Key
-        [1, 1, 1, 3, 1]  // Locked door
+        [1, 1, 1, 1, 1, 1, 1, 1], // Wall
+        [1, 1, 1, 0, 0, 1, 1, 1], // Room with door
+        [1, 0, 2, 0, 0, 2, 0, 1], // Room with key
+        [1, 0, 1, 0, 0, 1, 1, 1], // Wall with locked door
+        [1, 0, 2, 0, 0, 2, 0, 1], // Wall
+        [1, 1, 1, 0, 0, 1, 1, 1], // Key
+        [1, 9, 2, 0, 0, 2, 0, 1]  // Locked door
+        [1, 1, 1, 0, 0, 1, 1, 1]
+        [1, 0, 2, 0, 0, 2, 0, 1] 
+        [0, 0, 1, 1, 3, 1, 1, 1]
     ];
     const width = dungeon[0].length; 
     const height = dungeon.length; 
