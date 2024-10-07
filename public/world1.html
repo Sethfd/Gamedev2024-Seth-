@@ -46,11 +46,12 @@
         [1, 0, 1, 0, 0, 1, 1, 1], // Wall with locked door
         [1, 0, 2, 0, 0, 2, 0, 1], // Wall
         [1, 1, 1, 0, 0, 1, 1, 1], // Key
-        [1, 9, 2, 0, 0, 2, 0, 1]  // Locked door
-        [1, 1, 1, 0, 0, 1, 1, 1]
-        [1, 0, 2, 0, 0, 2, 0, 1] 
-        [0, 0, 1, 1, 3, 1, 1, 1]
+        [1, 9, 2, 0, 0, 2, 0, 1], // Locked door
+        [1, 1, 1, 0, 0, 1, 1, 1], // Wall
+        [1, 0, 2, 0, 0, 2, 0, 1], // Path
+        [0, 0, 1, 1, 3, 1, 1, 1]  // Exit
     ];
+    
     const width = dungeon[0].length; 
     const height = dungeon.length; 
     let hasKey = false; 
@@ -63,7 +64,7 @@
         drawDungeon();
     }
 
-    let playerPos = { x: 1, y: 1 };
+    let playerPos = { x: 1, y: 1 }; // Starting position
 
     function drawDungeon() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -169,7 +170,7 @@
             } else if (dungeon[playerPos.y][playerPos.x] === 9) {
                 hasKey = true;
                 displayMessage("You found a key!");
-                dungeon[playerPos.y][playerPos.x] = 0;
+                dungeon[playerPos.y][playerPos.x] = 0; // Remove key from the dungeon
             }
         } else {
             displayMessage("You hit a wall!");
@@ -184,7 +185,3 @@
 
 </body>
 </html>
-
-
-
-
