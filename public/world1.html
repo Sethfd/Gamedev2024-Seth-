@@ -44,15 +44,15 @@
         [1, 0, 0, 0, 1], // Room with door
         [1, 0, 0, 0, 1], // Room with key
         [1, 2, 1, 0, 1], // Wall with locked door
-        [1, 0, 1, 0, 1]  // Wall
-        [1, 9, 1, 0, 1]  // Wall
-        [1, 1, 1, 3, 1]  // Wall
+        [1, 0, 1, 0, 1], // Wall
+        [1, 9, 1, 0, 1], // Key
+        [1, 1, 1, 3, 1]  // Locked door
     ];
     const width = dungeon[0].length; 
     const height = dungeon.length; 
     let hasKey = false; 
-    let gameOver = false; // Track game over state
-    let won = false; // Track win state
+    let gameOver = false; 
+    let won = false; 
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -82,7 +82,6 @@
         ctx.fillStyle = '#FFFFFF'; 
         ctx.fillRect(playerPos.x * cellWidth, playerPos.y * cellHeight, cellWidth, cellHeight);
 
-        // Display Game Over message
         if (gameOver) {
             ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -91,7 +90,6 @@
             ctx.fillText("Game Over", canvas.width / 2 - 70, canvas.height / 2);
         }
 
-        // Display Win message
         if (won) {
             ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -136,14 +134,14 @@
     }
 
     window.addEventListener('keydown', (event) => {
-        if (gameOver || won) return; // Prevent movement if game is over or won
+        if (gameOver || won) return;
 
         let newPos = { x: playerPos.x, y: playerPos.y };
 
-        if (event.key === 'z') { // Change save game to 'Z' key press
+        if (event.key === 'z') {
             saveGame();
             return;
-        } else if (event.key === 'l') { // Load game on 'L' key press
+        } else if (event.key === 'l') {
             loadGame();
             return;
         }
@@ -159,16 +157,16 @@
                 displayMessage("You found a door!");
             } else if (dungeon[playerPos.y][playerPos.x] === 3) {
                 if (hasKey) {
-                    won = true; // Set win state when unlocking the door
+                    won = true;
                     displayMessage("The door is unlocked! You win!");
                 } else {
-                    gameOver = true; // Set game over if trying to pass locked door without key
+                    gameOver = true;
                     displayMessage("The door is locked! You need a key.");
                 }
             } else if (dungeon[playerPos.y][playerPos.x] === 9) {
                 hasKey = true;
                 displayMessage("You found a key!");
-                dungeon[playerPos.y][playerPos.x] = 0; // Remove the key from the dungeon
+                dungeon[playerPos.y][playerPos.x] = 0;
             }
         } else {
             displayMessage("You hit a wall!");
@@ -178,11 +176,12 @@
     });
 
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); 
+    resizeCanvas();
 </script>
 
 </body>
 </html>
+
 
 
 
