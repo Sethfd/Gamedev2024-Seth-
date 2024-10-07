@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Explorer</title>
+    <title>Single Room Dungeon Explorer</title>
     <style>
         body {
             background-color: #222;
@@ -14,106 +14,137 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
         }
         canvas {
             border: 2px solid #fff;
+        }
+        #message {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 
 <canvas id="dungeonCanvas"></canvas>
+<div id="message"></div>
 
 <script>
     const canvas = document.getElementById('dungeonCanvas');
     const ctx = canvas.getContext('2d');
+    const messageDiv = document.getElementById('message');
 
-    const dungeon = [];
-    const width = 6;  // Number of columns
-    const height = 100; // Number of rows
-    let hasKey = false; // Key status
+    const dungeon = [
+        [1, 1, 1, 1, 1], // Wall
+        [1, 0, 0, 2, 1], // Room with door
+        [1, 0, 9, 0, 1], // Room with key
+        [1, 1, 1, 3, 1], // Wall with locked door
+        [1, 1, 1, 1, 1]  // Wall
+    ];
+    const width = dungeon[0].length; 
+    const height = dungeon.length; 
+    let hasKey = false; 
+    let gameOver = false; // Track game over state
+    let won = false; // Track win state
 
-    // Set canvas size to fill the screen
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        drawDungeon(); // Redraw dungeon after resizing
-    }
-
-    // Create a connected dungeon layout
-    function createDungeon() {
-        for (let y = 0; y < height; y++) {
-            if (y % 5 === 0) {
-                dungeon.push([1, 1, 1, 1, 1, 1]); // Wall line
-                dungeon.push([1, 0, 0, 2, 0, 1]); // Room with door
-                dungeon.push([1, 0, 1, 1, 0, 1]); // Path with walls
-                dungeon.push([1, 0, 0, 2, 0, 1]); // Room with door
-                dungeon.push([1, 1, 1, 1, 1, 1]); // Wall line
-            }
-        }
-
-        // Add a locked door at the end of the dungeon
-        dungeon[height - 1] = [1, 1, 1, 3, 1, 1]; // Row with locked door
-
-        // Place the key randomly in one of the rooms
-        placeKeyRandomly();
-    }
-
-    // Function to randomly place the key in one of the rooms
-    function placeKeyRandomly() {
-        const roomPositions = [
-            { x: 1, y: 1 }, // Room 1
-            { x: 2, y: 1 }, // Room 1
-            { x: 1, y: 3 }, // Room 2
-            { x: 2, y: 3 }  // Room 2
-        ];
-
-        const randomRoom = roomPositions[Math.floor(Math.random() * roomPositions.length)];
-        dungeon[randomRoom.y][randomRoom.x] = 9; // Place the key in the random room
+        drawDungeon();
     }
 
     let playerPos = { x: 1, y: 1 };
 
     function drawDungeon() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const cellWidth = canvas.width / width; // Each cell takes the full width
-        const cellHeight = canvas.height / height; // Each cell takes the full height
+        const cellWidth = canvas.width / width;
+        const cellHeight = canvas.height / height;
 
         for (let y = 0; y < dungeon.length; y++) {
             for (let x = 0; x < dungeon[y].length; x++) {
                 switch (dungeon[y][x]) {
-                    case 1: // Wall
-                        ctx.fillStyle = '#555'; // Darker gray for walls
-                        break;
-                    case 0: // Path
-                        ctx.fillStyle = '#222'; // Darker black for paths
-                        break;
-                    case 2: // Door
-                        ctx.fillStyle = '#8B4513'; // Brown for doors
-                        break;
-                    case 3: // Locked door
-                        ctx.fillStyle = '#FF0000'; // Red for locked doors
-                        break;
-                    case 9: // Key
-                        ctx.fillStyle = '#FFFF00'; // Yellow for the key
-                        break;
+                    case 1: ctx.fillStyle = '#555'; break; // Wall
+                    case 0: ctx.fillStyle = '#222'; break; // Path
+                    case 2: ctx.fillStyle = '#8B4513'; break; // Door
+                    case 3: ctx.fillStyle = '#FF0000'; break; // Locked door
+                    case 9: ctx.fillStyle = '#FFFF00'; break; // Key
                 }
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
         }
-
-        // Draw player
-        ctx.fillStyle = '#FFFFFF'; // White for player
+        ctx.fillStyle = '#FFFFFF'; 
         ctx.fillRect(playerPos.x * cellWidth, playerPos.y * cellHeight, cellWidth, cellHeight);
+
+        // Display Game Over message
+        if (gameOver) {
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '30px Arial';
+            ctx.fillText("Game Over", canvas.width / 2 - 70, canvas.height / 2);
+        }
+
+        // Display Win message
+        if (won) {
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '30px Arial';
+            ctx.fillText("You Win!", canvas.width / 2 - 60, canvas.height / 2);
+        }
+    }
+
+    function displayMessage(msg) {
+        messageDiv.textContent = msg;
+        setTimeout(() => messageDiv.textContent = '', 2000);
     }
 
     function isValidMove(pos) {
         return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height && dungeon[pos.y][pos.x] !== 1;
     }
 
+    function saveGame() {
+        const gameState = {
+            playerPos,
+            hasKey,
+            gameOver,
+            won
+        };
+        localStorage.setItem('dungeonGame', JSON.stringify(gameState));
+        displayMessage("Game Saved!");
+    }
+
+    function loadGame() {
+        const savedState = localStorage.getItem('dungeonGame');
+        if (savedState) {
+            const gameState = JSON.parse(savedState);
+            playerPos = gameState.playerPos;
+            hasKey = gameState.hasKey;
+            gameOver = gameState.gameOver;
+            won = gameState.won;
+            displayMessage("Game Loaded!");
+        } else {
+            displayMessage("No saved game found.");
+        }
+    }
+
     window.addEventListener('keydown', (event) => {
+        if (gameOver || won) return; // Prevent movement if game is over or won
+
         let newPos = { x: playerPos.x, y: playerPos.y };
+
+        if (event.key === 's') { // Save game on 'S' key press
+            saveGame();
+            return;
+        } else if (event.key === 'l') { // Load game on 'L' key press
+            loadGame();
+            return;
+        }
 
         if (event.key === 'w') newPos.y--;
         else if (event.key === 's') newPos.y++;
@@ -123,31 +154,32 @@
         if (isValidMove(newPos)) {
             playerPos = newPos;
             if (dungeon[playerPos.y][playerPos.x] === 2) {
-                alert("You found a door!");
+                displayMessage("You found a door!");
             } else if (dungeon[playerPos.y][playerPos.x] === 3) {
                 if (hasKey) {
-                    alert("The door is unlocked! You can pass through.");
-                    playerPos.y = height - 1; // Move player through the locked door
+                    won = true; // Set win state when unlocking the door
+                    displayMessage("The door is unlocked! You win!");
                 } else {
-                    alert("The door is locked! You need a key.");
+                    gameOver = true; // Set game over if trying to pass locked door without key
+                    displayMessage("The door is locked! You need a key.");
                 }
             } else if (dungeon[playerPos.y][playerPos.x] === 9) {
-                hasKey = true; // Player collects the key
-                alert("You found a key!");
+                hasKey = true;
+                displayMessage("You found a key!");
                 dungeon[playerPos.y][playerPos.x] = 0; // Remove the key from the dungeon
             }
         } else {
-            alert("You hit a wall!");
+            displayMessage("You hit a wall!");
         }
 
         drawDungeon();
     });
 
-    window.addEventListener('resize', resizeCanvas); // Adjust canvas on window resize
-    resizeCanvas(); // Initial canvas size
-    createDungeon(); // Create the dungeon layout
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas(); 
 </script>
 
 </body>
 </html>
+
 
