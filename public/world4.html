@@ -3,153 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Ancient Ruins</title>
+    <title>Dungeon Crawler</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        button { padding: 10px 20px; margin: 10px; }
-        .hidden { display: none; }
-        #message { color: red; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to The Ancient Ruins!</h1>
-    <p id="room-description">You have discovered ruins filled with history!</p>
-    <p id="message" class="hidden"></p>
-
-    <div id="battle" class="hidden">
-        <h2>Enemy: Mummy</h2>
-        <p id="enemy-health">Enemy Health: 35</p>
-        <p id="player-health">Your Health: 100</p>
-        <button onclick="attack()">Attack</button>
-        <button onclick="dodge()">Dodge</button>
-        <button onclick="heal()">Heal</button>
-    </div>
-
-    <button id="continue-button" class="hidden" onclick="nextRoom()">Continue</button>
-
-    <ul id="room-list">
-        <li>Room 1: The Crumbling Temple</li>
-        <li>Room 2: The Pillared Hall</li>
-        <li>Room 3: The Mosaic Room</li>
-        <li>Room 4: The Sacrificial Altar</li> <!-- Trap Room -->
-        <li>Room 5: The Forgotten Chamber</li>
-        <li>Room 6: The Ancient Library</li>
-        <li>Room 7: The Guardian's Rest</li>
-        <li>Room 8: The Healing Springs</li>
-        <li>Room 9: The Hall of Echoes</li>
-        <li>Room 10: The Underground Cavern</li>
-        <li>Room 11: The Ritual Circle</li>
-        <li>Room 12: The Ancient Tomb</li> <!-- Trap Room -->
-        <li>Room 13: The Oracle's Room</li>
-        <li>Room 14: The Hall of Kings</li>
-        <li>Room 15: The Chamber of Secrets</li>
-        <li>Room 16: The Stone Garden</li>
-        <li>Room 17: The Exit Tunnel</li>
-        <li>Room 18: The Stone Bridge</li>
-        <li>Room 19: The Enigma Room</li>
-        <li>Room 20: The Final Exit</li>
-    </ul>
-
-    <button id="start-fight" onclick="startFight()">Start Fight</button>
-    <button onclick="location.href='world5.html'">Next World</button>
-    <button onclick="location.href='index.html'">Back to Menu</button>
-
+    <h1>Dungeon Crawler</h1>
     <script>
-        let playerHealth = 100;
-        let enemyHealth = 35;
-        let inBattle = false;
-        let visitedRooms = [];
+        class Room {
+            constructor(description) {
+                this.description = description;
+                this.enemies = [];
+            }
 
-        function startFight() {
-            inBattle = true;
-            document.getElementById('battle').classList.remove('hidden');
-            document.getElementById('start-fight').classList.add('hidden');
-            document.getElementById('continue-button').classList.add('hidden');
-        }
-
-        function attack() {
-            const damage = Math.floor(Math.random() * 20) + 5;
-            enemyHealth -= damage;
-            document.getElementById('enemy-health').innerText = `Enemy Health: ${enemyHealth}`;
-            if (enemyHealth <= 0) {
-                setMessage('You defeated the enemy!');
-                inBattle = false;
-                document.getElementById('continue-button').classList.remove('hidden');
-                document.getElementById('battle').classList.add('hidden');
-            } else {
-                enemyAttack();
+            addEnemy(enemy) {
+                this.enemies.push(enemy);
             }
         }
 
-        function dodge() {
-            setMessage('You dodged the attack!');
-            enemyAttack();
+        class Enemy {
+            constructor(name, health, attack) {
+                this.name = name;
+                this.health = health;
+                this.attack = attack;
+            }
+
+            isAlive() {
+                return this.health > 0;
+            }
         }
 
-        function heal() {
-            const healAmount = Math.floor(Math.random() * 15) + 5;
-            playerHealth += healAmount;
-            document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
-            enemyAttack();
+        class Player {
+            constructor(name) {
+                this.name = name;
+                this.health = 100;
+                this.attack = 10;
+            }
+
+            isAlive() {
+                return this.health > 0;
+            }
         }
 
-        function enemyAttack() {
-            if (inBattle) {
-                const damage = Math.floor(Math.random() * 10) + 5;
-                playerHealth -= damage;
-                document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
-                if (playerHealth <= 0) {
-                    alert('You were defeated! Game Over.');
-                    location.href = 'index.html';
+        function battle(player, enemy) {
+            while (player.isAlive() && enemy.isAlive()) {
+                alert(`You attack ${enemy.name} for ${player.attack} damage.`);
+                enemy.health -= player.attack;
+
+                if (enemy.isAlive()) {
+                    alert(`${enemy.name} has ${enemy.health} health left.`);
+                    alert(`${enemy.name} attacks you for ${enemy.attack} damage.`);
+                    player.health -= enemy.attack;
+                    alert(`You have ${player.health} health left.`);
+                }
+
+                if (!player.isAlive()) {
+                    alert("You have been defeated!");
+                    break;
                 }
             }
         }
 
-        function setMessage(msg) {
-            const messageElement = document.getElementById('message');
-            messageElement.innerText = msg;
-            messageElement.classList.remove('hidden');
-            setTimeout(() => {
-                messageElement.classList.add('hidden');
-            }, 3000);
+        function startGame() {
+            const room1 = new Room("You are in a dimly lit room.");
+            const room2 = new Room("You enter a damp and musty chamber.");
+
+            const goblin = new Enemy("Goblin", 30, 5);
+            const orc = new Enemy("Orc", 50, 8);
+
+            room1.addEnemy(goblin);
+            room2.addEnemy(orc);
+
+            const playerName = prompt("Enter your character's name:");
+            const player = new Player(playerName);
+
+            let currentRoom = room1;
+
+            while (player.isAlive()) {
+                alert(currentRoom.description);
+
+                if (currentRoom.enemies.length > 0) {
+                    for (let enemy of currentRoom.enemies) {
+                        if (enemy.isAlive()) {
+                            alert(`A wild ${enemy.name} appears!`);
+                            battle(player, enemy);
+                            if (!player.isAlive()) {
+                                break;
+                            }
+                        }
+                    }
+                    currentRoom.enemies = currentRoom.enemies.filter(enemy => enemy.isAlive());
+                }
+
+                const nextRoom = prompt("Do you want to go to the next room? (yes/no)");
+                if (nextRoom.toLowerCase() === "yes") {
+                    currentRoom = room2; // For simplicity, always move to room2
+                } else {
+                    alert("You decided to stay in the room.");
+                }
+            }
+
+            alert("Game over.");
         }
 
-        function nextRoom() {
-            let nextRoomNumber;
-            do {
-                nextRoomNumber = Math.floor(Math.random() * 20) + 1;
-            } while (visitedRooms.includes(nextRoomNumber));
-            
-            visitedRooms.push(nextRoomNumber);
-            
-            if (nextRoomNumber === 4 || nextRoomNumber === 12) {
-                trapRoom(nextRoomNumber);
-            } else {
-                alert(`You move to Room ${nextRoomNumber}!`);
-            }
-        }
-
-        function trapRoom(roomNumber) {
-            let trapMessage = '';
-            switch(roomNumber) {
-                case 4:
-                    playerHealth -= 20; // Damage from the trap
-                    trapMessage = 'You fell into a pit trap! You lost 20 health.';
-                    break;
-                case 12:
-                    playerHealth -= 30; // Damage from the trap
-                    trapMessage = 'You triggered a deadly poison gas! You lost 30 health.';
-                    break;
-            }
-            document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
-            setMessage(trapMessage);
-            
-            if (playerHealth <= 0) {
-                alert('You were defeated! Game Over.');
-                location.href = 'index.html';
-            }
-        }
+        startGame();
     </script>
 </body>
 </html>
-
