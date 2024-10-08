@@ -15,13 +15,39 @@
         canvas {
             border: 1px solid black;
         }
+        #menu {
+            position: absolute;
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #menu button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="menu">
+        <h2>Menu</h2>
+        <button id="startButton">Start</button>
+        <button id="pauseButton">Pause</button>
+        <button id="restartButton">Restart</button>
+        <button id="continueButton">Continue</button>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu');
+        const startButton = document.getElementById('startButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const restartButton = document.getElementById('restartButton');
+        const continueButton = document.getElementById('continueButton');
 
         const BALL_RADIUS = 15;
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
@@ -30,6 +56,7 @@
         let currentLevel = 0;
         let wallsHit = 0;
         let score = 0;
+        let isPaused = true; // Game starts paused
 
         // Define levels with wall coordinates
         const LEVELS = [
@@ -56,6 +83,7 @@
 
         // Mouse event handlers
         canvas.addEventListener('mousedown', (event) => {
+            if (isPaused) return; // Do not drag if paused
             const rect = canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
@@ -68,16 +96,18 @@
             }
         });
 
-        canvas.addEventListener('mouseup', () => {
+        canvas.addEventListener('mouseup', (event) => {
             if (dragging) {
                 dragging = false;
-                ball.vx = ball.x - startX; // Inverted
-                ball.vy = ball.y - startY; // Inverted
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                // Calculate velocity based on the drag distance
+                ball.vx = ball.x - mouseX; // Inverted
+                ball.vy = ball.y - mouseY; // Inverted
                 const speed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
-                ball.vx /= speed; // Normalize to unit vector
-                ball.vy /= speed; // Normalize to unit vector
-                ball.vx *= 10; // Set desired speed
-                ball.vy *= 10; // Set desired speed
+                ball.vx = (ball.vx / speed) * 15; // Set desired speed
+                ball.vy = (ball.vy / speed) * 15; // Set desired speed
             }
         });
 
@@ -123,6 +153,8 @@
 
         // Main game loop
         function gameLoop() {
+            if (isPaused) return; // Stop updating if paused
+
             // Clear the canvas and set background color
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -132,6 +164,12 @@
             // Move the ball
             ball.x += ball.vx;
             ball.y += ball.vy;
+
+            // Check if the ball leaves the screen
+            if (ball.x < 0 || ball.x > canvas.width || ball.y < 0 || ball.y > canvas.height) {
+                console.log("You lost! Restarting level.");
+                resetLevel(); // Restart the current level
+            }
 
             // Check for collision
             if (checkCollision(ball, walls)) {
@@ -169,6 +207,39 @@
 
             requestAnimationFrame(gameLoop);
         }
+
+        function resetLevel() {
+            wallsHit = 0; // Reset hit count
+            wallsHitStatus = Array(LEVELS[currentLevel].length).fill(false); // Reset wall hit status
+            ball.x = canvas.width / 2; // Reset ball position
+            ball.y = canvas.height / 2; // Reset ball position
+            ball.vx = 0;
+            ball.vy = 0;
+        }
+
+        // Button event handlers
+        startButton.addEventListener('click', () => {
+            isPaused = false;
+            menu.style.display = 'none'; // Hide menu
+        });
+
+        pauseButton.addEventListener('click', () => {
+            isPaused = true;
+            menu.style.display = 'block'; // Show menu
+        });
+
+        restartButton.addEventListener('click', () => {
+            currentLevel = 0;
+            score = 0;
+            resetLevel(); // Reset current level
+            isPaused = true;
+            menu.style.display = 'block'; // Show menu
+        });
+
+        continueButton.addEventListener('click', () => {
+            isPaused = false;
+            menu.style.display = 'none'; // Hide menu
+        });
 
         // Start the game loop
         gameLoop();
