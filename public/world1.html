@@ -7,8 +7,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
+            background-color: #333; /* Darker background */
+            color: #f4f4f4; /* Light text for contrast */
             padding: 20px;
         }
         h1 {
@@ -20,24 +20,38 @@
         #message {
             margin: 20px 0;
         }
+        button {
+            background-color: #444; /* Dark button background */
+            color: #f4f4f4; /* Light button text */
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #555; /* Slightly lighter on hover */
+        }
     </style>
 </head>
 <body>
     <h1>Dungeon Crawler</h1>
     <div id="intro">
-        <p>Welcome to the Dungeon Crawler! Click "Start" to begin your adventure.</p>
+        <p>Welcome to the Dungeon Crawler! A land once filled with light and hope is now shrouded in darkness. An ancient evil has awakened, and the once-great kingdom lies in ruins. As a brave adventurer, you must explore the treacherous dungeons, face fearsome enemies, and uncover lost treasures to restore peace to the realm.</p>
+        <p>Will you be the hero the kingdom needs? Click "Start" to begin your adventure.</p>
         <button id="startButton">Start</button>
     </div>
     <div id="game">
         <div id="message"></div>
         <button id="yesButton">Y: Yes</button>
         <button id="noButton">N: No</button>
+        <button id="interactButton">I: Interact</button>
     </div>
     
     <script>
         class Room {
-            constructor(description) {
+            constructor(description, interaction) {
                 this.description = description;
+                this.interaction = interaction;
                 this.enemies = [];
             }
 
@@ -96,24 +110,24 @@
         let message = "";
 
         function initializeGame() {
-            // Create rooms
+            // Create rooms with interactions
             rooms = [
-                new Room("You are in a dimly lit room. A foul smell lingers in the air."),
-                new Room("You enter a damp and musty chamber, with shadows dancing on the walls."),
-                new Room("You find yourself in a small treasure room filled with gold and jewels."),
-                new Room("You walk into a dark cave, with echoes of distant growls."),
-                new Room("You enter a vast library filled with ancient tomes and dusty scrolls."),
-                new Room("You discover a hidden alcove, covered in spider webs."),
-                new Room("You step into a room adorned with strange murals and flickering torches."),
-                new Room("You find a flooded room, with water lapping at your feet."),
-                new Room("You enter a grand hall with a towering statue at its center."),
-                new Room("You stumble into a mysterious portal, swirling with colors."),
-                new Room("You walk into a dusty workshop filled with broken tools."),
-                new Room("You find a darkened throne room, with a large throne shrouded in shadows."),
-                new Room("You enter a chamber filled with crystals that glow softly."),
-                new Room("You walk into a garden of mushrooms, some of them glowing eerily."),
-                new Room("You find a room where the walls seem to whisper secrets."),
-                new Room("You enter a narrow corridor that feels like it leads to nowhere.")
+                new Room("You are in a dimly lit room. A foul smell lingers in the air.", "You find an old, rusty key."),
+                new Room("You enter a damp and musty chamber, with shadows dancing on the walls.", "You discover a hidden passage."),
+                new Room("You find yourself in a small treasure room filled with gold and jewels.", "You take some gold."),
+                new Room("You walk into a dark cave, with echoes of distant growls.", "You hear a growl nearby."),
+                new Room("You enter a vast library filled with ancient tomes and dusty scrolls.", "You find a spellbook."),
+                new Room("You discover a hidden alcove, covered in spider webs.", "You collect a strange potion."),
+                new Room("You step into a room adorned with strange murals and flickering torches.", "You feel a strange energy."),
+                new Room("You find a flooded room, with water lapping at your feet.", "You notice something shiny underwater."),
+                new Room("You enter a grand hall with a towering statue at its center.", "The statue seems to watch you."),
+                new Room("You stumble into a mysterious portal, swirling with colors.", "You feel pulled towards it."),
+                new Room("You walk into a dusty workshop filled with broken tools.", "You find a usable sword."),
+                new Room("You find a darkened throne room, with a large throne shrouded in shadows.", "You feel a presence."),
+                new Room("You enter a chamber filled with crystals that glow softly.", "The crystals hum softly."),
+                new Room("You walk into a garden of mushrooms, some of them glowing eerily.", "You sense magic here."),
+                new Room("You find a room where the walls seem to whisper secrets.", "You hear faint voices."),
+                new Room("You enter a narrow corridor that feels like it leads to nowhere.", "You discover a hidden door.")
             ];
 
             // Create enemies
@@ -189,14 +203,21 @@
             alert("You decided to stay in the room.");
         }
 
+        function handleInteract() {
+            const currentRoom = rooms[currentRoomIndex];
+            alert(currentRoom.interaction);
+        }
+
         document.getElementById("startButton").onclick = () => {
             document.getElementById("intro").style.display = "none";
             initializeGame();
         };
         document.getElementById("yesButton").onclick = handleYes;
         document.getElementById("noButton").onclick = handleNo;
+        document.getElementById("interactButton").onclick = handleInteract;
     </script>
 </body>
 </html>
+
 
 
