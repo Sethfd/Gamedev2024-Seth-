@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ball Wall Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const BALL_RADIUS = 15;
+        let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
+        let dragging = false;
+        let startX, startY;
+        let currentLevel = 0;
+
+        // Define levels with wall coordinates (x, y, width, height)
+        const LEVELS = [
+            [[100, 100, 600, 20]],  // Level 1
+            [[200, 150, 20, 300]],  // Level 2
+            [[100, 100, 600, 20], [200, 300, 400, 20]], // Level 3
+            [[150, 50, 500, 20], [400, 200, 20, 200]], // Level 4
+            [[100, 100, 20, 400], [300, 100, 20, 400]], // Level 5
+            [[100, 300, 600, 20], [100, 150, 20, 200]], // Level 6
+            [[150, 100, 500, 20], [150, 200, 500, 20]], // Level 7
+            [[200, 100, 20, 200], [200, 300, 20, 200]], // Level 8
+            [[100, 200, 600, 20], [400, 100, 20, 200]], // Level 9
+            [[200, 200, 400, 20], [200, 150, 20, 150]], // Level 10
+            [[100, 100, 600, 20], [300, 300, 20, 200]], // Level 11
+            [[150, 50, 500, 20], [150, 250, 500, 20]], // Level 12
+            [[100, 100, 20, 400], [600, 100, 20, 400]], // Level 13
+            [[200, 150, 20, 300], [400, 100, 20, 200]], // Level 14
+            [[100, 100, 600, 20], [100, 300, 600, 20]]  // Level 15
+        ];
+
+        // Mouse event handlers
+        canvas.addEventListener('mousedown', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const distance = Math.hypot(mouseX - ball.x, mouseY - ball.y);
+            if (distance < BALL_RADIUS) {
+                dragging = true;
+                startX = mouseX;
+                startY = mouseY;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (dragging) {
+                dragging = false;
+                // Invert the velocity direction
+                ball.vx = ball.x - startX; // Inverted
+                ball.vy = ball.y - startY; // Inverted
+                const speed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
+                ball.vx /= speed; // Normalize to unit vector
+                ball.vy /= speed; // Normalize to unit vector
+                ball.vx *= 10; // Set desired speed
+                ball.vy *= 10; // Set desired speed
+            }
+        });
+
+        canvas.addEventListener('mousemove', (event) => {
+            if (dragging) {
+                const rect = canvas.getBoundingClientRect();
+                ball.x = event.clientX - rect.left;
+                ball.y = event.clientY - rect.top;
+            }
+        });
+
+        // Check collision with walls
+        function checkCollision(ball, walls) {
+            for (let wall of walls) {
+                const rect = { x: wall[0], y: wall[1], width: wall[2], height: wall[3] };
+                if (ball.x + BALL_RADIUS > rect.x && ball.x - BALL_RADIUS < rect.x + rect.width &&
+                    ball.y + BALL_RADIUS > rect.y && ball.y - BALL_RADIUS < rect.y + rect.height) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Main game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const walls = LEVELS[currentLevel];
+
+            // Move the ball
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Check for collision
+            if (checkCollision(ball, walls)) {
+                console.log("Hit a wall!");
+                ball.x = canvas.width / 2;  // Reset position
+                ball.y = canvas.height / 2; // Reset position
+                ball.vx = 0;
+                ball.vy = 0;
+                currentLevel = (currentLevel + 1) % LEVELS.length; // Go to next level
+            }
+
+            // Draw walls
+            ctx.fillStyle = 'black';
+            for (let wall of walls) {
+                ctx.fillRect(wall[0], wall[1], wall[2], wall[3]);
+            }
+
+            // Draw the ball
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>
