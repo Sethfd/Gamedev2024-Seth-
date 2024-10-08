@@ -3,191 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Single Room Dungeon Explorer</title>
+    <title>Dungeon Crawler</title>
     <style>
         body {
-            background-color: #222;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
             font-family: Arial, sans-serif;
-            overflow: hidden;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
         }
-        canvas {
-            border: 2px solid #fff;
+        h1 {
+            text-align: center;
+        }
+        #game {
+            display: none;
         }
         #message {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
+    <h1>Dungeon Crawler</h1>
+    <div id="intro">
+        <p>Welcome to the Dungeon Crawler! Click "Start" to begin your adventure.</p>
+        <button id="startButton">Start</button>
+    </div>
+    <div id="game">
+        <div id="message"></div>
+        <button id="yesButton">Y: Yes</button>
+        <button id="noButton">N: No</button>
+    </div>
+    
+    <script>
+        class Room {
+            constructor(description) {
+                this.description = description;
+                this.enemies = [];
+            }
 
-<canvas id="dungeonCanvas"></canvas>
-<div id="message"></div>
-
-<script>
-    const canvas = document.getElementById('dungeonCanvas');
-    const ctx = canvas.getContext('2d');
-    const messageDiv = document.getElementById('message');
-
-    const dungeon = [
-        [1, 1, 1, 1, 1, 1, 1, 1], // Wall
-        [1, 0, 0, 0, 5, 4, 1, 1], // Entry Room: trap (5) and enemy (4)
-        [1, 0, 2, 0, 0, 0, 0, 1], // Key Room: key (2)
-        [1, 0, 0, 0, 5, 1, 1, 1], // Room with trap (5)
-        [1, 0, 0, 0, 0, 4, 0, 1], // Room with enemy (4)
-        [1, 0, 1, 0, 0, 1, 1, 1], // Room with key (9)
-        [1, 9, 2, 0, 0, 2, 0, 1], // Locked Door Room: requires keys
-        [1, 1, 1, 0, 0, 1, 1, 1], // Wall with path
-        [1, 0, 0, 0, 0, 2, 0, 1], // Path with keys
-        [0, 0, 1, 1, 3, 1, 1, 1]  // Treasure Room: exit (3)
-    ];
-
-    const width = dungeon[0].length; 
-    const height = dungeon.length; 
-    let hasKey = false; 
-    let gameOver = false; 
-    let won = false; 
-
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        drawDungeon();
-    }
-
-    let playerPos = { x: 1, y: 1 }; // Starting position
-
-    function drawDungeon() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const cellWidth = canvas.width / width;
-        const cellHeight = canvas.height / height;
-
-        for (let y = 0; y < dungeon.length; y++) {
-            for (let x = 0; x < dungeon[y].length; x++) {
-                switch (dungeon[y][x]) {
-                    case 1: ctx.fillStyle = '#555'; break; // Wall
-                    case 0: ctx.fillStyle = '#222'; break; // Path
-                    case 2: ctx.fillStyle = '#8B4513'; break; // Key
-                    case 3: ctx.fillStyle = '#FF0000'; break; // Exit
-                    case 4: ctx.fillStyle = '#FF4500'; break; // Enemy
-                    case 5: ctx.fillStyle = '#0000FF'; break; // Trap
-                }
-                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+            addEnemy(enemy) {
+                this.enemies.push(enemy);
             }
         }
-        ctx.fillStyle = '#FFFFFF'; 
-        ctx.fillRect(playerPos.x * cellWidth, playerPos.y * cellHeight, cellWidth, cellHeight);
 
-        if (gameOver) {
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '30px Arial';
-            ctx.fillText("Game Over", canvas.width / 2 - 70, canvas.height / 2);
+        class Enemy {
+            constructor(name, health, attack) {
+                this.name = name;
+                this.health = health;
+                this.attack = attack;
+            }
+
+            isAlive() {
+                return this.health > 0;
+            }
         }
 
-        if (won) {
-            ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '30px Arial';
-            ctx.fillText("You Win!", canvas.width / 2 - 60, canvas.height / 2);
-        }
-    }
+        class Player {
+            constructor(name) {
+                this.name = name;
+                this.health = 100;
+                this.attack = 10;
+            }
 
-    function displayMessage(msg) {
-        messageDiv.textContent = msg;
-        setTimeout(() => messageDiv.textContent = '', 2000);
-    }
-
-    function isValidMove(pos) {
-        return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height && dungeon[pos.y][pos.x] !== 1;
-    }
-
-    function saveGame() {
-        const gameState = {
-            playerPos,
-            hasKey,
-            gameOver,
-            won
-        };
-        localStorage.setItem('dungeonGame', JSON.stringify(gameState));
-        displayMessage("Game Saved!");
-    }
-
-    function loadGame() {
-        const savedState = localStorage.getItem('dungeonGame');
-        if (savedState) {
-            const gameState = JSON.parse(savedState);
-            playerPos = gameState.playerPos;
-            hasKey = gameState.hasKey;
-            gameOver = gameState.gameOver;
-            won = gameState.won;
-            displayMessage("Game Loaded!");
-        } else {
-            displayMessage("No saved game found.");
-        }
-    }
-
-    window.addEventListener('keydown', (event) => {
-        if (gameOver || won) return;
-
-        let newPos = { x: playerPos.x, y: playerPos.y };
-
-        if (event.key === 'z') {
-            saveGame();
-            return;
-        } else if (event.key === 'l') {
-            loadGame();
-            return;
+            isAlive() {
+                return this.health > 0;
+            }
         }
 
-        if (event.key === 'w') newPos.y--;
-        else if (event.key === 's') newPos.y++;
-        else if (event.key === 'a') newPos.x--;
-        else if (event.key === 'd') newPos.x++;
+        function battle(player, enemy) {
+            while (player.isAlive() && enemy.isAlive()) {
+                message += `You attack ${enemy.name} for ${player.attack} damage.\n`;
+                enemy.health -= player.attack;
 
-        if (isValidMove(newPos)) {
-            playerPos = newPos;
+                if (enemy.isAlive()) {
+                    message += `${enemy.name} has ${enemy.health} health left.\n`;
+                    message += `${enemy.name} attacks you for ${enemy.attack} damage.\n`;
+                    player.health -= enemy.attack;
+                    message += `You have ${player.health} health left.\n`;
+                }
 
-            if (dungeon[playerPos.y][playerPos.x] === 2) {
-                hasKey = true;
-                displayMessage("You found a key!");
-                dungeon[playerPos.y][playerPos.x] = 0; // Remove key from the dungeon
-            } else if (dungeon[playerPos.y][playerPos.x] === 4) {
-                gameOver = true; // Player hit an enemy
-                displayMessage("You were defeated by an enemy!");
-            } else if (dungeon[playerPos.y][playerPos.x] === 5) {
-                gameOver = true; // Player triggered a trap
-                displayMessage("You triggered a trap!");
-            } else if (dungeon[playerPos.y][playerPos.x] === 3) {
-                if (hasKey) {
-                    won = true; // Player wins by exiting
-                    displayMessage("You escaped! You win!");
+                if (!player.isAlive()) {
+                    message += "You have been defeated!\n";
+                    break;
+                }
+            }
+        }
+
+        let rooms = [];
+        let enemies = [];
+        let player;
+        let currentRoomIndex = 0;
+        let message = "";
+
+        function initializeGame() {
+            // Create rooms
+            rooms = [
+                new Room("You are in a dimly lit room. A foul smell lingers in the air."),
+                new Room("You enter a damp and musty chamber, with shadows dancing on the walls."),
+                new Room("You find yourself in a small treasure room filled with gold and jewels."),
+                new Room("You walk into a dark cave, with echoes of distant growls."),
+                new Room("You enter a vast library filled with ancient tomes and dusty scrolls."),
+                new Room("You discover a hidden alcove, covered in spider webs."),
+                new Room("You step into a room adorned with strange murals and flickering torches."),
+                new Room("You find a flooded room, with water lapping at your feet."),
+                new Room("You enter a grand hall with a towering statue at its center."),
+                new Room("You stumble into a mysterious portal, swirling with colors."),
+                new Room("You walk into a dusty workshop filled with broken tools."),
+                new Room("You find a darkened throne room, with a large throne shrouded in shadows."),
+                new Room("You enter a chamber filled with crystals that glow softly."),
+                new Room("You walk into a garden of mushrooms, some of them glowing eerily."),
+                new Room("You find a room where the walls seem to whisper secrets."),
+                new Room("You enter a narrow corridor that feels like it leads to nowhere.")
+            ];
+
+            // Create enemies
+            enemies = [
+                new Enemy("Goblin", 30, 5),
+                new Enemy("Orc", 50, 8),
+                new Enemy("Skeleton", 25, 6),
+                new Enemy("Troll", 70, 10),
+                new Enemy("Evil Wizard", 40, 12),
+                new Enemy("Vampire", 60, 9),
+                new Enemy("Zombie", 35, 4),
+                new Enemy("Werewolf", 80, 11),
+                new Enemy("Mummy", 45, 7),
+                new Enemy("Ghost", 50, 8)
+            ];
+
+            // Assign enemies to rooms randomly
+            for (let i = 0; i < rooms.length; i++) {
+                if (Math.random() > 0.5) { // 50% chance to add an enemy
+                    const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+                    rooms[i].addEnemy(randomEnemy);
+                }
+            }
+
+            const playerName = prompt("Enter your character's name:");
+            player = new Player(playerName);
+            currentRoomIndex = 0;
+
+            startRoom();
+        }
+
+        function startRoom() {
+            const currentRoom = rooms[currentRoomIndex];
+            message = currentRoom.description + "\n";
+
+            if (currentRoom.enemies.length > 0) {
+                for (let enemy of currentRoom.enemies) {
+                    if (enemy.isAlive()) {
+                        message += `A wild ${enemy.name} appears!\n`;
+                        battle(player, enemy);
+                        if (!player.isAlive()) {
+                            break;
+                        }
+                    }
+                }
+                currentRoom.enemies = currentRoom.enemies.filter(enemy => enemy.isAlive());
+            }
+
+            if (player.isAlive()) {
+                if (currentRoomIndex < rooms.length - 1) {
+                    message += "Do you want to go to the next room? (Y/N)";
                 } else {
-                    displayMessage("You need a key to escape!");
+                    message += "You have explored all the rooms. Adventure ends here!";
                 }
+            } else {
+                message += "Game over.";
             }
-        } else {
-            displayMessage("You hit a wall!");
+
+            document.getElementById("message").innerText = message;
+            document.getElementById("game").style.display = "block";
         }
 
-        drawDungeon();
-    });
+        function handleYes() {
+            if (player.isAlive() && currentRoomIndex < rooms.length - 1) {
+                currentRoomIndex++;
+                startRoom();
+            } else {
+                alert("Game over.");
+            }
+        }
 
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-</script>
+        function handleNo() {
+            alert("You decided to stay in the room.");
+        }
 
+        document.getElementById("startButton").onclick = () => {
+            document.getElementById("intro").style.display = "none";
+            initializeGame();
+        };
+        document.getElementById("yesButton").onclick = handleYes;
+        document.getElementById("noButton").onclick = handleNo;
+    </script>
 </body>
 </html>
 
