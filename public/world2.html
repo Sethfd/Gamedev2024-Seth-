@@ -3,152 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Haunted Woods</title>
+    <title>Single Room Dungeon Explorer</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        button { padding: 10px 20px; margin: 10px; }
-        .hidden { display: none; }
+        body {
+            background-color: #222;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #fff;
+        }
+        #message {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to The Haunted Woods!</h1>
-    <p id="room-description">You've stumbled into a forest filled with spirits!</p>
-    
-    <div id="battle" class="hidden">
-        <h2>Enemy: Forest Spirit</h2>
-        <p id="enemy-health">Enemy Health: 25</p>
-        <p id="player-health">Your Health: 100</p>
-        <button onclick="attack()">Attack</button>
-        <button onclick="dodge()">Dodge</button>
-        <button onclick="heal()">Heal</button>
-    </div>
 
-    <button id="continue-button" class="hidden" onclick="nextRoom()">Continue</button>
-    <button id="wish-button" class="hidden" onclick="makeWish()">Make a Wish</button>
+<canvas id="dungeonCanvas"></canvas>
+<div id="message"></div>
 
-    <audio id="whisper-sound" src="whispers.mp3" loop></audio>
+<script>
+    const canvas = document.getElementById('dungeonCanvas');
+    const ctx = canvas.getContext('2d');
+    const messageDiv = document.getElementById('message');
 
-    <ul>
-        <li>Room 1: The Foggy Clearing</li>
-        <li>Room 2: The Whispering Trees</li>
-        <li>Room 3: The Ghostly Glade</li>
-        <li>Room 4: The Cursed Path</li>
-        <li>Room 5: The Ruined Cabin</li>
-        <li>Room 6: The Wishing Well</li>
-        <li>Room 7: The Howling Wind</li>
-        <li>Room 8: The Phantom Bridge</li>
-        <li>Room 9: The Lost Soul's Grave</li>
-        <li>Room 10: The Enchanted Pond</li>
-        <li>Room 11: The Twilight Thicket</li>
-        <li>Room 12: The Shadow's Den</li>
-        <li>Room 13: The Moonlit Glade</li>
-        <li>Room 14: The Spirit's Hearth</li>
-        <li>Room 15: The Echoing Cavern</li>
-        <li>Room 16: The Witch's Hut</li>
-        <li>Room 17: The Enchanted Forest</li>
-        <li>Room 18: The Hidden Path</li>
-        <li>Room 19: The Forgotten Shrine</li>
-        <li>Room 20: The Exit</li>
-    </ul>
+    const dungeons = [
+        [ // Room 1
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 5, 4, 1, 1],
+            [1, 0, 2, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 5, 1, 1, 1],
+            [1, 0, 0, 0, 0, 4, 0, 1],
+            [1, 0, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        [ // Room 2
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 3, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 4, 0, 5, 1, 1, 1],
+            [1, 0, 2, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        [ // Room 3
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 2, 0, 0, 4, 0, 3, 1],
+            [1, 0, 0, 0, 0, 5, 0, 1],
+            [1, 0, 4, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 5, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        [ // Room 4
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 5, 0, 0, 0, 2, 1],
+            [1, 0, 0, 0, 4, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        [ // Room 5
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 2, 0, 5, 4, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 3, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1]
+        ]
+    ];
 
-    <button id="start-fight" onclick="startFight()">Start Fight</button>
-    <button onclick="location.href='world3.html'">Next World</button>
-    <button onclick="location.href='index.html'">Back to Menu</button>
+    let currentRoomIndex = 0;
+    let playerPos = { x: 1, y: 1 }; // Starting position
+    let hasKey = false; 
+    let gameOver = false; 
+    let won = false; 
 
-    <script>
-        let playerHealth = 100;
-        let enemyHealth = 25;
-        let inBattle = false;
-        const whisperSound = document.getElementById('whisper-sound');
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        drawDungeon();
+    }
 
-        function startFight() {
-            inBattle = true;
-            document.getElementById('battle').classList.remove('hidden');
-            document.getElementById('start-fight').classList.add('hidden');
-            document.getElementById('continue-button').classList.add('hidden');
-            document.getElementById('wish-button').classList.add('hidden'); // Hide wish button during battle
-            stopWhisper(); // Stop whisper sound during battle
-        }
+    function drawDungeon() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const dungeon = dungeons[currentRoomIndex];
+        const cellWidth = canvas.width / dungeon[0].length;
+        const cellHeight = canvas.height / dungeon.length;
 
-        function attack() {
-            const damage = Math.floor(Math.random() * 20) + 5;
-            enemyHealth -= damage;
-            document.getElementById('enemy-health').innerText = `Enemy Health: ${enemyHealth}`;
-            if (enemyHealth <= 0) {
-                alert('You defeated the enemy!');
-                inBattle = false;
-                document.getElementById('continue-button').classList.remove('hidden');
-                document.getElementById('battle').classList.add('hidden');
-            } else {
-                enemyAttack();
+        for (let y = 0; y < dungeon.length; y++) {
+            for (let x = 0; x < dungeon[y].length; x++) {
+                switch (dungeon[y][x]) {
+                    case 1: ctx.fillStyle = '#555'; break; // Wall
+                    case 0: ctx.fillStyle = '#222'; break; // Path
+                    case 2: ctx.fillStyle = '#8B4513'; break; // Key
+                    case 3: ctx.fillStyle = '#FF0000'; break; // Exit
+                    case 4: ctx.fillStyle = '#FF4500'; break; // Enemy
+                    case 5: ctx.fillStyle = '#0000FF'; break; // Trap
+                }
+                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
         }
 
-        function dodge() {
-            alert('You dodged the attack!');
-            enemyAttack();
-        }
+        // Draw player
+        ctx.fillStyle = '#FFD700'; // Player color
+        ctx.fillRect(playerPos.x * cellWidth, playerPos.y * cellHeight, cellWidth, cellHeight);
 
-        function heal() {
-            const healAmount = Math.floor(Math.random() * 15) + 5;
-            playerHealth += healAmount;
-            document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
-            enemyAttack();
+        // Display message
+        if (gameOver) {
+            messageDiv.textContent = "Game Over! Press R to Restart.";
+        } else if (won) {
+            messageDiv.textContent = "You found the treasure! Press R to Restart.";
+        } else {
+            messageDiv.textContent = hasKey ? "You have a key." : "Explore the dungeon!";
         }
+    }
 
-        function enemyAttack() {
-            if (inBattle) {
-                const damage = Math.floor(Math.random() * 10) + 5;
-                playerHealth -= damage;
-                document.getElementById('player-health').innerText = `Your Health: ${playerHealth}`;
-                if (playerHealth <= 0) {
-                    alert('You were defeated! Game Over.');
-                    location.href = 'index.html';
+    function movePlayer(dx, dy) {
+        if (gameOver || won) return;
+
+        const dungeon = dungeons[currentRoomIndex];
+        const newX = playerPos.x + dx;
+        const newY = playerPos.y + dy;
+
+        if (dungeon[newY] && dungeon[newY][newX] !== undefined) {
+            const cell = dungeon[newY][newX];
+
+            if (cell === 1) {
+                // Wall
+                return;
+            } else if (cell === 2) {
+                // Key
+                hasKey = true;
+            } else if (cell === 4) {
+                // Enemy
+                gameOver = true;
+            } else if (cell === 3) {
+                // Exit
+                won = true;
+            } else if (cell === 9) {
+                // Locked Door (for room transition)
+                if (hasKey) {
+                    currentRoomIndex = (currentRoomIndex + 1) % dungeons.length; // Move to the next room
+                    playerPos = { x: 1, y: 1 }; // Reset player position
+                    hasKey = false; // Reset key status
                 }
             }
-        }
 
-        function nextRoom() {
-            const roomDescription = document.getElementById('room-description');
-            if (roomDescription.innerText.includes("Wishing Well")) {
-                document.getElementById('wish-button').classList.remove('hidden'); // Show wish button in Wishing Well
-            } else {
-                document.getElementById('wish-button').classList.add('hidden'); // Hide it in other rooms
-            }
-
-            if (roomDescription.innerText.includes("Whispering Trees")) {
-                playWhisper(); // Play whisper sound in Whispering Trees
-            } else {
-                stopWhisper(); // Stop whisper sound in other rooms
-            }
+            playerPos.x = newX;
+            playerPos.y = newY;
+            drawDungeon();
         }
+    }
 
-        function makeWish() {
-            const wish = prompt("What is your wish? (You can wish for health, power, or luck)");
-            if (wish.toLowerCase() === "health") {
-                const healAmount = Math.floor(Math.random() * 30) + 10;
-                playerHealth += healAmount;
-                alert(`Your wish for health is granted! You healed for ${healAmount} points.`);
-            } else if (wish.toLowerCase() === "power") {
-                alert("Your wish for power is granted! You feel stronger!");
-                // Implement any power-up logic here if needed
-            } else if (wish.toLowerCase() === "luck") {
-                alert("Your wish for luck is granted! Good things are coming your way!");
-                // Implement luck-related enhancements here if desired
-            } else {
-                alert("The well cannot grant that wish.");
-            }
-        }
+    function restartGame() {
+        currentRoomIndex = 0;
+        playerPos = { x: 1, y: 1 };
+        hasKey = false;
+        gameOver = false;
+        won = false;
+        drawDungeon();
+    }
 
-        function playWhisper() {
-            whisperSound.play();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case 'ArrowUp': movePlayer(0, -1); break;
+            case 'ArrowDown': movePlayer(0, 1); break;
+            case 'ArrowLeft': movePlayer(-1, 0); break;
+            case 'ArrowRight': movePlayer(1, 0); break;
+            case 'r': // Restart game
+            case 'R': restartGame(); break;
         }
+    });
 
-        function stopWhisper() {
-            whisperSound.pause();
-            whisperSound.currentTime = 0; // Reset to start
-        }
-    </script>
+    resizeCanvas(); // Initial canvas setup
+</script>
+
 </body>
 </html>
+
 
