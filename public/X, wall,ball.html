@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ball Wall Game</title>
+    <title>Ball Wall Game with Gravity</title>
     <style>
         body {
             display: flex;
@@ -23,30 +23,67 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const BALL_RADIUS = 15;
+        const GRAVITY = 0.5; // Gravity constant
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
+        let dragging = false;
+        let startX, startY, offsetX, offsetY;
+
+        canvas.addEventListener('mousedown', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            const distance = Math.hypot(mouseX - ball.x, mouseY - ball.y);
+            if (distance < BALL_RADIUS) {
+                dragging = true;
+                startX = mouseX;
+                startY = mouseY;
+                offsetX = mouseX - ball.x; // Calculate offset
+                offsetY = mouseY - ball.y; // Calculate offset
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (dragging) {
+                dragging = false;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (event) => {
+            if (dragging) {
+                const rect = canvas.getBoundingClientRect();
+                ball.x = event.clientX - rect.left - offsetX;
+                ball.y = event.clientY - rect.top - offsetY;
+            }
+        });
 
         function gameLoop() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Apply gravity to the ball
+            ball.vy += GRAVITY;
+
+            // Move the ball
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Check for collision with the ground
+            if (ball.y + BALL_RADIUS > canvas.height) {
+                ball.y = canvas.height - BALL_RADIUS; // Position it at the bottom
+                ball.vy *= -0.8; // Bounce back with some energy loss
+            }
+
+            // Draw the ball
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
             ctx.fill();
 
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-
-            if (ball.x < BALL_RADIUS || ball.x > canvas.width - BALL_RADIUS ||
-                ball.y < BALL_RADIUS || ball.y > canvas.height - BALL_RADIUS) {
-                ball.vx = -ball.vx; 
-                ball.vy = -ball.vy; 
-            }
-
             requestAnimationFrame(gameLoop);
         }
 
+        // Start the game loop
         gameLoop();
     </script>
 </body>
 </html>
-
