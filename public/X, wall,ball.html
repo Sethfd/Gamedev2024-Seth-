@@ -25,6 +25,7 @@
         const BALL_RADIUS = 15;
         const GRAVITY = 0.5;
         const MOVE_ACCELERATION = 0.2;
+        const JUMP_STRENGTH = 10; // Strength of the jump
         const FRICTION = 0.95;
 
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
@@ -57,6 +58,9 @@
                     break;
                 case 'd':
                     ball.vx += MOVE_ACCELERATION;
+                    break;
+                case ' ': // Spacebar for jump
+                    ball.vy -= JUMP_STRENGTH; // Jump regardless of whether on the ground
                     break;
             }
         });
