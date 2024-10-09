@@ -29,10 +29,10 @@
         let startX, startY;
 
         // Define walls
-        const walls = [
+        let walls = [
             { x: 100, y: 100, width: 600, height: 20 }, // Horizontal wall
             { x: 200, y: 300, width: 20, height: 200 }, // Vertical wall
-            { x: 400, y: 200, width: 20, height: 200 }  // Another vertical wall
+            { x: 400, y: 200, width: 100, height: 100, angle: Math.PI / 4 } // Angled wall
         ];
 
         // Keyboard controls
@@ -95,24 +95,40 @@
         // Check for collision with walls
         function checkCollision(ball, walls) {
             for (const wall of walls) {
-                if (ball.x + BALL_RADIUS > wall.x && ball.x - BALL_RADIUS < wall.x + wall.width &&
-                    ball.y + BALL_RADIUS > wall.y && ball.y - BALL_RADIUS < wall.y + wall.height) {
-                    // Simple response for vertical walls
-                    if (ball.vx > 0 && ball.x + BALL_RADIUS > wall.x) {
-                        ball.x = wall.x - BALL_RADIUS; // Move ball outside of the wall
-                        ball.vx *= -1; // Reverse horizontal velocity
-                    } else if (ball.vx < 0 && ball.x - BALL_RADIUS < wall.x + wall.width) {
-                        ball.x = wall.x + wall.width + BALL_RADIUS; // Move ball outside of the wall
-                        ball.vx *= -1; // Reverse horizontal velocity
-                    }
+                if (wall.angle) {
+                    // Handle collision with angled walls
+                    const wallEndX = wall.x + wall.width * Math.cos(wall.angle);
+                    const wallEndY = wall.y + wall.height * Math.sin(wall.angle);
 
-                    // Simple response for horizontal walls
-                    if (ball.vy > 0 && ball.y + BALL_RADIUS > wall.y) {
-                        ball.y = wall.y - BALL_RADIUS; // Move ball outside of the wall
-                        ball.vy *= -0.8; // Reverse vertical velocity with some energy loss
-                    } else if (ball.vy < 0 && ball.y - BALL_RADIUS < wall.y + wall.height) {
-                        ball.y = wall.y + wall.height + BALL_RADIUS; // Move ball outside of the wall
-                        ball.vy *= -1; // Reverse vertical velocity
+                    // Check collision with the line segment of the angled wall
+                    const wallToBallDist = Math.abs((wallEndY - wall.y) * ball.x - (wallEndX - wall.x) * ball.y + wallEndX * wall.y - wallEndY * wall.x) /
+                                            Math.sqrt((wallEndY - wall.y) ** 2 + (wallEndX - wall.x) ** 2);
+                    if (wallToBallDist < BALL_RADIUS) {
+                        // Handle bounce
+                        ball.vx *= -1; // Invert horizontal velocity
+                        ball.vy *= -1; // Invert vertical velocity
+                    }
+                } else {
+                    // Check axis-aligned wall collision
+                    if (ball.x + BALL_RADIUS > wall.x && ball.x - BALL_RADIUS < wall.x + wall.width &&
+                        ball.y + BALL_RADIUS > wall.y && ball.y - BALL_RADIUS < wall.y + wall.height) {
+                        // Simple response for vertical walls
+                        if (ball.vx > 0 && ball.x + BALL_RADIUS > wall.x) {
+                            ball.x = wall.x - BALL_RADIUS; // Move ball outside of the wall
+                            ball.vx *= -1; // Reverse horizontal velocity
+                        } else if (ball.vx < 0 && ball.x - BALL_RADIUS < wall.x + wall.width) {
+                            ball.x = wall.x + wall.width + BALL_RADIUS; // Move ball outside of the wall
+                            ball.vx *= -1; // Reverse horizontal velocity
+                        }
+
+                        // Simple response for horizontal walls
+                        if (ball.vy > 0 && ball.y + BALL_RADIUS > wall.y) {
+                            ball.y = wall.y - BALL_RADIUS; // Move ball outside of the wall
+                            ball.vy *= -0.8; // Reverse vertical velocity with some energy loss
+                        } else if (ball.vy < 0 && ball.y - BALL_RADIUS < wall.y + wall.height) {
+                            ball.y = wall.y + wall.height + BALL_RADIUS; // Move ball outside of the wall
+                            ball.vy *= -1; // Reverse vertical velocity
+                        }
                     }
                 }
             }
@@ -123,6 +139,21 @@
             ball.y = canvas.height / 2;
             ball.vx = 0;
             ball.vy = 0;
+        }
+
+        function drawWalls() {
+            ctx.fillStyle = 'red';
+            for (const wall of walls) {
+                if (wall.angle) {
+                    // Draw angled wall
+                    ctx.beginPath();
+                    ctx.moveTo(wall.x, wall.y);
+                    ctx.lineTo(wall.x + wall.width * Math.cos(wall.angle), wall.y + wall.height * Math.sin(wall.angle));
+                    ctx.stroke();
+                } else {
+                    ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+                }
+            }
         }
 
         function gameLoop() {
@@ -146,10 +177,7 @@
             checkCollision(ball, walls);
 
             // Draw walls
-            ctx.fillStyle = 'red';
-            for (const wall of walls) {
-                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
-            }
+            drawWalls();
 
             // Draw the ball
             ctx.fillStyle = 'white';
