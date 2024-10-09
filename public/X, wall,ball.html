@@ -15,266 +15,38 @@
         canvas {
             border: 1px solid black;
         }
-        #menu {
-            position: absolute;
-            display: none;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        #menu button {
-            margin: 5px;
-            padding: 10px;
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="menu">
-        <h2>Menu</h2>
-        <button id="startButton">Start</button>
-        <button id="pauseButton">Pause</button>
-        <button id="restartButton">Restart</button>
-        <button id="continueButton">Continue</button>
-    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu');
-        const startButton = document.getElementById('startButton');
-        const pauseButton = document.getElementById('pauseButton');
-        const restartButton = document.getElementById('restartButton');
-        const continueButton = document.getElementById('continueButton');
-
         const BALL_RADIUS = 15;
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
-        let dragging = false;
-        let startX, startY;
-        let offsetX, offsetY; // To store offset when dragging
-        let currentLevel = 0;
-        let wallsHit = 0;
-        let score = 0; // Initialize score
-        let isPaused = true; // Game starts paused
 
-        // Define levels with wall coordinates
-        const LEVELS = [
-            [[100, 100, 600, 20]],  // Level 1 (horizontal)
-            [[200, 150, 20, 300], [300, 300, 100, 100]],  // Level 2 (vertical + angled)
-            [[100, 100, 600, 20], [200, 300, 400, 20]], // Level 3
-            [[150, 50, 500, 20], [400, 200, 20, 200]], // Level 4
-            [[100, 100, 20, 400], [300, 100, 20, 400]], // Level 5
-            [[100, 300, 600, 20], [100, 150, 20, 200]], // Level 6
-            [[150, 100, 500, 20], [150, 200, 500, 20]], // Level 7
-            [[200, 100, 20, 200], [200, 300, 20, 200]], // Level 8
-            [[100, 200, 600, 20], [400, 100, 20, 200]], // Level 9
-            [[200, 200, 400, 20], [200, 150, 20, 150]], // Level 10
-            [[100, 100, 600, 20], [300, 300, 20, 200]], // Level 11
-            [[150, 50, 500, 20], [150, 250, 500, 20]], // Level 12
-            [[100, 100, 20, 400], [600, 100, 20, 400]], // Level 13
-            [[200, 150, 20, 300], [400, 100, 20, 200]], // Level 14
-            [[100, 100, 600, 20], [100, 300, 600, 20]], // Level 15
-            [[100, 100, 200, 20], [300, 200, 200, 20], [500, 100, 20, 200]] // Level 16 (angled)
-        ];
-
-        // Track which walls have been hit
-        let wallsHitStatus = [];
-
-        // Mouse event handlers
-        canvas.addEventListener('mousedown', (event) => {
-            if (isPaused) return; // Do not drag if paused
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-
-            const distance = Math.hypot(mouseX - ball.x, mouseY - ball.y);
-            if (distance < BALL_RADIUS) {
-                dragging = true;
-                startX = mouseX;
-                startY = mouseY;
-                offsetX = mouseX - ball.x; // Calculate offset
-                offsetY = mouseY - ball.y; // Calculate offset
-            }
-        });
-
-        canvas.addEventListener('mouseup', (event) => {
-            if (dragging) {
-                dragging = false;
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = event.clientX - rect.left;
-                const mouseY = event.clientY - rect.top;
-                // Calculate velocity based on the drag distance
-                ball.vx = ball.x - mouseX; // Inverted
-                ball.vy = ball.y - mouseY; // Inverted
-                const speed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
-                ball.vx = (ball.vx / speed) * 15; // Set desired speed
-                ball.vy = (ball.vy / speed) * 15; // Set desired speed
-            }
-        });
-
-        canvas.addEventListener('mousemove', (event) => {
-            if (dragging) {
-                const rect = canvas.getBoundingClientRect();
-                ball.x = event.clientX - rect.left - offsetX; // Use offset for smoother dragging
-                ball.y = event.clientY - rect.top - offsetY; // Use offset for smoother dragging
-            }
-        });
-
-        // Enhanced Check collision with walls
-        function checkCollision(ball, walls) {
-            for (let i = 0; i < walls.length; i++) {
-                const wall = walls[i];
-                const rect = { x: wall[0], y: wall[1], width: wall[2], height: wall[3] };
-                
-                // Check collision with the rectangle
-                if (ball.x + BALL_RADIUS > rect.x && ball.x - BALL_RADIUS < rect.x + rect.width &&
-                    ball.y + BALL_RADIUS > rect.y && ball.y - BALL_RADIUS < rect.y + rect.height) {
-
-                    // Calculate normal vector for reflection
-                    let normalX = 0, normalY = 0;
-
-                    // Determine which side the ball collided with
-                    if (ball.x < rect.x) {
-                        normalX = -1; // Left
-                    } else if (ball.x > rect.x + rect.width) {
-                        normalX = 1; // Right
-                    } else if (ball.y < rect.y) {
-                        normalY = -1; // Top
-                    } else if (ball.y > rect.y + rect.height) {
-                        normalY = 1; // Bottom
-                    }
-
-                    // Reflect the ball's velocity
-                    const dotProduct = ball.vx * normalX + ball.vy * normalY;
-                    ball.vx -= 2 * dotProduct * normalX;
-                    ball.vy -= 2 * dotProduct * normalY;
-
-                    // Adjust the ball's position to avoid sticking
-                    const overlapX = BALL_RADIUS - Math.abs(ball.x - (rect.x + rect.width / 2));
-                    const overlapY = BALL_RADIUS - Math.abs(ball.y - (rect.y + rect.height / 2));
-                    if (overlapX < overlapY) {
-                        ball.x += (ball.x < rect.x + rect.width / 2 ? overlapX : -overlapX);
-                    } else {
-                        ball.y += (ball.y < rect.y + rect.height / 2 ? overlapY : -overlapY);
-                    }
-
-                    // Mark wall as hit if it hasn't been hit already
-                    if (!wallsHitStatus[i]) {
-                        wallsHitStatus[i] = true;
-                        wallsHit++;
-                        score += 10; // Increase score when a wall is hit
-                        console.log(`Wall ${i + 1} hit! Score: ${score}`);
-                    }
-                    return true; // Collision detected
-                }
-            }
-            return false; // No collision
-        }
-
-        // Draw angled walls
-        function drawAngledWalls(walls) {
-            ctx.strokeStyle = 'red';
-            ctx.lineWidth = 5;
-            for (let wall of walls) {
-                ctx.beginPath();
-                ctx.moveTo(wall[0], wall[1]);
-                ctx.lineTo(wall[0] + wall[2], wall[1] + wall[3]); // Draw line at an angle
-                ctx.stroke();
-            }
-        }
-
-        // Main game loop
         function gameLoop() {
-            if (isPaused) return; // Stop updating if paused
-
-            // Clear the canvas and set background color
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const walls = LEVELS[currentLevel];
-
-            // Move the ball
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-
-            // Check if the ball leaves the screen
-            if (ball.x < 0 || ball.x > canvas.width || ball.y < 0 || ball.y > canvas.height) {
-                console.log("You lost! Restarting level.");
-                resetLevel(); // Restart the current level
-            }
-
-            // Check for collision
-            if (checkCollision(ball, walls)) {
-                // Collision handling is done in checkCollision
-            }
-
-            // Check if all walls have been hit to progress to the next level
-            if (wallsHit === walls.length) {
-                console.log("All walls hit! Moving to next level.");
-                score += 50; // Add points for completing the level
-                currentLevel = (currentLevel + 1) % LEVELS.length; // Go to next level
-                wallsHit = 0; // Reset hit count
-                wallsHitStatus = Array(walls.length).fill(false); // Reset wall hit status
-                ball.x = canvas.width / 2; // Reset ball position
-                ball.y = canvas.height / 2; // Reset ball position
-                ball.vx = 0;
-                ball.vy = 0;
-            }
-
-            // Draw walls
-            drawAngledWalls(walls);
-
-            // Draw the ball in white
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw score
-            ctx.fillStyle = 'white';
-            ctx.font = '24px Arial';
-            ctx.fillText(`Score: ${score}`, 10, 30);
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            if (ball.x < BALL_RADIUS || ball.x > canvas.width - BALL_RADIUS ||
+                ball.y < BALL_RADIUS || ball.y > canvas.height - BALL_RADIUS) {
+                ball.vx = -ball.vx; 
+                ball.vy = -ball.vy; 
+            }
 
             requestAnimationFrame(gameLoop);
         }
 
-        function resetLevel() {
-            wallsHit = 0; // Reset hit count
-            wallsHitStatus = Array(LEVELS[currentLevel].length).fill(false); // Reset wall hit status
-            ball.x = canvas.width / 2; // Reset ball position
-            ball.y = canvas.height / 2; // Reset ball position
-            ball.vx = 0;
-            ball.vy = 0;
-        }
-
-        // Button event handlers
-        startButton.addEventListener('click', () => {
-            isPaused = false;
-            menu.style.display = 'none'; // Hide menu
-        });
-
-        pauseButton.addEventListener('click', () => {
-            isPaused = true;
-            menu.style.display = 'block'; // Show menu
-        });
-
-        restartButton.addEventListener('click', () => {
-            currentLevel = 0;
-            score = 0;
-            resetLevel(); // Reset current level
-            isPaused = true;
-            menu.style.display = 'block'; // Show menu
-        });
-
-        continueButton.addEventListener('click', () => {
-            isPaused = false;
-            menu.style.display = 'none'; // Hide menu
-        });
-
-        // Start the game loop
         gameLoop();
     </script>
 </body>
 </html>
+
