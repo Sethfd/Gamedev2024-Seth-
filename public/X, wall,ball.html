@@ -24,6 +24,9 @@
         const ctx = canvas.getContext('2d');
         const BALL_RADIUS = 15;
         const GRAVITY = 0.5; // Gravity constant
+        const MOVE_ACCELERATION = 0.2; // Acceleration when moving
+        const FRICTION = 0.95; // Friction to slow down the ball
+
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
         let dragging = false;
         let startX, startY;
@@ -36,21 +39,19 @@
         ];
 
         // Keyboard controls
-        const moveSpeed = 2; // Speed of ball movement
-
         document.addEventListener('keydown', (event) => {
             switch (event.key) {
-                case 'w': // Move up
-                    ball.y -= moveSpeed;
+                case 'w':
+                    ball.vy -= MOVE_ACCELERATION; // Move up
                     break;
-                case 'a': // Move left
-                    ball.x -= moveSpeed;
+                case 'a':
+                    ball.vx -= MOVE_ACCELERATION; // Move left
                     break;
-                case 's': // Move down
-                    ball.y += moveSpeed;
+                case 's':
+                    ball.vy += MOVE_ACCELERATION; // Move down
                     break;
-                case 'd': // Move right
-                    ball.x += moveSpeed;
+                case 'd':
+                    ball.vx += MOVE_ACCELERATION; // Move right
                     break;
             }
         });
@@ -162,6 +163,10 @@
 
             // Apply gravity to the ball
             ball.vy += GRAVITY;
+
+            // Apply friction to slow down the ball gradually
+            ball.vx *= FRICTION;
+            ball.vy *= FRICTION;
 
             // Move the ball
             ball.x += ball.vx;
