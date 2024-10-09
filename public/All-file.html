@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Basics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        code {
+            background: #ecf0f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        pre {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Introduction to JavaScript Concepts</h1>
+
+    <h2>1. Objects</h2>
+    <p>In JavaScript, an object is a collection of properties. Each property is defined as a key-value pair.</p>
+    <pre><code>
+const person = {
+    name: "Alice",
+    age: 30,
+    greet: function() {
+        console.log("Hello, " + this.name);
+    }
+};
+    </code></pre>
+
+    <h2>2. JSON (JavaScript Object Notation)</h2>
+    <p>JSON is a lightweight data interchange format. It's easy for humans to read and write, and easy for machines to parse and generate.</p>
+    <pre><code>
+const jsonString = '{"name": "Alice", "age": 30}';
+const jsonObject = JSON.parse(jsonString);
+    </code></pre>
+
+    <h2>3. Arrays</h2>
+    <p>An array is a list-like object used to store multiple values in a single variable.</p>
+    <pre><code>
+const fruits = ["Apple", "Banana", "Cherry"];
+console.log(fruits[1]); // Outputs: Banana
+    </code></pre>
+
+    <h2>4. CSS</h2>
+    <p>CSS (Cascading Style Sheets) is used to style HTML documents. You can set colors, fonts, layouts, and more.</p>
+    <pre><code>
+h1 {
+    color: blue;
+}
+    </code></pre>
+
+    <h2>5. Loops</h2>
+    <p>Loops are used to execute a block of code repeatedly. Here’s an example using a <code>for</code> loop.</p>
+    <pre><code>
+for (let i = 0; i < 5; i++) {
+    console.log(i);
+}
+    </code></pre>
+
+    <h2>6. Events</h2>
+    <p>Events are actions that occur in the browser, like clicks or keyboard input. You can use JavaScript to respond to these events.</p>
+    <pre><code>
+document.getElementById("myButton").addEventListener("click", function() {
+    alert("Button was clicked!");
+});
+    </code></pre>
+
+    <button id="myButton">Click me!</button>
+
+</body>
+</html>
