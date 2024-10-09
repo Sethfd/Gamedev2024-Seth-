@@ -28,6 +28,14 @@
         let dragging = false;
         let startX, startY, offsetX, offsetY;
 
+        // Define walls
+        const walls = [
+            { x: 100, y: 100, width: 600, height: 20 }, // Horizontal wall
+            { x: 200, y: 300, width: 20, height: 200 }, // Vertical wall
+            { x: 400, y: 200, width: 20, height: 200 }  // Another vertical wall
+        ];
+
+        // Mouse event handlers
         canvas.addEventListener('mousedown', (event) => {
             const rect = canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
@@ -56,6 +64,32 @@
             }
         });
 
+        // Check for collision with walls
+        function checkCollision(ball, walls) {
+            for (const wall of walls) {
+                if (ball.x + BALL_RADIUS > wall.x && ball.x - BALL_RADIUS < wall.x + wall.width &&
+                    ball.y + BALL_RADIUS > wall.y && ball.y - BALL_RADIUS < wall.y + wall.height) {
+                    // Simple response for vertical walls
+                    if (ball.vx > 0 && ball.x + BALL_RADIUS > wall.x) {
+                        ball.x = wall.x - BALL_RADIUS; // Move ball outside of the wall
+                        ball.vx *= -1; // Reverse horizontal velocity
+                    } else if (ball.vx < 0 && ball.x - BALL_RADIUS < wall.x + wall.width) {
+                        ball.x = wall.x + wall.width + BALL_RADIUS; // Move ball outside of the wall
+                        ball.vx *= -1; // Reverse horizontal velocity
+                    }
+
+                    // Simple response for horizontal walls
+                    if (ball.vy > 0 && ball.y + BALL_RADIUS > wall.y) {
+                        ball.y = wall.y - BALL_RADIUS; // Move ball outside of the wall
+                        ball.vy *= -0.8; // Reverse vertical velocity with some energy loss
+                    } else if (ball.vy < 0 && ball.y - BALL_RADIUS < wall.y + wall.height) {
+                        ball.y = wall.y + wall.height + BALL_RADIUS; // Move ball outside of the wall
+                        ball.vy *= -1; // Reverse vertical velocity
+                    }
+                }
+            }
+        }
+
         function gameLoop() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -71,6 +105,15 @@
             if (ball.y + BALL_RADIUS > canvas.height) {
                 ball.y = canvas.height - BALL_RADIUS; // Position it at the bottom
                 ball.vy *= -0.8; // Bounce back with some energy loss
+            }
+
+            // Check for collision with walls
+            checkCollision(ball, walls);
+
+            // Draw walls
+            ctx.fillStyle = 'red';
+            for (const wall of walls) {
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
             }
 
             // Draw the ball
