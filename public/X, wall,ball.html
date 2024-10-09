@@ -23,35 +23,40 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const BALL_RADIUS = 15;
-        const GRAVITY = 0.5; // Gravity constant
-        const MOVE_ACCELERATION = 0.2; // Acceleration when moving
-        const FRICTION = 0.95; // Friction to slow down the ball
+        const GRAVITY = 0.5;
+        const MOVE_ACCELERATION = 0.2;
+        const FRICTION = 0.95;
 
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
         let dragging = false;
-        let startX, startY;
 
-        // Define walls
+        // Define walls and game objects
         let walls = [
             { x: 100, y: 100, width: 600, height: 20 }, // Horizontal wall
             { x: 200, y: 300, width: 20, height: 200 }, // Vertical wall
             { x: 400, y: 200, width: 100, height: 100, angle: Math.PI / 4 } // Angled wall
         ];
 
+        // Goal platform
+        const goal = { x: 700, y: 50, width: 80, height: 20 };
+
+        // Jump pad
+        const jumpPad = { x: 50, y: 500, width: 100, height: 20, angle: Math.PI / 4 };
+
         // Keyboard controls
         document.addEventListener('keydown', (event) => {
             switch (event.key) {
                 case 'w':
-                    ball.vy -= MOVE_ACCELERATION; // Move up
+                    ball.vy -= MOVE_ACCELERATION;
                     break;
                 case 'a':
-                    ball.vx -= MOVE_ACCELERATION; // Move left
+                    ball.vx -= MOVE_ACCELERATION;
                     break;
                 case 's':
-                    ball.vy += MOVE_ACCELERATION; // Move down
+                    ball.vy += MOVE_ACCELERATION;
                     break;
                 case 'd':
-                    ball.vx += MOVE_ACCELERATION; // Move right
+                    ball.vx += MOVE_ACCELERATION;
                     break;
             }
         });
@@ -64,8 +69,6 @@
             const distance = Math.hypot(mouseX - ball.x, mouseY - ball.y);
             if (distance < BALL_RADIUS) {
                 dragging = true;
-                startX = mouseX;
-                startY = mouseY;
             }
         });
 
@@ -75,10 +78,9 @@
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = event.clientX - rect.left;
                 const mouseY = event.clientY - rect.top;
-                // Calculate velocity based on the drag distance
-                ball.vx = (ball.x - mouseX) * 0.5; // Adjust strength
-                ball.vy = (ball.y - mouseY) * 0.5; // Adjust strength
-                resetBallPosition(); // Reset the ball position after shooting
+                ball.vx = (ball.x - mouseX) * 0.5;
+                ball.vy = (ball.y - mouseY) * 0.5;
+                resetBallPosition();
             }
         });
 
@@ -87,51 +89,56 @@
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = event.clientX - rect.left;
                 const mouseY = event.clientY - rect.top;
-                // Update the ball's position to follow the mouse
                 ball.x = mouseX;
                 ball.y = mouseY;
             }
         });
 
-        // Check for collision with walls
         function checkCollision(ball, walls) {
             for (const wall of walls) {
                 if (wall.angle) {
-                    // Handle collision with angled walls
                     const wallEndX = wall.x + wall.width * Math.cos(wall.angle);
                     const wallEndY = wall.y + wall.height * Math.sin(wall.angle);
-
-                    // Check collision with the line segment of the angled wall
                     const wallToBallDist = Math.abs((wallEndY - wall.y) * ball.x - (wallEndX - wall.x) * ball.y + wallEndX * wall.y - wallEndY * wall.x) /
                                             Math.sqrt((wallEndY - wall.y) ** 2 + (wallEndX - wall.x) ** 2);
                     if (wallToBallDist < BALL_RADIUS) {
-                        // Handle bounce
-                        ball.vx *= -1; // Invert horizontal velocity
-                        ball.vy *= -1; // Invert vertical velocity
+                        ball.vx *= -1;
+                        ball.vy *= -1;
                     }
                 } else {
-                    // Check axis-aligned wall collision
                     if (ball.x + BALL_RADIUS > wall.x && ball.x - BALL_RADIUS < wall.x + wall.width &&
                         ball.y + BALL_RADIUS > wall.y && ball.y - BALL_RADIUS < wall.y + wall.height) {
-                        // Simple response for vertical walls
                         if (ball.vx > 0 && ball.x + BALL_RADIUS > wall.x) {
-                            ball.x = wall.x - BALL_RADIUS; // Move ball outside of the wall
-                            ball.vx *= -1; // Reverse horizontal velocity
+                            ball.x = wall.x - BALL_RADIUS;
+                            ball.vx *= -1;
                         } else if (ball.vx < 0 && ball.x - BALL_RADIUS < wall.x + wall.width) {
-                            ball.x = wall.x + wall.width + BALL_RADIUS; // Move ball outside of the wall
-                            ball.vx *= -1; // Reverse horizontal velocity
+                            ball.x = wall.x + wall.width + BALL_RADIUS;
+                            ball.vx *= -1;
                         }
-
-                        // Simple response for horizontal walls
                         if (ball.vy > 0 && ball.y + BALL_RADIUS > wall.y) {
-                            ball.y = wall.y - BALL_RADIUS; // Move ball outside of the wall
-                            ball.vy *= -0.8; // Reverse vertical velocity with some energy loss
+                            ball.y = wall.y - BALL_RADIUS;
+                            ball.vy *= -0.8;
                         } else if (ball.vy < 0 && ball.y - BALL_RADIUS < wall.y + wall.height) {
-                            ball.y = wall.y + wall.height + BALL_RADIUS; // Move ball outside of the wall
-                            ball.vy *= -1; // Reverse vertical velocity
+                            ball.y = wall.y + wall.height + BALL_RADIUS;
+                            ball.vy *= -1;
                         }
                     }
                 }
+            }
+        }
+
+        function checkGoal(ball, goal) {
+            if (ball.x + BALL_RADIUS > goal.x && ball.x - BALL_RADIUS < goal.x + goal.width &&
+                ball.y + BALL_RADIUS > goal.y && ball.y - BALL_RADIUS < goal.y + goal.height) {
+                alert("You reached the goal!");
+                resetBallPosition(); // Reset ball position after reaching the goal
+            }
+        }
+
+        function checkJumpPad(ball, jumpPad) {
+            if (ball.x + BALL_RADIUS > jumpPad.x && ball.x - BALL_RADIUS < jumpPad.x + jumpPad.width &&
+                ball.y + BALL_RADIUS > jumpPad.y && ball.y - BALL_RADIUS < jumpPad.y + jumpPad.height) {
+                ball.vy -= 10; // Propel the ball upwards when it hits the jump pad
             }
         }
 
@@ -146,7 +153,6 @@
             ctx.fillStyle = 'red';
             for (const wall of walls) {
                 if (wall.angle) {
-                    // Draw angled wall
                     ctx.beginPath();
                     ctx.moveTo(wall.x, wall.y);
                     ctx.lineTo(wall.x + wall.width * Math.cos(wall.angle), wall.y + wall.height * Math.sin(wall.angle));
@@ -157,34 +163,46 @@
             }
         }
 
+        function drawGoal() {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+        }
+
+        function drawJumpPad() {
+            ctx.fillStyle = 'blue';
+            ctx.beginPath();
+            ctx.moveTo(jumpPad.x, jumpPad.y + jumpPad.height);
+            ctx.lineTo(jumpPad.x + jumpPad.width, jumpPad.y + jumpPad.height);
+            ctx.lineTo(jumpPad.x + jumpPad.width / 2, jumpPad.y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
         function gameLoop() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Apply gravity to the ball
             ball.vy += GRAVITY;
-
-            // Apply friction to slow down the ball gradually
             ball.vx *= FRICTION;
             ball.vy *= FRICTION;
 
-            // Move the ball
             ball.x += ball.vx;
             ball.y += ball.vy;
 
             // Check for collision with the ground
             if (ball.y + BALL_RADIUS > canvas.height) {
-                ball.y = canvas.height - BALL_RADIUS; // Position it at the bottom
-                ball.vy *= -0.8; // Bounce back with some energy loss
+                ball.y = canvas.height - BALL_RADIUS;
+                ball.vy *= -0.8;
             }
 
-            // Check for collision with walls
             checkCollision(ball, walls);
+            checkGoal(ball, goal);
+            checkJumpPad(ball, jumpPad);
 
-            // Draw walls
             drawWalls();
+            drawGoal();
+            drawJumpPad();
 
-            // Draw the ball
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
