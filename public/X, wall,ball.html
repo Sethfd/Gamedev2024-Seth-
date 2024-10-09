@@ -26,7 +26,7 @@
         const GRAVITY = 0.5; // Gravity constant
         let ball = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
         let dragging = false;
-        let startX, startY, offsetX, offsetY;
+        let startX, startY;
 
         // Define walls
         const walls = [
@@ -34,6 +34,26 @@
             { x: 200, y: 300, width: 20, height: 200 }, // Vertical wall
             { x: 400, y: 200, width: 20, height: 200 }  // Another vertical wall
         ];
+
+        // Keyboard controls
+        const moveSpeed = 2; // Speed of ball movement
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'w': // Move up
+                    ball.y -= moveSpeed;
+                    break;
+                case 'a': // Move left
+                    ball.x -= moveSpeed;
+                    break;
+                case 's': // Move down
+                    ball.y += moveSpeed;
+                    break;
+                case 'd': // Move right
+                    ball.x += moveSpeed;
+                    break;
+            }
+        });
 
         // Mouse event handlers
         canvas.addEventListener('mousedown', (event) => {
@@ -45,22 +65,30 @@
                 dragging = true;
                 startX = mouseX;
                 startY = mouseY;
-                offsetX = mouseX - ball.x; // Calculate offset
-                offsetY = mouseY - ball.y; // Calculate offset
             }
         });
 
-        canvas.addEventListener('mouseup', () => {
+        canvas.addEventListener('mouseup', (event) => {
             if (dragging) {
                 dragging = false;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                // Calculate velocity based on the drag distance
+                ball.vx = (ball.x - mouseX) * 0.5; // Adjust strength
+                ball.vy = (ball.y - mouseY) * 0.5; // Adjust strength
+                resetBallPosition(); // Reset the ball position after shooting
             }
         });
 
         canvas.addEventListener('mousemove', (event) => {
             if (dragging) {
                 const rect = canvas.getBoundingClientRect();
-                ball.x = event.clientX - rect.left - offsetX;
-                ball.y = event.clientY - rect.top - offsetY;
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                // Update the ball's position to follow the mouse
+                ball.x = mouseX;
+                ball.y = mouseY;
             }
         });
 
@@ -88,6 +116,13 @@
                     }
                 }
             }
+        }
+
+        function resetBallPosition() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.vx = 0;
+            ball.vy = 0;
         }
 
         function gameLoop() {
