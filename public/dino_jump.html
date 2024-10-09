@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Jump Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+        }
+
+        .game-container {
+            position: relative;
+            width: 600px;
+            height: 150px;
+            overflow: hidden;
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+
+        .dino {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            width: 30px;
+            height: 30px;
+            background-color: green;
+            transition: bottom 0.5s;
+        }
+
+        .cactus {
+            position: absolute;
+            bottom: 0;
+            right: -50px;
+            width: 20px;
+            height: 40px;
+            background-color: brown;
+            animation: move 2s linear infinite;
+        }
+
+        @keyframes move {
+            0% {
+                right: -50px;
+            }
+            100% {
+                right: 650px;
+            }
+        }
+
+        .jump {
+            bottom: 70px; /* Jump height */
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="dino"></div>
+        <div class="cactus"></div>
+    </div>
+    <script>
+        const dino = document.querySelector('.dino');
+        const cactus = document.querySelector('.cactus');
+
+        let isJumping = false;
+
+        function jump() {
+            if (isJumping) return;
+            isJumping = true;
+            dino.classList.add('jump');
+
+            setTimeout(() => {
+                dino.classList.remove('jump');
+                isJumping = false;
+            }, 500);
+        }
+
+        document.addEventListener('keydown', jump);
+
+        const checkCollision = setInterval(() => {
+            const dinoRect = dino.getBoundingClientRect();
+            const cactusRect = cactus.getBoundingClientRect();
+
+            if (
+                dinoRect.x < cactusRect.x + cactusRect.width &&
+                dinoRect.x + dinoRect.width > cactusRect.x &&
+                dinoRect.y < cactusRect.y + cactusRect.height &&
+                dinoRect.y + dinoRect.height > cactusRect.y
+            ) {
+                alert('Game Over!');
+                clearInterval(checkCollision);
+            }
+        }, 10);
+    </script>
+</body>
+</html>
