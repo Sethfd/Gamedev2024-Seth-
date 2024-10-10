@@ -82,9 +82,95 @@
         css: [
             "CSS stands for Cascading Style Sheets and is used to style HTML documents.",
             "You can apply styles to elements using selectors, properties, and values.",
-            "CSS can be included in HTML via `<style>` tags or linked externally using `<link>`. ",
+            "CSS can be included in HTML via `<style>` tags or linked externally using `<link>`.",
             "Common properties include `color`, `font-size`, `margin`, and `padding`."
         ],
+        html: [
+            "HTML stands for HyperText Markup Language and is the standard language for creating web pages.",
+            "HTML elements are defined by tags, e.g., `<p>`, `<h1>`, `<div>`, and more.",
+            "You can structure content with headings, paragraphs, links, and lists.",
+            "HTML forms are created using the `<form>` tag to collect user input."
+        ],
+        python: [
+            "Python is a high-level programming language known for its readability.",
+            "It supports multiple programming paradigms, including procedural and object-oriented.",
+            "Common uses of Python include web development, data analysis, and machine learning.",
+            "You can create a list in Python using square brackets, e.g., `my_list = []`."
+        ],
+        sql: [
+            "SQL stands for Structured Query Language and is used to communicate with databases.",
+            "Common SQL commands include `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.",
+            "You can filter results using the `WHERE` clause.",
+            "SQL databases are structured in tables, with rows representing records and columns representing fields."
+        ],
+        algorithms: [
+            "An algorithm is a step-by-step procedure for solving a problem.",
+            "Common algorithms include sorting (like bubble sort) and searching (like binary search).",
+            "Algorithms can be analyzed for time and space complexity.",
+            "Understanding algorithms is crucial for optimizing code performance."
+        ],
+        apis: [
+            "An API (Application Programming Interface) allows different software applications to communicate.",
+            "APIs can be RESTful, using HTTP requests to perform CRUD operations.",
+            "Commonly used APIs include those for social media platforms and payment gateways.",
+            "You can interact with an API using tools like Postman or through code with fetch in JavaScript."
+        ],
+        machineLearning: [
+            "Machine learning is a subset of artificial intelligence that enables systems to learn from data.",
+            "Common algorithms include supervised learning (like regression) and unsupervised learning (like clustering).",
+            "Machine learning models can be trained using libraries like TensorFlow or Scikit-learn.",
+            "It's used in various applications, such as image recognition, natural language processing, and recommendation systems."
+        ],
+        more: {
+            json: [
+                "You can also validate JSON using various online tools.",
+                "JSON supports nested structures, allowing objects to contain other objects or arrays."
+            ],
+            events: [
+                "Event delegation is a useful technique for managing events on multiple child elements.",
+                "Events can also bubble up the DOM, allowing for parent elements to listen for events triggered by children."
+            ],
+            arrays: [
+                "You can use the `map()` method to create a new array with the results of calling a function on every element.",
+                "The `filter()` method creates a new array with all elements that pass the test implemented by the provided function."
+            ],
+            javascript: [
+                "JavaScript can run in various environments, including web browsers and server-side using Node.js.",
+                "It supports asynchronous programming with promises and async/await syntax."
+            ],
+            objects: [
+                "You can use the `Object.keys()` method to get an array of an object's keys.",
+                "JavaScript also supports prototype-based inheritance for objects."
+            ],
+            css: [
+                "CSS allows for responsive designs using media queries.",
+                "Flexbox and Grid are powerful layout systems in CSS."
+            ],
+            html: [
+                "HTML5 introduced new elements like `<header>`, `<footer>`, and `<article>` for better semantics.",
+                "You can embed multimedia elements using `<audio>` and `<video>` tags."
+            ],
+            python: [
+                "Python has a rich ecosystem of libraries for various tasks, including NumPy for numerical computing and Pandas for data analysis.",
+                "It's widely used in web development with frameworks like Django and Flask."
+            ],
+            sql: [
+                "SQL supports joins to combine data from multiple tables.",
+                "You can create views in SQL to simplify complex queries."
+            ],
+            algorithms: [
+                "Algorithms can be implemented in various programming languages, and their efficiency can vary significantly between them.",
+                "Understanding big O notation helps in analyzing algorithm performance."
+            ],
+            apis: [
+                "APIs can return data in different formats, such as JSON or XML.",
+                "Rate limiting is often implemented in APIs to control the number of requests a client can make."
+            ],
+            machineLearning: [
+                "Supervised learning requires labeled data, while unsupervised learning works with unlabeled data.",
+                "Deep learning is a subset of machine learning that uses neural networks."
+            ]
+        },
         motivational: [
             "Believe in yourself! You can achieve anything!",
             "Every day is a new beginning. Take a deep breath and start again.",
@@ -110,35 +196,71 @@
         ]
     };
 
+    let lastTopic = "";
+
     function respond(userInput) {
         userInput = userInput.toLowerCase();
+
+        if (userInput.includes("tell me more") && lastTopic) {
+            return getRandomResponse(responses.more[lastTopic]);
+        }
+
         if (userInput.includes("hi") || userInput.includes("hello")) {
+            lastTopic = "greet";
             return getRandomResponse(responses.greet);
         } else if (userInput.includes("bye")) {
+            lastTopic = "bye";
             return getRandomResponse(responses.bye);
         } else if (userInput.includes("thank")) {
+            lastTopic = "thanks";
             return getRandomResponse(responses.thanks);
         } else if (userInput.includes("how") || userInput.includes("what")) {
+            lastTopic = "questions";
             return getRandomResponse(responses.questions);
         } else if (userInput.includes("json")) {
+            lastTopic = "json";
             return getRandomResponse(responses.json);
-        } else if (userInput.includes("event") || userInput.includes("events")) {
+        } else if (userInput.includes("events")) {
+            lastTopic = "events";
             return getRandomResponse(responses.events);
-        } else if (userInput.includes("array") || userInput.includes("arrays")) {
+        } else if (userInput.includes("arrays")) {
+            lastTopic = "arrays";
             return getRandomResponse(responses.arrays);
         } else if (userInput.includes("javascript")) {
+            lastTopic = "javascript";
             return getRandomResponse(responses.javascript);
-        } else if (userInput.includes("object") || userInput.includes("objects")) {
+        } else if (userInput.includes("objects")) {
+            lastTopic = "objects";
             return getRandomResponse(responses.objects);
         } else if (userInput.includes("css")) {
+            lastTopic = "css";
             return getRandomResponse(responses.css);
-        } else if (userInput.includes("joke")) {
-            return getRandomResponse(responses.jokes);
+        } else if (userInput.includes("html")) {
+            lastTopic = "html";
+            return getRandomResponse(responses.html);
+        } else if (userInput.includes("python")) {
+            lastTopic = "python";
+            return getRandomResponse(responses.python);
+        } else if (userInput.includes("sql")) {
+            lastTopic = "sql";
+            return getRandomResponse(responses.sql);
+        } else if (userInput.includes("algorithm")) {
+            lastTopic = "algorithms";
+            return getRandomResponse(responses.algorithms);
+        } else if (userInput.includes("api")) {
+            lastTopic = "apis";
+            return getRandomResponse(responses.apis);
+        } else if (userInput.includes("machine learning")) {
+            lastTopic = "machineLearning";
+            return getRandomResponse(responses.machineLearning);
         } else if (userInput.includes("motivate") || userInput.includes("inspire")) {
+            lastTopic = "motivational";
             return getRandomResponse(responses.motivational);
         } else if (userInput.includes("random")) {
+            lastTopic = "random";
             return getRandomResponse(responses.random);
         } else {
+            lastTopic = "default";
             return getRandomResponse(responses.default);
         }
     }
@@ -151,11 +273,9 @@
         const userInput = document.getElementById("userInput").value;
         if (userInput) {
             addMessageToChat("You: " + userInput, "user");
-            addMessageToChat("Bot is typing...", "loading");
+            addMessageToChat("Bot: Bot is typing...", "loading");
             setTimeout(() => {
                 const botResponse = respond(userInput);
-                const loadingMessage = document.querySelector(".loading");
-                loadingMessage.remove(); // Remove loading message
                 addMessageToChat("Bot: " + botResponse, "bot");
             }, 1000); // Simulate delay
             document.getElementById("userInput").value = ""; // Clear input
@@ -181,4 +301,3 @@
 
 </body>
 </html>
-
