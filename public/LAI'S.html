@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-scale=1.0">
-    <title>AI Leveling System with XP Pop-Up</title>
+    <title>AI Leveling System with Day/Night Cycle</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -45,6 +45,7 @@
         <div>Thirst: <div class="bar"><div class="fill" id="thirstBar"></div></div></div>
         <div>Level: <span id="levelDisplay">1</span></div>
         <div>XP: <span id="xpDisplay">0</span></div>
+        <div>Wood: <span id="woodDisplay">0</span></div>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
@@ -52,10 +53,12 @@
         const ctx = canvas.getContext('2d');
 
         const AI_SIZE = 20;
-        const FOOD_SIZE = 10;
+        const FOOD_SIZE = 30;
         const WATER_SIZE = 10;
         const PREY_SIZE = 15;
         const ENEMY_SIZE = 15;
+        const TREE_SIZE = 30;
+        const HOUSE_SIZE = 40;
 
         class AI {
             constructor() {
@@ -65,14 +68,18 @@
                 this.targetFood = null;
                 this.targetWater = null;
                 this.targetPrey = null;
+                this.targetTree = null;
+                this.targetEnemy = null;
                 this.health = 100;
                 this.hunger = 100;
                 this.thirst = 100;
                 this.level = 1;
                 this.xp = 0;
+                this.wood = 0;
                 this.damage = 5;
                 this.xpToLevelUp = 10;
-                this.xpIcons = []; // Array to hold XP icons
+                this.xpIcons = [];
+                this.isSleeping = false;
             }
 
             moveTowards(target) {
@@ -82,6 +89,14 @@
                 if (distance > 0) {
                     this.x += (dx / distance) * this.speed;
                     this.y += (dy / distance) * this.speed;
+                }
+            }
+
+            attack(enemy) {
+                enemy.health -= this.damage;
+                this.gainXP(5);
+                if (enemy.health <= 0) {
+                    enemyItems.splice(enemyItems.indexOf(enemy), 1);
                 }
             }
 
@@ -97,15 +112,19 @@
                 const icon = document.createElement('div');
                 icon.className = 'xp-icon';
                 icon.style.left = `${this.x + AI_SIZE / 2 - 10}px`;
-                icon.style.top = `${this.y - 30}px`; // Position above AI
+                icon.style.top = `${this.y - 30}px`;
                 document.body.appendChild(icon);
                 this.xpIcons.push(icon);
 
-                // Remove the icon after 1 second
                 setTimeout(() => {
                     icon.remove();
                     this.xpIcons.splice(this.xpIcons.indexOf(icon), 1);
                 }, 1000);
+            }
+
+            collectWood() {
+                this.wood += 1;
+                document.getElementById('woodDisplay').innerText = this.wood;
             }
 
             levelUp() {
@@ -127,6 +146,17 @@
                 this.health = Math.max(this.health, 0);
             }
 
+            sleep() {
+                if (this.isSleeping) return;
+                this.isSleeping = true;
+                this.hunger -= 10; // Slightly reduce hunger after sleeping
+                this.thirst -= 10; // Slightly reduce thirst after sleeping
+                this.health = Math.min(this.health + 20, 100); // Restore health after sleeping
+                setTimeout(() => {
+                    this.isSleeping = false;
+                }, 5000); // Sleep for 5 seconds
+            }
+
             draw() {
                 ctx.fillStyle = 'green';
                 ctx.fillRect(this.x, this.y, AI_SIZE, AI_SIZE);
@@ -137,13 +167,15 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
+                this.isActive = true;
             }
 
             draw() {
-                ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, FOOD_SIZE, 0, Math.PI * 2);
-                ctx.fill();
+                if (this.isActive) {
+                    const img = new Image();
+                    img.src = 'https://via.placeholder.com/30/ffffff?text=🍎';
+                    ctx.drawImage(img, this.x - FOOD_SIZE / 2, this.y - FOOD_SIZE / 2, FOOD_SIZE, FOOD_SIZE);
+                }
             }
         }
 
@@ -179,6 +211,7 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
+                this.health = 30; // Enemy health
             }
 
             draw() {
@@ -189,11 +222,51 @@
             }
         }
 
+        class Tree {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            draw() {
+                ctx.fillStyle = 'saddlebrown';
+                ctx.fillRect(this.x, this.y, TREE_SIZE / 4, TREE_SIZE);
+                ctx.fillStyle = 'green';
+                ctx.beginPath();
+                ctx.arc(this.x + TREE_SIZE / 8, this.y, TREE_SIZE / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        class House {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            draw() {
+                ctx.fillStyle = 'burlywood';
+                ctx.fillRect(this.x, this.y, HOUSE_SIZE, HOUSE_SIZE);
+                ctx.fillStyle = 'saddlebrown';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + HOUSE_SIZE / 2, this.y - HOUSE_SIZE / 2);
+                ctx.lineTo(this.x + HOUSE_SIZE, this.y);
+                ctx.fill();
+            }
+        }
+
         const ai = new AI();
         const foodItems = [];
         const waterItems = [];
         const preyItems = [];
         const enemyItems = [];
+        const treeItems = [];
+        const houseItems = [];
+
+        let dayTime = true;
+        let cycleDuration = 5000;
+        let lastCycleTime = Date.now();
 
         canvas.addEventListener('click', (event) => {
             const rect = canvas.getBoundingClientRect();
@@ -221,9 +294,27 @@
                 const y = Math.random() * canvas.height;
                 preyItems.push(new Prey(x, y));
             }
+            if (event.key === 't') {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                treeItems.push(new Tree(x, y));
+            }
+            if (event.key === 'h') { // Build house on 'H' key press
+                const x = ai.x - HOUSE_SIZE / 2;
+                const y = ai.y - HOUSE_SIZE / 2;
+                houseItems.push(new House(x, y));
+                ai.sleep(); // AI sleeps when house is built
+                dayTime = true; // Skip night
+            }
         });
 
         function update() {
+            const currentTime = Date.now();
+            if (currentTime - lastCycleTime >= cycleDuration) {
+                dayTime = !dayTime;
+                lastCycleTime = currentTime;
+            }
+
             if (foodItems.length > 0) {
                 ai.targetFood = foodItems.reduce((prev, curr) => {
                     const prevDist = Math.hypot(prev.x - ai.x, prev.y - ai.y);
@@ -231,6 +322,12 @@
                     return currDist < prevDist ? curr : prev;
                 });
                 ai.moveTowards(ai.targetFood);
+
+                if (Math.hypot(ai.targetFood.x - ai.x, ai.targetFood.y - ai.y) < AI_SIZE) {
+                    ai.hunger = Math.min(ai.hunger + 20, 100);
+                    foodItems[foodItems.indexOf(ai.targetFood)].isActive = false;
+                    foodItems.splice(foodItems.indexOf(ai.targetFood), 1);
+                }
             }
 
             if (waterItems.length > 0) {
@@ -240,20 +337,24 @@
                     return currDist < prevDist ? curr : prev;
                 });
                 ai.moveTowards(ai.targetWater);
+
+                if (Math.hypot(ai.targetWater.x - ai.x, ai.targetWater.y - ai.y) < AI_SIZE) {
+                    ai.thirst = Math.min(ai.thirst + 30, 100);
+                    waterItems.splice(waterItems.indexOf(ai.targetWater), 1);
+                }
             }
 
-            if (preyItems.length > 0) {
-                ai.targetPrey = preyItems.reduce((prev, curr) => {
+            // Check for enemies and attack
+            if (enemyItems.length > 0) {
+                ai.targetEnemy = enemyItems.reduce((prev, curr) => {
                     const prevDist = Math.hypot(prev.x - ai.x, prev.y - ai.y);
                     const currDist = Math.hypot(curr.x - ai.x, curr.y - ai.y);
                     return currDist < prevDist ? curr : prev;
                 });
-                ai.moveTowards(ai.targetPrey);
+                ai.moveTowards(ai.targetEnemy);
 
-                // Check for collision with prey
-                if (Math.hypot(ai.targetPrey.x - ai.x, ai.targetPrey.y - ai.y) < AI_SIZE) {
-                    ai.gainXP(5); // Gain XP for eating prey
-                    preyItems.splice(preyItems.indexOf(ai.targetPrey), 1); // Remove eaten prey
+                if (Math.hypot(ai.targetEnemy.x - ai.x, ai.targetEnemy.y - ai.y) < AI_SIZE) {
+                    ai.attack(ai.targetEnemy);
                 }
             }
 
@@ -262,10 +363,17 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Set background color based on time of day
+            ctx.fillStyle = dayTime ? 'lightblue' : 'darkblue';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             foodItems.forEach(food => food.draw());
             waterItems.forEach(water => water.draw());
             preyItems.forEach(prey => prey.draw());
             enemyItems.forEach(enemy => enemy.draw());
+            treeItems.forEach(tree => tree.draw());
+            houseItems.forEach(house => house.draw());
             ai.draw();
 
             // Update health, hunger, thirst, and XP bars
