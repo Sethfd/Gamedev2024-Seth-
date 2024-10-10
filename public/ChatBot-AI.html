@@ -12,6 +12,7 @@
         .message { margin: 5px 0; }
         .user { color: blue; }
         .bot { color: green; }
+        .loading { font-style: italic; color: gray; }
     </style>
 </head>
 <body>
@@ -24,108 +25,86 @@
 <script>
     const responses = {
         greet: [
-            "Hello!", "Hi there!", "Greetings!", "Howdy!", 
-            "What's up?", "Hey!", "Salutations!", "Hello, friend!", 
-            "Hi! How can I assist you today?", "Good to see you!", 
+            "Hello!", "Hi there!", "Greetings!", "Howdy!",
+            "What's up?", "Hey!", "Salutations!", "Hello, friend!",
+            "Hi! How can I assist you today?", "Good to see you!",
             "Hey there! What can I do for you?", "Hi! How's your day going?"
         ],
         bye: [
-            "Goodbye!", "See you later!", "Take care!", "Farewell!", 
-            "Catch you later!", "Until next time!", "Bye! Have a great day!", 
-            "See you soon!", "Adios!", "So long!", 
+            "Goodbye!", "See you later!", "Take care!", "Farewell!",
+            "Catch you later!", "Until next time!", "Bye! Have a great day!",
+            "See you soon!", "Adios!", "So long!",
             "Take care! Until next time!", "I’ll be here when you need me!"
         ],
         thanks: [
-            "You're welcome!", "No problem!", "Glad to help!", 
-            "Anytime!", "My pleasure!", "Happy to assist!", 
+            "You're welcome!", "No problem!", "Glad to help!",
+            "Anytime!", "My pleasure!", "Happy to assist!",
             "No worries!", "You got it!", "Absolutely!", "Sure thing!",
             "It was my pleasure!", "Just doing my job!", "I'm happy to help!"
         ],
         questions: [
-            "How can I help you?", "What would you like to know?", 
-            "Is there something specific you need?", "Feel free to ask me anything!", 
-            "What’s on your mind?", "How can I assist you today?", 
+            "How can I help you?", "What would you like to know?",
+            "Is there something specific you need?", "Feel free to ask me anything!",
+            "What’s on your mind?", "How can I assist you today?",
             "Do you have a question for me?", "What can I do for you?",
             "Is there anything you'd like to discuss?", "I'm all ears for your questions!"
         ],
-        compliments: [
-            "You're amazing!", "You have great taste!", "You're so smart!", 
-            "I appreciate you!", "You're doing great!", 
-            "You're a wonderful person!", "You rock!", 
-            "Your positivity is infectious!", "You make a difference!", "You're awesome!",
-            "You light up the room!", "You're an inspiration!", "You have a great spirit!"
+        json: [
+            "JSON stands for JavaScript Object Notation and is used for data interchange.",
+            "A JSON object is a collection of key/value pairs enclosed in curly braces.",
+            "JSON is easy for humans to read and write, and easy for machines to parse and generate.",
+            "You can parse JSON using JavaScript's `JSON.parse()` method."
         ],
-        mood: [
-            "How are you feeling today?", "I hope you're having a good day!", 
-            "What's your mood like?", "Feeling good?", "Hope you're well!", 
-            "How's everything going?", "What's on your mind today?", 
-            "How are you doing today?", "Are you feeling positive?", "What’s your vibe today?"
+        events: [
+            "JavaScript events are actions that occur in the browser, such as clicks or key presses.",
+            "You can listen for events using `addEventListener()` method.",
+            "Common events include 'click', 'mouseover', 'keypress', and 'load'.",
+            "Events can be triggered manually using methods like `dispatchEvent()`."
         ],
-        jokes: [
-            "Why did the scarecrow win an award? Because he was outstanding in his field!", 
-            "What do you call fake spaghetti? An impasta!", 
-            "Why don't skeletons fight each other? They don't have the guts!", 
-            "What did one ocean say to the other ocean? Nothing, they just waved!",
-            "Why did the bicycle fall over? Because it was two-tired!", 
-            "What do you call a bear with no teeth? A gummy bear!", 
-            "Why did the math book look sad? Because it had too many problems!"
+        arrays: [
+            "An array is a list-like object in JavaScript that can hold multiple values.",
+            "You can create an array using square brackets, e.g., `let arr = []`.",
+            "Common array methods include `push()`, `pop()`, `map()`, and `filter()`.",
+            "Arrays are zero-indexed, meaning the first element is at index 0."
         ],
-        hobbies: [
-            "I love hearing about hobbies! What do you enjoy doing?", 
-            "Hobbies can be so much fun! What are yours?", 
-            "Do you have any hobbies you're passionate about?", 
-            "I'm always curious about people's hobbies! What about you?",
-            "What do you like to do in your free time?", 
-            "Do you have any favorite pastimes?", 
-            "What hobbies bring you joy?"
+        javascript: [
+            "JavaScript is a versatile programming language primarily used for web development.",
+            "You can use JavaScript to manipulate HTML and CSS, create dynamic content, and handle events.",
+            "JavaScript supports both object-oriented and functional programming paradigms.",
+            "Common JavaScript features include functions, objects, and asynchronous programming."
         ],
-        weather: [
-            "How's the weather where you are?", 
-            "It's always nice to talk about the weather! How's it today?", 
-            "Do you prefer sunny or rainy days?", 
-            "What's your favorite season?",
-            "Is it hot or cold where you are?", 
-            "Are you enjoying the weather today?", 
-            "What kind of weather do you like best?"
+        objects: [
+            "In JavaScript, an object is a collection of properties, each with a key and a value.",
+            "You can create an object using curly braces, e.g., `let obj = { key: value }`.",
+            "Objects can also contain methods, which are functions stored as object properties.",
+            "You can access object properties using dot notation or bracket notation."
         ],
-        help: [
-            "I'm here to help! What do you need assistance with?", 
-            "How can I assist you further?", 
-            "Let me know what you need help with!", 
-            "I’m here to provide support. What can I do for you?",
-            "If you need assistance, just ask!", 
-            "I'm here for you! What do you need help with?", 
-            "Feel free to reach out for any help you need!"
-        ],
-        facts: [
-            "Did you know honey never spoils? Archaeologists have found pots of honey in ancient tombs that are over 3000 years old!", 
-            "Bananas are berries, but strawberries aren't!", 
-            "A group of flamingos is called a 'flamboyance.'", 
-            "Octopuses have three hearts!",
-            "The Eiffel Tower can be 15 cm taller during the summer due to thermal expansion!", 
-            "A day on Venus is longer than a year on Venus!", 
-            "Wombat poop is cube-shaped!"
+        css: [
+            "CSS stands for Cascading Style Sheets and is used to style HTML documents.",
+            "You can apply styles to elements using selectors, properties, and values.",
+            "CSS can be included in HTML via `<style>` tags or linked externally using `<link>`. ",
+            "Common properties include `color`, `font-size`, `margin`, and `padding`."
         ],
         motivational: [
-            "Believe in yourself! You can achieve anything!", 
-            "Every day is a new beginning. Take a deep breath and start again.", 
-            "You are stronger than you think!", 
+            "Believe in yourself! You can achieve anything!",
+            "Every day is a new beginning. Take a deep breath and start again.",
+            "You are stronger than you think!",
             "Keep pushing forward, you got this!",
             "Success is not the key to happiness. Happiness is the key to success!",
             "Dream big and dare to fail!",
             "You are capable of amazing things!"
         ],
         random: [
-            "Here's a fun fact: A shrimp's heart is located in its head!", 
+            "Here's a fun fact: A shrimp's heart is located in its head!",
             "Did you know? The longest time between two twins being born is 87 days!",
             "Here's a quirky thought: A snail can sleep for three years!",
             "Did you know? The unicorn is Scotland's national animal!",
             "Here's something to ponder: You can't hum while holding your nose!"
         ],
         default: [
-            "I'm not sure how to respond to that.", "Could you rephrase that?", 
-            "That's interesting! Tell me more.", "I'm here to listen.", 
-            "I don't quite understand. Can you elaborate?", "What do you mean by that?", 
+            "I'm not sure how to respond to that.", "Could you rephrase that?",
+            "That's interesting! Tell me more.", "I'm here to listen.",
+            "I don't quite understand. Can you elaborate?", "What do you mean by that?",
             "Sorry, I'm not sure about that.", "Can you ask something else?",
             "That’s a new one for me!", "I’m still learning, but I’m here to help!"
         ]
@@ -141,24 +120,24 @@
             return getRandomResponse(responses.thanks);
         } else if (userInput.includes("how") || userInput.includes("what")) {
             return getRandomResponse(responses.questions);
+        } else if (userInput.includes("json")) {
+            return getRandomResponse(responses.json);
+        } else if (userInput.includes("event") || userInput.includes("events")) {
+            return getRandomResponse(responses.events);
+        } else if (userInput.includes("array") || userInput.includes("arrays")) {
+            return getRandomResponse(responses.arrays);
+        } else if (userInput.includes("javascript")) {
+            return getRandomResponse(responses.javascript);
+        } else if (userInput.includes("object") || userInput.includes("objects")) {
+            return getRandomResponse(responses.objects);
+        } else if (userInput.includes("css")) {
+            return getRandomResponse(responses.css);
         } else if (userInput.includes("joke")) {
             return getRandomResponse(responses.jokes);
-        } else if (userInput.includes("hobby")) {
-            return getRandomResponse(responses.hobbies);
-        } else if (userInput.includes("weather")) {
-            return getRandomResponse(responses.weather);
-        } else if (userInput.includes("help")) {
-            return getRandomResponse(responses.help);
-        } else if (userInput.includes("fact")) {
-            return getRandomResponse(responses.facts);
         } else if (userInput.includes("motivate") || userInput.includes("inspire")) {
             return getRandomResponse(responses.motivational);
         } else if (userInput.includes("random")) {
             return getRandomResponse(responses.random);
-        } else if (userInput.includes("you") || userInput.includes("great")) {
-            return getRandomResponse(responses.compliments);
-        } else if (userInput.includes("feeling") || userInput.includes("mood")) {
-            return getRandomResponse(responses.mood);
         } else {
             return getRandomResponse(responses.default);
         }
@@ -172,8 +151,13 @@
         const userInput = document.getElementById("userInput").value;
         if (userInput) {
             addMessageToChat("You: " + userInput, "user");
-            const botResponse = respond(userInput);
-            addMessageToChat("Bot: " + botResponse, "bot");
+            addMessageToChat("Bot is typing...", "loading");
+            setTimeout(() => {
+                const botResponse = respond(userInput);
+                const loadingMessage = document.querySelector(".loading");
+                loadingMessage.remove(); // Remove loading message
+                addMessageToChat("Bot: " + botResponse, "bot");
+            }, 1000); // Simulate delay
             document.getElementById("userInput").value = ""; // Clear input
         }
     }
@@ -197,3 +181,4 @@
 
 </body>
 </html>
+
