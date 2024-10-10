@@ -3,51 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Title</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Bouncing Balls</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            background-color: #f0f0f0;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Event Title</h1>
-        <p>Date: October 20, 2024</p>
-        <p>Location: Example Venue, City, Country</p>
-    </header>
+    <canvas id="canvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
 
-    <main>
-        <section id="description">
-            <h2>About the Event</h2>
-            <p>This is a brief description of the event. You can include details about what attendees can expect, speakers, activities, etc.</p>
-        </section>
+        class Ball {
+            constructor(x, y, radius, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.vx = Math.random() * 4 + 1; // Random horizontal speed
+                this.vy = Math.random() * 4 + 1; // Random vertical speed
+            }
 
-        <section id="schedule">
-            <h2>Schedule</h2>
-            <ul>
-                <li>10:00 AM - Registration</li>
-                <li>11:00 AM - Opening Remarks</li>
-                <li>12:00 PM - Keynote Speaker</li>
-                <li>1:00 PM - Lunch Break</li>
-                <li>2:00 PM - Workshops</li>
-                <li>5:00 PM - Closing Remarks</li>
-            </ul>
-        </section>
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.closePath();
+            }
 
-        <section id="registration">
-            <h2>Register Now</h2>
-            <form action="#" method="post">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-                
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+            update() {
+                // Move the ball
+                this.x += this.vx;
+                this.y += this.vy;
 
-                <button type="submit">Register</button>
-            </form>
-        </section>
-    </main>
+                // Bounce off walls
+                if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                    this.vx = -this.vx;
+                }
+                if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                    this.vy = -this.vy;
+                }
+            }
+        }
 
-    <footer>
-        <p>&copy; 2024 Event Organizer. All rights reserved.</p>
-        <p>Contact: <a href="mailto:info@example.com">info@example.com</a></p>
-    </footer>
+        const balls = [];
+
+        // Event to spawn a new ball
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const radius = Math.random() * 20 + 10; // Random radius between 10 and 30
+            const color = `hsl(${Math.random() * 360}, 100%, 50%)`; // Random color
+            balls.push(new Ball(x, y, radius, color));
+        });
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            balls.forEach(ball => {
+                ball.update();
+                ball.draw();
+            });
+            requestAnimationFrame(animate); // Continue the animation
+        }
+
+        // Start the animation
+        animate();
+    </script>
 </body>
 </html>
