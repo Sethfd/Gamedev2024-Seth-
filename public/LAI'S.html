@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-scale=1.0">
-    <title>AI Leveling System with Day/Night Cycle</title>
+    <title>AI Leveling System with Buttons</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -36,6 +36,12 @@
             0% { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-30px); opacity: 0; }
         }
+        #controls {
+            margin: 10px 0;
+        }
+        button {
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +52,11 @@
         <div>Level: <span id="levelDisplay">1</span></div>
         <div>XP: <span id="xpDisplay">0</span></div>
         <div>Wood: <span id="woodDisplay">0</span></div>
+    </div>
+    <div id="controls">
+        <button id="increaseDamage">Increase Damage</button>
+        <button id="increaseHealth">Increase Health</button>
+        <button id="spawnAI">Spawn Another AI</button>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
@@ -65,11 +76,6 @@
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.speed = 2;
-                this.targetFood = null;
-                this.targetWater = null;
-                this.targetPrey = null;
-                this.targetTree = null;
-                this.targetEnemy = null;
                 this.health = 100;
                 this.hunger = 100;
                 this.thirst = 100;
@@ -77,8 +83,6 @@
                 this.xp = 0;
                 this.wood = 0;
                 this.damage = 5;
-                this.xpToLevelUp = 10;
-                this.xpIcons = [];
                 this.isSleeping = false;
             }
 
@@ -95,45 +99,32 @@
             attack(enemy) {
                 enemy.health -= this.damage;
                 this.gainXP(5);
-                if (enemy.health <= 0) {
-                    enemyItems.splice(enemyItems.indexOf(enemy), 1);
-                }
             }
 
             gainXP(amount) {
                 this.xp += amount;
-                this.showXPIcon();
-                if (this.xp >= this.xpToLevelUp) {
-                    this.levelUp();
-                }
+                if (this.xp >= 10) this.levelUp();
             }
 
-            showXPIcon() {
-                const icon = document.createElement('div');
-                icon.className = 'xp-icon';
-                icon.style.left = `${this.x + AI_SIZE / 2 - 10}px`;
-                icon.style.top = `${this.y - 30}px`;
-                document.body.appendChild(icon);
-                this.xpIcons.push(icon);
+            levelUp() {
+                this.level++;
+                this.health = Math.min(this.health + 20, 100);
+                this.damage += 2;
+                this.xp = 0;
+                document.getElementById('levelDisplay').innerText = this.level;
+            }
 
-                setTimeout(() => {
-                    icon.remove();
-                    this.xpIcons.splice(this.xpIcons.indexOf(icon), 1);
-                }, 1000);
+            increaseDamage() {
+                this.damage += 1;
+            }
+
+            increaseHealth() {
+                this.health = Math.min(this.health + 10, 100);
             }
 
             collectWood() {
                 this.wood += 1;
                 document.getElementById('woodDisplay').innerText = this.wood;
-            }
-
-            levelUp() {
-                this.level++;
-                this.health += 20;
-                this.damage += 2;
-                this.xp = 0;
-                this.xpToLevelUp += 10;
-                document.getElementById('levelDisplay').innerText = this.level;
             }
 
             updateStats() {
@@ -146,241 +137,38 @@
                 this.health = Math.max(this.health, 0);
             }
 
-            sleep() {
-                if (this.isSleeping) return;
-                this.isSleeping = true;
-                this.hunger -= 10; // Slightly reduce hunger after sleeping
-                this.thirst -= 10; // Slightly reduce thirst after sleeping
-                this.health = Math.min(this.health + 20, 100); // Restore health after sleeping
-                setTimeout(() => {
-                    this.isSleeping = false;
-                }, 5000); // Sleep for 5 seconds
-            }
-
             draw() {
                 ctx.fillStyle = 'green';
                 ctx.fillRect(this.x, this.y, AI_SIZE, AI_SIZE);
             }
         }
 
-        class Food {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.isActive = true;
-            }
-
-            draw() {
-                if (this.isActive) {
-                    const img = new Image();
-                    img.src = 'https://via.placeholder.com/30/ffffff?text=🍎';
-                    ctx.drawImage(img, this.x - FOOD_SIZE / 2, this.y - FOOD_SIZE / 2, FOOD_SIZE, FOOD_SIZE);
-                }
-            }
-        }
-
-        class Water {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-
-            draw() {
-                ctx.fillStyle = 'blue';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, WATER_SIZE, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        class Prey {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-
-            draw() {
-                ctx.fillStyle = 'yellow';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, PREY_SIZE, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        class Enemy {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.health = 30; // Enemy health
-            }
-
-            draw() {
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, ENEMY_SIZE, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        class Tree {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-
-            draw() {
-                ctx.fillStyle = 'saddlebrown';
-                ctx.fillRect(this.x, this.y, TREE_SIZE / 4, TREE_SIZE);
-                ctx.fillStyle = 'green';
-                ctx.beginPath();
-                ctx.arc(this.x + TREE_SIZE / 8, this.y, TREE_SIZE / 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        class House {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-
-            draw() {
-                ctx.fillStyle = 'burlywood';
-                ctx.fillRect(this.x, this.y, HOUSE_SIZE, HOUSE_SIZE);
-                ctx.fillStyle = 'saddlebrown';
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(this.x + HOUSE_SIZE / 2, this.y - HOUSE_SIZE / 2);
-                ctx.lineTo(this.x + HOUSE_SIZE, this.y);
-                ctx.fill();
-            }
-        }
-
         const ai = new AI();
+        const enemyItems = [];
         const foodItems = [];
         const waterItems = [];
-        const preyItems = [];
-        const enemyItems = [];
-        const treeItems = [];
-        const houseItems = [];
 
-        let dayTime = true;
-        let cycleDuration = 5000;
-        let lastCycleTime = Date.now();
-
-        canvas.addEventListener('click', (event) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            foodItems.push(new Food(x, y));
+        document.getElementById('increaseDamage').addEventListener('click', () => {
+            ai.increaseDamage();
         });
 
-        canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            waterItems.push(new Water(x, y));
+        document.getElementById('increaseHealth').addEventListener('click', () => {
+            ai.increaseHealth();
         });
 
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'e') {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                enemyItems.push(new Enemy(x, y));
-            }
-            if (event.key === 'p') {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                preyItems.push(new Prey(x, y));
-            }
-            if (event.key === 't') {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                treeItems.push(new Tree(x, y));
-            }
-            if (event.key === 'h') { // Build house on 'H' key press
-                const x = ai.x - HOUSE_SIZE / 2;
-                const y = ai.y - HOUSE_SIZE / 2;
-                houseItems.push(new House(x, y));
-                ai.sleep(); // AI sleeps when house is built
-                dayTime = true; // Skip night
-            }
+        document.getElementById('spawnAI').addEventListener('click', () => {
+            const newAI = new AI();
+            ai.x += 20; // Adjusting spawn position
+            ai.y += 20; // Adjusting spawn position
         });
 
         function update() {
-            const currentTime = Date.now();
-            if (currentTime - lastCycleTime >= cycleDuration) {
-                dayTime = !dayTime;
-                lastCycleTime = currentTime;
-            }
-
-            if (foodItems.length > 0) {
-                ai.targetFood = foodItems.reduce((prev, curr) => {
-                    const prevDist = Math.hypot(prev.x - ai.x, prev.y - ai.y);
-                    const currDist = Math.hypot(curr.x - ai.x, curr.y - ai.y);
-                    return currDist < prevDist ? curr : prev;
-                });
-                ai.moveTowards(ai.targetFood);
-
-                if (Math.hypot(ai.targetFood.x - ai.x, ai.targetFood.y - ai.y) < AI_SIZE) {
-                    ai.hunger = Math.min(ai.hunger + 20, 100);
-                    foodItems[foodItems.indexOf(ai.targetFood)].isActive = false;
-                    foodItems.splice(foodItems.indexOf(ai.targetFood), 1);
-                }
-            }
-
-            if (waterItems.length > 0) {
-                ai.targetWater = waterItems.reduce((prev, curr) => {
-                    const prevDist = Math.hypot(prev.x - ai.x, prev.y - ai.y);
-                    const currDist = Math.hypot(curr.x - ai.x, curr.y - ai.y);
-                    return currDist < prevDist ? curr : prev;
-                });
-                ai.moveTowards(ai.targetWater);
-
-                if (Math.hypot(ai.targetWater.x - ai.x, ai.targetWater.y - ai.y) < AI_SIZE) {
-                    ai.thirst = Math.min(ai.thirst + 30, 100);
-                    waterItems.splice(waterItems.indexOf(ai.targetWater), 1);
-                }
-            }
-
-            // Check for enemies and attack
-            if (enemyItems.length > 0) {
-                ai.targetEnemy = enemyItems.reduce((prev, curr) => {
-                    const prevDist = Math.hypot(prev.x - ai.x, prev.y - ai.y);
-                    const currDist = Math.hypot(curr.x - ai.x, curr.y - ai.y);
-                    return currDist < prevDist ? curr : prev;
-                });
-                ai.moveTowards(ai.targetEnemy);
-
-                if (Math.hypot(ai.targetEnemy.x - ai.x, ai.targetEnemy.y - ai.y) < AI_SIZE) {
-                    ai.attack(ai.targetEnemy);
-                }
-            }
-
             ai.updateStats();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Set background color based on time of day
-            ctx.fillStyle = dayTime ? 'lightblue' : 'darkblue';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            foodItems.forEach(food => food.draw());
-            waterItems.forEach(water => water.draw());
-            preyItems.forEach(prey => prey.draw());
-            enemyItems.forEach(enemy => enemy.draw());
-            treeItems.forEach(tree => tree.draw());
-            houseItems.forEach(house => house.draw());
             ai.draw();
-
-            // Update health, hunger, thirst, and XP bars
-            document.getElementById('healthBar').style.width = ai.health + '%';
-            document.getElementById('hungerBar').style.width = ai.hunger + '%';
-            document.getElementById('thirstBar').style.width = ai.thirst + '%';
-            document.getElementById('xpDisplay').innerText = ai.xp;
         }
 
         function loop() {
