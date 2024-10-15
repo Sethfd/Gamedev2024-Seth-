@@ -30,71 +30,129 @@
             width: 30px;
             height: 30px;
             background-color: green;
-            transition: bottom 0.5s;
         }
 
         .cactus {
             position: absolute;
             bottom: 0;
-            right: -50px;
             width: 20px;
             height: 40px;
             background-color: brown;
-            animation: move 2s linear infinite;
         }
 
-        @keyframes move {
-            0% {
-                right: -50px;
-            }
-            100% {
-                right: 650px;
-            }
+        .score, .clock {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
         }
 
-        .jump {
-            bottom: 70px; /* Jump height */
+        .clock {
+            left: 100px; /* Positioning the clock next to the score */
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="dino"></div>
-        <div class="cactus"></div>
+        <div class="score">Score: 0</div>
+        <div class="clock">Time: 0s</div>
     </div>
     <script>
         const dino = document.querySelector('.dino');
-        const cactus = document.querySelector('.cactus');
-
+        const scoreDisplay = document.querySelector('.score');
+        const clockDisplay = document.querySelector('.clock');
+        let score = 0;
         let isJumping = false;
+        let gravity = 0.5; // Gravity effect
+        let jumpHeight = 10; // Initial jump height
+        let velocity = 0; // Initial velocity
+        let dinoPosition = 0; // Vertical position
+        let gameSpeed = 50; // Initial game speed
+        let cactusSpeedIncreaseInterval = 10000; // Speed increase interval in milliseconds
+        let speedFactor = 0.5; // Speed increase factor
+        let cactusInterval; // Variable to hold the cactus interval
+        let elapsedTime = 0; // Elapsed time in seconds
+        let timerInterval; // Variable to hold the timer interval
 
         function jump() {
             if (isJumping) return;
             isJumping = true;
-            dino.classList.add('jump');
+            velocity = -jumpHeight; // Set initial velocity for jump
 
-            setTimeout(() => {
-                dino.classList.remove('jump');
-                isJumping = false;
-            }, 500);
+            const jumpInterval = setInterval(() => {
+                dinoPosition += velocity;
+                velocity += gravity; // Apply gravity
+                
+                if (dinoPosition >= 0) {
+                    dinoPosition = 0; // Reset position
+                    clearInterval(jumpInterval);
+                    isJumping = false; // Allow jumping again
+                }
+
+                dino.style.bottom = `${dinoPosition}px`; // Update dino position
+            }, 20);
         }
 
         document.addEventListener('keydown', jump);
 
-        const checkCollision = setInterval(() => {
-            const dinoRect = dino.getBoundingClientRect();
-            const cactusRect = cactus.getBoundingClientRect();
+        function createCactus() {
+            for (let i = 0; i < 2; i++) { // Create two cacti
+                const cactus = document.createElement('div');
+                cactus.classList.add('cactus');
+                cactus.style.right = '-50px'; // Start off-screen
+                cactus.style.bottom = `${Math.random() * 20}px`; // Randomize height slightly
+                document.querySelector('.game-container').appendChild(cactus);
 
-            if (
-                dinoRect.x < cactusRect.x + cactusRect.width &&
-                dinoRect.x + dinoRect.width > cactusRect.x &&
-                dinoRect.y < cactusRect.y + cactusRect.height &&
-                dinoRect.y + dinoRect.height > cactusRect.y
-            ) {
-                alert('Game Over!');
-                clearInterval(checkCollision);
+                let cactusInterval = setInterval(() => {
+                    let cactusRect = cactus.getBoundingClientRect();
+                    cactus.style.right = `${parseInt(cactus.style.right) + 5}px`; // Move cactus
+
+                    if (cactusRect.x > window.innerWidth) {
+                        clearInterval(cactusInterval);
+                        cactus.remove(); // Remove cactus when it goes off-screen
+                        score++; // Increment score
+                        scoreDisplay.textContent = `Score: ${score}`;
+                    }
+
+                    // Collision detection
+                    const dinoRect = dino.getBoundingClientRect();
+                    if (
+                        dinoRect.x < cactusRect.x + cactusRect.width &&
+                        dinoRect.x + dinoRect.width > cactusRect.x &&
+                        dinoRect.y < cactusRect.y + cactusRect.height &&
+                        dinoRect.y + dinoRect.height > cactusRect.y
+                    ) {
+                        alert('Game Over! Your score: ' + score);
+                        clearInterval(cactusInterval);
+                        document.querySelectorAll('.cactus').forEach(c => c.remove());
+                        clearInterval(timerInterval); // Stop the timer
+                        score = 0; // Reset score
+                        elapsedTime = 0; // Reset time
+                        scoreDisplay.textContent = 'Score: 0';
+                        clockDisplay.textContent = 'Time: 0s';
+                    }
+                }, 20);
             }
-        }, 10);
+
+            // Spawn new cacti
+            cactusInterval = setTimeout(createCactus, Math.random() * 2000 + 1000); // 1-3 seconds
+        }
+
+        function increaseGameSpeed() {
+            if (gameSpeed > 1) {
+                gameSpeed -= speedFactor; // Decrease game speed
+            }
+        }
+
+        function updateTimer() {
+            elapsedTime++; // Increment elapsed time
+            clockDisplay.textContent = `Time: ${elapsedTime}s`; // Update clock display
+        }
+
+        setInterval(increaseGameSpeed, cactusSpeedIncreaseInterval); // Increase speed every 10 seconds
+        timerInterval = setInterval(updateTimer, 1000); // Update timer every second
+        createCactus(); // Start creating cacti
     </script>
 </body>
 </html>
