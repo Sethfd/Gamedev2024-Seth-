@@ -3,149 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Maze with Custom Icons</title>
+    <title>Playable Map 30x30</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
         }
-        .maze {
+        .map {
             display: grid;
             grid-template-columns: repeat(30, 20px);
+            grid-template-rows: repeat(30, 20px);
             gap: 1px;
-            background-color: rgba(255, 255, 255, 0.8);
         }
         .cell {
             width: 20px;
             height: 20px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            position: relative;
+            justify-content: center;
+            font-weight: bold;
         }
         .wall {
-            background-color: #000;
+            background-color: gray;
         }
         .path {
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(1).png?raw=true');
-            background-size: cover;
-            background-position: center;
+            background-color: lightgreen;
         }
         .player {
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(5).png?raw=true'); /* New custom player icon */
-            background-size: cover;
-            width: 20px;
-            height: 20px;
-        }
-        .key {
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(2).png?raw=true'); /* Key icon URL */
-            background-size: cover;
-            width: 20px;
-            height: 20px;
+            background-color: blue;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div class="maze" id="maze"></div>
 
-    <script>
-        const mazeData = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1],
-            [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-            // Add more rows to create a playable maze
-        ];
+<div class="map" id="map"></div>
+<input type="text" id="command" placeholder="Enter move (up/down/left/right)">
+<button onclick="movePlayer()">Move</button>
 
-        const mazeElement = document.getElementById('maze');
-        let playerPosition = { x: 1, y: 1 }; // Starting position of the player
-        let keysCollected = 0;
-        const totalKeys = 10;
+<script>
+    const gameMap = Array.from({ length: 30 }, () => Array(30).fill(0));
 
-        // Function to place keys randomly in the maze
-        function placeKeys() {
-            let placedKeys = 0;
-            while (placedKeys < totalKeys) {
-                const x = Math.floor(Math.random() * 28) + 1; // Random x between 1 and 28
-                const y = Math.floor(Math.random() * 14) + 1; // Random y between 1 and 14
+    // Create walls using '!'
+    for (let i = 0; i < 30; i++) {
+        gameMap[i][0] = '!'; // Left border
+        gameMap[i][29] = '!'; // Right border
+        gameMap[0][i] = '!'; // Top border
+        gameMap[29][i] = '!'; // Bottom border
+    }
 
-                if (mazeData[y][x] === 0) { // Place key only on path
-                    mazeData[y][x] = 2; // Use '2' to represent a key
-                    placedKeys++;
-                }
+    // Adding some random walls in the middle
+    for (let i = 1; i < 29; i++) {
+        for (let j = 1; j < 29; j++) {
+            if (Math.random() < 0.2) { // 20% chance to place a wall
+                gameMap[i][j] = '!';
             }
         }
+    }
 
-        // Render the maze
-        function renderMaze() {
-            mazeElement.innerHTML = ''; // Clear the maze element
-            mazeData.forEach((row, rowIndex) => {
-                row.forEach((cell, colIndex) => {
-                    const cellDiv = document.createElement('div');
-                    cellDiv.className = 'cell ' + (cell === 1 ? 'wall' : 'path');
+    let playerPos = { x: 1, y: 1 };
 
-                    // Add player
-                    if (rowIndex === playerPosition.y && colIndex === playerPosition.x) {
-                        cellDiv.classList.add('player');
-                    }
+    function renderMap() {
+        const mapDiv = document.getElementById("map");
+        mapDiv.innerHTML = ""; // Clear previous map
 
-                    // Add keys
-                    if (cell === 2) {
-                        cellDiv.classList.add('key');
-                    }
+        gameMap.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                const cellDiv = document.createElement("div");
+                cellDiv.classList.add("cell");
 
-                    mazeElement.appendChild(cellDiv);
-                });
+                if (x === playerPos.x && y === playerPos.y) {
+                    cellDiv.classList.add("player");
+                    cellDiv.textContent = "P"; // Player representation
+                } else if (cell === '!') {
+                    cellDiv.classList.add("wall");
+                    cellDiv.textContent = "!"; // Wall
+                } else {
+                    cellDiv.classList.add("path");
+                    cellDiv.textContent = "0"; // Path
+                }
+
+                mapDiv.appendChild(cellDiv);
             });
-
-            // Show collected keys
-            document.title = `Keys Collected: ${keysCollected}/${totalKeys}`;
-        }
-
-        // Move player
-        function movePlayer(dx, dy) {
-            const newX = playerPosition.x + dx;
-            const newY = playerPosition.y + dy;
-
-            // Check if the new position is a path (0) or a key (2)
-            if (mazeData[newY] && (mazeData[newY][newX] === 0 || mazeData[newY][newX] === 2)) {
-                if (mazeData[newY][newX] === 2) { // If the player moves to a key
-                    keysCollected++;
-                    mazeData[newY][newX] = 0; // Remove the key from the maze
-                }
-                playerPosition.x = newX;
-                playerPosition.y = newY;
-                renderMaze();
-            }
-        }
-
-        // Handle keyboard input
-        document.addEventListener('keydown', (event) => {
-            switch (event.key) {
-                case 'ArrowUp':
-                    movePlayer(0, -1);
-                    break;
-                case 'ArrowDown':
-                    movePlayer(0, 1);
-                    break;
-                case 'ArrowLeft':
-                    movePlayer(-1, 0);
-                    break;
-                case 'ArrowRight':
-                    movePlayer(1, 0);
-                    break;
-            }
         });
+    }
 
-        // Place keys and initial render
-        placeKeys();
-        renderMaze();
-    </script>
+    function movePlayer() {
+        const command = document.getElementById("command").value.toLowerCase();
+        const { x, y } = playerPos;
+
+        if (command === "up" && gameMap[y - 1][x] === 0) {
+            playerPos.y -= 1;
+        } else if (command === "down" && gameMap[y + 1][x] === 0) {
+            playerPos.y += 1;
+        } else if (command === "left" && gameMap[y][x - 1] === 0) {
+            playerPos.x -= 1;
+        } else if (command === "right" && gameMap[y][x + 1] === 0) {
+            playerPos.x += 1;
+        }
+
+        renderMap();
+        document.getElementById("command").value = ""; // Clear input
+    }
+
+    renderMap(); // Initial render
+</script>
+
 </body>
 </html>
+
