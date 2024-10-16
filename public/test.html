@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0; /* Remove default margin */
+            background-color: #f0f0f0; /* Fallback color */
+        }
+        .maze {
+            display: grid;
+            grid-template-columns: repeat(30, 20px);
+            gap: 1px;
+            background-image: url('your-background-image.jpg'); /* Replace with your image path */
+            background-size: cover; /* Adjust to fit */
+            background-color: rgba(255, 255, 255, 0.8); /* Optional overlay color */
+        }
+        .cell {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .wall {
+            background-color: #000;
+        }
+        .path {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="maze">
+        <!-- Example Maze -->
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell path"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+        <div class="cell wall"></div>
+    </div>
+</body>
+</html>
