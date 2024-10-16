@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map 30x30</title>
+    <title>Playable Map 30x30 with Enemies</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,12 +32,15 @@
             background-color: blue;
             color: white;
         }
+        .enemy {
+            background-color: red;
+            color: white;
+        }
     </style>
 </head>
 <body>
 
 <div class="map" id="map"></div>
-<input type="text" id="command" placeholder="Press W/A/S/D to move" style="display:none;">
 
 <script>
     const gameMap = Array.from({ length: 30 }, () => Array(30).fill(0));
@@ -60,6 +63,7 @@
     }
 
     let playerPos = { x: 1, y: 1 };
+    let enemies = [{ x: 28, y: 28 }]; // Starting position of the enemy
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
@@ -81,6 +85,14 @@
                     cellDiv.textContent = "0"; // Path
                 }
 
+                // Render enemies
+                enemies.forEach(enemy => {
+                    if (x === enemy.x && y === enemy.y) {
+                        cellDiv.classList.add("enemy");
+                        cellDiv.textContent = "E"; // Enemy representation
+                    }
+                });
+
                 mapDiv.appendChild(cellDiv);
             });
         });
@@ -99,7 +111,32 @@
             playerPos.x += 1;
         }
 
+        updateEnemies();
         renderMap();
+    }
+
+    function updateEnemies() {
+        enemies.forEach(enemy => {
+            const dx = playerPos.x - enemy.x;
+            const dy = playerPos.y - enemy.y;
+
+            // Move enemy towards the player
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Move horizontally first
+                if (dx > 0 && gameMap[enemy.y][enemy.x + 1] === 0) {
+                    enemy.x += 1;
+                } else if (dx < 0 && gameMap[enemy.y][enemy.x - 1] === 0) {
+                    enemy.x -= 1;
+                }
+            } else {
+                // Move vertically first
+                if (dy > 0 && gameMap[enemy.y + 1][enemy.x] === 0) {
+                    enemy.y += 1;
+                } else if (dy < 0 && gameMap[enemy.y - 1][enemy.x] === 0) {
+                    enemy.y -= 1;
+                }
+            }
+        });
     }
 
     // Event listener for keydown events
