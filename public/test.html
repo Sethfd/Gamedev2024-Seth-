@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map 30x30 with Enemies</title>
+    <title>Playable Map 30x30 with Autonomous Enemies</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -111,7 +111,6 @@
             playerPos.x += 1;
         }
 
-        updateEnemies();
         renderMap();
     }
 
@@ -139,6 +138,12 @@
         });
     }
 
+    function gameLoop() {
+        updateEnemies();
+        renderMap();
+        requestAnimationFrame(gameLoop); // Continue the loop
+    }
+
     // Event listener for keydown events
     document.addEventListener('keydown', (event) => {
         const key = event.key.toLowerCase();
@@ -148,6 +153,7 @@
     });
 
     renderMap(); // Initial render
+    gameLoop(); // Start the game loop
 </script>
 
 </body>
