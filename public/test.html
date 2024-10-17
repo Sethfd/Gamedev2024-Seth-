@@ -213,14 +213,14 @@
     }
 
     function updateEnemies() {
-        const enemy = enemies[0];
-        const path = findPath(enemy, playerPos);
-
-        if (path.length > 0) {
-            const nextStep = path[0].split(',').map(Number);
-            enemy.x = nextStep[0];
-            enemy.y = nextStep[1];
-        }
+        enemies.forEach(enemy => {
+            const path = findPath(enemy, playerPos);
+            if (path.length > 0) {
+                const nextStep = path[0].split(',').map(Number);
+                enemy.x = nextStep[0];
+                enemy.y = nextStep[1];
+            }
+        });
     }
 
     function checkCollision() {
