@@ -40,6 +40,10 @@
             background-color: orange;
             color: black;
         }
+        .door {
+            background-color: yellow;
+            color: black;
+        }
     </style>
 </head>
 <body>
@@ -66,12 +70,30 @@
         }
     }
 
+    // Function to place doors
+    function placeDoors() {
+        for (let y = 1; y < 29; y++) {
+            for (let x = 1; x < 29; x++) {
+                // Check for vertical doors
+                if (gameMap[y][x] === '!' && gameMap[y + 1][x] === '!' && gameMap[y][x + 1] === 0) {
+                    gameMap[y][x + 1] = '|'; // Place door
+                }
+                // Check for horizontal doors
+                if (gameMap[y][x] === '!' && gameMap[y][x + 1] === '!' && gameMap[y + 1][x] === 0) {
+                    gameMap[y + 1][x] = '|'; // Place door
+                }
+            }
+        }
+    }
+
     let playerPos = { x: 1, y: 1 };
     let enemies = [{ x: 28, y: 28 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
 
     let enemyMoveInterval = 2000; // Move enemies every 2 seconds (2000 ms)
     let lastEnemyMoveTime = Date.now();
+
+    placeDoors(); // Place doors after generating walls
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
@@ -91,6 +113,9 @@
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
                     cellDiv.textContent = "!"; // Wall
+                } else if (cell === '|') {
+                    cellDiv.classList.add("door");
+                    cellDiv.textContent = "|"; // Door representation
                 } else {
                     cellDiv.classList.add("path");
                     cellDiv.textContent = "0"; // Path
@@ -134,8 +159,8 @@
             }
         }
 
-        // Move the player if the new position is a path
-        if (gameMap[newY][newX] === 0) {
+        // Move the player if the new position is a path or a door
+        if (gameMap[newY][newX] === 0 || gameMap[newY][newX] === '|') {
             playerPos.x = newX;
             playerPos.y = newY;
         }
