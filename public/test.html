@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -90,11 +90,27 @@
     let enemies = [{ x: 10, y: 10 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
 
-    // Define the points A and B for enemy movement
-    const pointA = { x: 10, y: 10 };
-    const pointB = { x: 30, y: 30 };
-    let movingToB = true; // Track current target point
-
+    // Define the patrol path (A series of waypoints)
+    const patrolPath = [
+        { x: 10, y: 10 },
+        { x: 10, y: 15 },
+        { x: 10, y: 20 },
+        { x: 10, y: 25 },
+        { x: 10, y: 30 },
+        { x: 15, y: 30 },
+        { x: 20, y: 30 },
+        { x: 25, y: 30 },
+        { x: 30, y: 30 },
+        { x: 30, y: 25 },
+        { x: 30, y: 20 },
+        { x: 30, y: 15 },
+        { x: 30, y: 10 },
+        { x: 25, y: 10 },
+        { x: 20, y: 10 },
+        { x: 15, y: 10 },
+    ];
+    
+    let currentPatrolIndex = 0;
     let enemyMoveInterval = 2000; // Move enemies every 2 seconds (2000 ms)
     let lastEnemyMoveTime = Date.now();
 
@@ -173,64 +189,20 @@
         renderMap();
     }
 
-    function aStar(start, goal) {
-        const openSet = new Set([`${start.x},${start.y}`]);
-        const cameFrom = {};
-        const gScore = {};
-        const fScore = {};
-        const h = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-
-        gScore[`${start.x},${start.y}`] = 0;
-        fScore[`${start.x},${start.y}`] = h(start, goal);
-
-        while (openSet.size > 0) {
-            let current = [...openSet].reduce((lowest, pos) => {
-                const [x, y] = pos.split(',').map(Number);
-                if (fScore[`${x},${y}`] < fScore[lowest]) return pos;
-                return lowest;
-            });
-
-            const [currentX, currentY] = current.split(',').map(Number);
-            if (currentX === goal.x && currentY === goal.y) {
-                const path = [];
-                while (current in cameFrom) {
-                    path.push({ x: currentX, y: currentY });
-                    current = cameFrom[current];
-                }
-                return path.reverse();
-            }
-
-            openSet.delete(current);
-            for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-                const neighbor = { x: currentX + dx, y: currentY + dy };
-                if (gameMap[neighbor.y] && gameMap[neighbor.y][neighbor.x] !== '!' && neighbor.x >= 0 && neighbor.x < 40 && neighbor.y >= 0 && neighbor.y < 40) {
-                    const tentativeGScore = gScore[current] + 1;
-                    if (!(neighbor.x + ',' + neighbor.y in gScore) || tentativeGScore < gScore[neighbor.x + ',' + neighbor.y]) {
-                        cameFrom[`${neighbor.x},${neighbor.y}`] = current;
-                        gScore[`${neighbor.x},${neighbor.y}`] = tentativeGScore;
-                        fScore[`${neighbor.x},${neighbor.y}`] = tentativeGScore + h(neighbor, goal);
-                        openSet.add(`${neighbor.x},${neighbor.y}`);
-                    }
-                }
-            }
-        }
-        return [];
-    }
-
     function updateEnemies() {
-        enemies.forEach(enemy => {
-            const target = movingToB ? pointB : pointA;
-            const path = aStar(enemy, target);
-            if (path.length > 0) {
-                const nextStep = path[0];
-                enemy.x = nextStep.x;
-                enemy.y = nextStep.y;
-            }
-        });
+        const enemy = enemies[0];
+        const target = patrolPath[currentPatrolIndex];
+
+        // Move towards the target
+        if (enemy.x < target.x) enemy.x++;
+        else if (enemy.x > target.x) enemy.x--;
+
+        if (enemy.y < target.y) enemy.y++;
+        else if (enemy.y > target.y) enemy.y--;
 
         // Check if the enemy has reached the target point
-        if (enemies[0].x === (movingToB ? pointB.x : pointA.x) && enemies[0].y === (movingToB ? pointB.y : pointA.y)) {
-            movingToB = !movingToB; // Switch target point
+        if (enemy.x === target.x && enemy.y === target.y) {
+            currentPatrolIndex = (currentPatrolIndex + 1) % patrolPath.length; // Move to the next patrol point
         }
     }
 
@@ -247,6 +219,7 @@
         playerPos = { x: 1, y: 1 };
         enemies = [{ x: 10, y: 10 }]; // Reset enemy position
         boxPos = { x: 5, y: 5 }; // Reset box position
+        currentPatrolIndex = 0; // Reset patrol index
         renderMap();
     }
 
