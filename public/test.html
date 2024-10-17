@@ -36,6 +36,10 @@
             background-color: red;
             color: white;
         }
+        .box {
+            background-color: orange;
+            color: black;
+        }
     </style>
 </head>
 <body>
@@ -64,6 +68,10 @@
 
     let playerPos = { x: 1, y: 1 };
     let enemies = [{ x: 28, y: 28 }]; // Starting position of the enemy
+    let boxPos = { x: 5, y: 5 }; // Initial position of the box
+
+    let enemyMoveInterval = 15; // Number of frames before enemies move
+    let frameCount = 0;
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
@@ -77,6 +85,9 @@
                 if (x === playerPos.x && y === playerPos.y) {
                     cellDiv.classList.add("player");
                     cellDiv.textContent = "P"; // Player representation
+                } else if (x === boxPos.x && y === boxPos.y) {
+                    cellDiv.classList.add("box");
+                    cellDiv.textContent = "#"; // Box representation
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
                     cellDiv.textContent = "!"; // Wall
@@ -101,60 +112,13 @@
     function movePlayer(direction) {
         const { x, y } = playerPos;
 
-        if (direction === "w" && gameMap[y - 1][x] === 0) {
-            playerPos.y -= 1;
-        } else if (direction === "s" && gameMap[y + 1][x] === 0) {
-            playerPos.y += 1;
-        } else if (direction === "a" && gameMap[y][x - 1] === 0) {
-            playerPos.x -= 1;
-        } else if (direction === "d" && gameMap[y][x + 1] === 0) {
-            playerPos.x += 1;
-        }
+        let newX = x;
+        let newY = y;
 
-        renderMap();
-    }
+        if (direction === "w") newY -= 1;
+        else if (direction === "s") newY += 1;
+        else if (direction === "a") newX -= 1;
+        else if (direction === "d") newX += 1;
 
-    function updateEnemies() {
-        enemies.forEach(enemy => {
-            const dx = playerPos.x - enemy.x;
-            const dy = playerPos.y - enemy.y;
-
-            // Move enemy towards the player
-            if (Math.abs(dx) > Math.abs(dy)) {
-                // Move horizontally first
-                if (dx > 0 && gameMap[enemy.y][enemy.x + 1] === 0) {
-                    enemy.x += 1;
-                } else if (dx < 0 && gameMap[enemy.y][enemy.x - 1] === 0) {
-                    enemy.x -= 1;
-                }
-            } else {
-                // Move vertically first
-                if (dy > 0 && gameMap[enemy.y + 1][enemy.x] === 0) {
-                    enemy.y += 1;
-                } else if (dy < 0 && gameMap[enemy.y - 1][enemy.x] === 0) {
-                    enemy.y -= 1;
-                }
-            }
-        });
-    }
-
-    function gameLoop() {
-        updateEnemies();
-        renderMap();
-        requestAnimationFrame(gameLoop); // Continue the loop
-    }
-
-    // Event listener for keydown events
-    document.addEventListener('keydown', (event) => {
-        const key = event.key.toLowerCase();
-        if (["w", "a", "s", "d"].includes(key)) {
-            movePlayer(key);
-        }
-    });
-
-    renderMap(); // Initial render
-    gameLoop(); // Start the game loop
-</script>
-
-</body>
-</html>
+        // Check if the player is trying to move onto the box
+ 
