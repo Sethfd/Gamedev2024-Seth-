@@ -74,12 +74,12 @@
     function placeDoors() {
         for (let y = 1; y < 29; y++) {
             for (let x = 1; x < 29; x++) {
-                // Check for vertical doors
-                if (gameMap[y][x] === '!' && gameMap[y + 1][x] === '!' && gameMap[y][x + 1] === 0) {
+                // Check for vertical doors between two walls
+                if (gameMap[y][x] === '!' && gameMap[y + 1][x] === '!' && gameMap[y][x + 1] === 0 && gameMap[y][x - 1] === 0) {
                     gameMap[y][x + 1] = '|'; // Place door
                 }
-                // Check for horizontal doors
-                if (gameMap[y][x] === '!' && gameMap[y][x + 1] === '!' && gameMap[y + 1][x] === 0) {
+                // Check for horizontal doors between two walls
+                if (gameMap[y][x] === '!' && gameMap[y][x + 1] === '!' && gameMap[y + 1][x] === 0 && gameMap[y - 1][x] === 0) {
                     gameMap[y + 1][x] = '|'; // Place door
                 }
             }
