@@ -87,8 +87,13 @@
     }
 
     let playerPos = { x: 1, y: 1 };
-    let enemies = [{ x: 38, y: 38 }]; // Starting position of the enemy
+    let enemies = [{ x: 10, y: 10 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
+
+    // Define the points A and B for enemy movement
+    const pointA = { x: 10, y: 10 };
+    const pointB = { x: 30, y: 30 };
+    let movingToB = true; // Track current target point
 
     let enemyMoveInterval = 2000; // Move enemies every 2 seconds (2000 ms)
     let lastEnemyMoveTime = Date.now();
@@ -214,13 +219,19 @@
 
     function updateEnemies() {
         enemies.forEach(enemy => {
-            const path = aStar(enemy, playerPos);
+            const target = movingToB ? pointB : pointA;
+            const path = aStar(enemy, target);
             if (path.length > 0) {
                 const nextStep = path[0];
                 enemy.x = nextStep.x;
                 enemy.y = nextStep.y;
             }
         });
+
+        // Check if the enemy has reached the target point
+        if (enemies[0].x === (movingToB ? pointB.x : pointA.x) && enemies[0].y === (movingToB ? pointB.y : pointA.y)) {
+            movingToB = !movingToB; // Switch target point
+        }
     }
 
     function checkCollision() {
@@ -234,7 +245,7 @@
 
     function resetGame() {
         playerPos = { x: 1, y: 1 };
-        enemies = [{ x: 38, y: 38 }]; // Reset enemy position
+        enemies = [{ x: 10, y: 10 }]; // Reset enemy position
         boxPos = { x: 5, y: 5 }; // Reset box position
         renderMap();
     }
