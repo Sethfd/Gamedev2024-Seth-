@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map 30x30 with Autonomous Enemies</title>
+    <title>Playable Map 40x40 with Autonomous Enemies</title>
     <style>
         body {
             font-family: Arial, sans-serif;
         }
         .map {
             display: grid;
-            grid-template-columns: repeat(30, 20px);
-            grid-template-rows: repeat(30, 20px);
+            grid-template-columns: repeat(40, 20px);
+            grid-template-rows: repeat(40, 20px);
             gap: 1px;
         }
         .cell {
@@ -51,19 +51,19 @@
 <div class="map" id="map"></div>
 
 <script>
-    const gameMap = Array.from({ length: 30 }, () => Array(30).fill(0));
+    const gameMap = Array.from({ length: 40 }, () => Array(40).fill(0));
 
     // Create walls using '!'
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
         gameMap[i][0] = '!'; // Left border
-        gameMap[i][29] = '!'; // Right border
+        gameMap[i][39] = '!'; // Right border
         gameMap[0][i] = '!'; // Top border
-        gameMap[29][i] = '!'; // Bottom border
+        gameMap[39][i] = '!'; // Bottom border
     }
 
     // Adding some random walls in the middle
-    for (let i = 1; i < 29; i++) {
-        for (let j = 1; j < 29; j++) {
+    for (let i = 1; i < 39; i++) {
+        for (let j = 1; j < 39; j++) {
             if (Math.random() < 0.2) { // 20% chance to place a wall
                 gameMap[i][j] = '!';
             }
@@ -72,8 +72,8 @@
 
     // Function to place doors
     function placeDoors() {
-        for (let y = 1; y < 29; y++) {
-            for (let x = 1; x < 29; x++) {
+        for (let y = 1; y < 39; y++) {
+            for (let x = 1; x < 39; x++) {
                 // Check for vertical doors between two walls
                 if (gameMap[y][x] === '!' && gameMap[y + 1][x] === '!' && gameMap[y][x + 1] === 0 && gameMap[y][x - 1] === 0) {
                     gameMap[y][x + 1] = '|'; // Place door
@@ -87,7 +87,7 @@
     }
 
     let playerPos = { x: 1, y: 1 };
-    let enemies = [{ x: 28, y: 28 }]; // Starting position of the enemy
+    let enemies = [{ x: 38, y: 38 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
 
     let enemyMoveInterval = 2000; // Move enemies every 2 seconds (2000 ms)
@@ -203,7 +203,7 @@
 
     function resetGame() {
         playerPos = { x: 1, y: 1 };
-        enemies = [{ x: 28, y: 28 }]; // Reset enemy position
+        enemies = [{ x: 38, y: 38 }]; // Reset enemy position
         boxPos = { x: 5, y: 5 }; // Reset box position
         renderMap();
     }
