@@ -70,8 +70,8 @@
     let enemies = [{ x: 28, y: 28 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
 
-    let enemyMoveInterval = 15; // Number of frames before enemies move
-    let frameCount = 0;
+    let enemyMoveInterval = 2000; // Move enemies every 2 seconds (2000 ms)
+    let lastEnemyMoveTime = Date.now();
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
@@ -184,11 +184,10 @@
     }
 
     function gameLoop() {
-        frameCount++;
-
-        // Update enemies less frequently
-        if (frameCount % enemyMoveInterval === 0) {
+        // Check if it's time to move the enemies
+        if (Date.now() - lastEnemyMoveTime >= enemyMoveInterval) {
             updateEnemies();
+            lastEnemyMoveTime = Date.now();
         }
 
         checkCollision(); // Check for collisions
