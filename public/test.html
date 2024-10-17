@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -90,30 +90,6 @@
     let enemies = [{ x: 10, y: 10 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
 
-    // Define the patrol path (A series of waypoints)
-    const patrolPath = [
-        { x: 10, y: 10 },
-        { x: 10, y: 15 },
-        { x: 10, y: 20 },
-        { x: 10, y: 25 },
-        { x: 10, y: 30 },
-        { x: 15, y: 30 },
-        { x: 20, y: 30 },
-        { x: 25, y: 30 },
-        { x: 30, y: 30 },
-        { x: 30, y: 25 },
-        { x: 30, y: 20 },
-        { x: 30, y: 15 },
-        { x: 30, y: 10 },
-        { x: 25, y: 10 },
-        { x: 20, y: 10 },
-        { x: 15, y: 10 },
-    ];
-    
-    let currentPatrolIndex = 0;
-    let enemyMoveInterval = 2000; // Move enemies every 2 seconds (2000 ms)
-    let lastEnemyMoveTime = Date.now();
-
     placeDoors(); // Place doors after generating walls
 
     function renderMap() {
@@ -189,20 +165,61 @@
         renderMap();
     }
 
+    function findPath(start, end) {
+        const queue = [start];
+        const visited = new Set();
+        const cameFrom = {};
+        const directions = [
+            { dx: 0, dy: 1 },   // Down
+            { dx: 0, dy: -1 },  // Up
+            { dx: 1, dy: 0 },   // Right
+            { dx: -1, dy: 0 },  // Left
+        ];
+
+        while (queue.length > 0) {
+            const current = queue.shift();
+            const currentPos = `${current.x},${current.y}`;
+
+            if (current.x === end.x && current.y === end.y) {
+                const path = [];
+                let step = currentPos;
+
+                while (step) {
+                    path.push(step);
+                    step = cameFrom[step];
+                }
+
+                return path.reverse().slice(1); // Return path excluding the start
+            }
+
+            for (const { dx, dy } of directions) {
+                const next = { x: current.x + dx, y: current.y + dy };
+                const nextPos = `${next.x},${next.y}`;
+
+                if (
+                    next.x >= 0 && next.x < 40 &&
+                    next.y >= 0 && next.y < 40 &&
+                    (gameMap[next.y][next.x] === 0 || gameMap[next.y][next.x] === '|') && 
+                    !visited.has(nextPos)
+                ) {
+                    visited.add(nextPos);
+                    queue.push(next);
+                    cameFrom[nextPos] = currentPos;
+                }
+            }
+        }
+
+        return []; // No path found
+    }
+
     function updateEnemies() {
         const enemy = enemies[0];
-        const target = patrolPath[currentPatrolIndex];
+        const path = findPath(enemy, playerPos);
 
-        // Move towards the target
-        if (enemy.x < target.x) enemy.x++;
-        else if (enemy.x > target.x) enemy.x--;
-
-        if (enemy.y < target.y) enemy.y++;
-        else if (enemy.y > target.y) enemy.y--;
-
-        // Check if the enemy has reached the target point
-        if (enemy.x === target.x && enemy.y === target.y) {
-            currentPatrolIndex = (currentPatrolIndex + 1) % patrolPath.length; // Move to the next patrol point
+        if (path.length > 0) {
+            const nextStep = path[0].split(',').map(Number);
+            enemy.x = nextStep[0];
+            enemy.y = nextStep[1];
         }
     }
 
@@ -219,17 +236,11 @@
         playerPos = { x: 1, y: 1 };
         enemies = [{ x: 10, y: 10 }]; // Reset enemy position
         boxPos = { x: 5, y: 5 }; // Reset box position
-        currentPatrolIndex = 0; // Reset patrol index
         renderMap();
     }
 
     function gameLoop() {
-        // Check if it's time to move the enemies
-        if (Date.now() - lastEnemyMoveTime >= enemyMoveInterval) {
-            updateEnemies();
-            lastEnemyMoveTime = Date.now();
-        }
-
+        updateEnemies(); // Update enemy positions
         checkCollision(); // Check for collisions
         renderMap();
         requestAnimationFrame(gameLoop); // Continue the loop
