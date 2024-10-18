@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Animal Class</title>
+</head>
+<body>
+    <h1>Animal Sounds</h1>
+    <button id="dogButton">Create Dog</button>
+    <button id="catButton">Create Cat</button>
+    <div id="output"></div>
+
+    <script>
+        class MyAnimal {
+            constructor(name, species) {
+                this.name = name;
+                this.species = species;
+            }
+
+            makeSound(sound) {
+                return `${this.name} says: ${sound}`;
+            }
+
+            info() {
+                return `This is ${this.name}, a ${this.species}.`;
+            }
+        }
+
+        document.getElementById('dogButton').addEventListener('click', () => {
+            const myDog = new MyAnimal('Buddy', 'Dog');
+            document.getElementById('output').innerHTML = myDog.makeSound('Woof') + '<br>' + myDog.info();
+        });
+
+        document.getElementById('catButton').addEventListener('click', () => {
+            const myCat = new MyAnimal('Whiskers', 'Cat');
+            document.getElementById('output').innerHTML = myCat.makeSound('Meow') + '<br>' + myCat.info();
+        });
+    </script>
+</body>
+</html>
