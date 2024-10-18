@@ -36,10 +36,6 @@
             background-color: orange;
             color: black;
         }
-        .door {
-            background-color: yellow;
-            color: black;
-        }
     </style>
 </head>
 <body>
@@ -72,28 +68,26 @@
         });
     }
 
-    generateLShapes(); // Call the function to generate L shapes
+    // Generate + shaped walls
+    function generatePlusShapes() {
+        const plusPositions = [
+            { x: 15, y: 15 }, { x: 25, y: 25 }, { x: 30, y: 10 }
+        ];
 
-    // Function to place doors
-    function placeDoors() {
-        for (let y = 1; y < 39; y++) {
-            for (let x = 1; x < 39; x++) {
-                // Check for vertical doors between two walls
-                if (gameMap[y][x] === '!' && gameMap[y + 1][x] === '!' && gameMap[y][x + 1] === 0 && gameMap[y][x - 1] === 0) {
-                    gameMap[y][x + 1] = '|'; // Place door
-                }
-                // Check for horizontal doors between two walls
-                if (gameMap[y][x] === '!' && gameMap[y][x + 1] === '!' && gameMap[y + 1][x] === 0 && gameMap[y - 1][x] === 0) {
-                    gameMap[y + 1][x] = '|'; // Place door
-                }
-            }
-        }
+        plusPositions.forEach(pos => {
+            gameMap[pos.y][pos.x] = '!'; // Center
+            gameMap[pos.y - 1][pos.x] = '!'; // Up
+            gameMap[pos.y + 1][pos.x] = '!'; // Down
+            gameMap[pos.y][pos.x - 1] = '!'; // Left
+            gameMap[pos.y][pos.x + 1] = '!'; // Right
+        });
     }
+
+    generateLShapes(); // Call the function to generate L shapes
+    generatePlusShapes(); // Call the function to generate + shapes
 
     let playerPos = { x: 1, y: 1 };
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
-
-    placeDoors(); // Place doors after generating walls
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
@@ -113,9 +107,6 @@
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
                     cellDiv.textContent = "!"; // Wall
-                } else if (cell === '|') {
-                    cellDiv.classList.add("door");
-                    cellDiv.textContent = "|"; // Door representation
                 } else {
                     cellDiv.classList.add("path");
                     cellDiv.textContent = "0"; // Path
@@ -151,8 +142,8 @@
             }
         }
 
-        // Move the player if the new position is a path or a door
-        if (gameMap[newY][newX] === 0 || gameMap[newY][newX] === '|') {
+        // Move the player if the new position is a path
+        if (gameMap[newY][newX] === 0) {
             playerPos.x = newX;
             playerPos.y = newY;
         }
