@@ -61,18 +61,30 @@
     gameMap[10][centerX] = 0; // Opening in the vertical line
     gameMap[30][centerX] = 0; // Opening in the vertical line
 
-    // Generate L-shaped walls
+    // Generate L-shaped walls (Left and Right)
     function generateLShapes() {
         const positions = [
-            { x: 10, y: 10 }, { x: 20, y: 15 }, { x: 30, y: 20 },
-            { x: 10, y: 30 }, { x: 25, y: 25 }
+            { x: 5, y: 5 }, { x: 15, y: 10 }, { x: 25, y: 20 },
+            { x: 35, y: 30 }, { x: 10, y: 25 },
+            { x: 50, y: 5 }, { x: 60, y: 15 }, { x: 70, y: 25 },
+            { x: 45, y: 35 }, { x: 20, y: 30 }
         ];
 
         positions.forEach(pos => {
             // Left L shape
             for (let i = 0; i < 3; i++) {
                 gameMap[pos.y][pos.x + i] = '!'; // Horizontal line
+            }
+            for (let i = 0; i < 3; i++) {
                 gameMap[pos.y + i][pos.x] = '!'; // Vertical line
+            }
+
+            // Right L shape
+            for (let i = 0; i < 3; i++) {
+                gameMap[pos.y][pos.x + 3 + i] = '!'; // Horizontal line
+            }
+            for (let i = 0; i < 3; i++) {
+                gameMap[pos.y + i][pos.x + 3] = '!'; // Vertical line
             }
         });
     }
@@ -80,7 +92,8 @@
     // Generate + shaped walls
     function generatePlusShapes() {
         const plusPositions = [
-            { x: 15, y: 15 }, { x: 25, y: 25 }, { x: 30, y: 10 }
+            { x: 15, y: 15 }, { x: 25, y: 25 }, { x: 30, y: 10 },
+            { x: 45, y: 15 }, { x: 50, y: 25 }, { x: 60, y: 20 }
         ];
 
         plusPositions.forEach(pos => {
