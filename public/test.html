@@ -164,7 +164,7 @@
             const boxNewX = boxPos.x + (newX - x);
             const boxNewY = boxPos.y + (newY - y);
 
-            if (gameMap[boxNewY][boxNewX] === 0) {
+            if (gameMap[boxNewY][boxNewX] === 0 || gameMap[boxNewY][boxNewX] === 'w') {
                 boxPos.x = boxNewX;
                 boxPos.y = boxNewY;
             } else {
@@ -173,16 +173,17 @@
             }
         }
 
-        // Move the player if the new position is a path
-        if (gameMap[newY][newX] === 0) {
+        // Move the player if the new position is a path or water
+        if (gameMap[newY][newX] === 0 || gameMap[newY][newX] === 'w') {
             playerPos.x = newX;
             playerPos.y = newY;
         }
 
+        const moveDelay = gameMap[newY][newX] === 'w' ? 200 : 100; // Slow down in water
         renderMap();
         setTimeout(() => {
             isMoving = false; // Allow movement again after a short delay
-        }, 100); // Delay in milliseconds
+        }, moveDelay); // Adjust delay based on terrain
     }
 
     // Event listener for keydown events
