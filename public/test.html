@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map 40x80 with Custom Walls and Lakes</title>
+    <title>Playable Map 40x80 with Custom Wall Shapes and Lakes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,42 +48,22 @@
 <script>
     const gameMap = Array.from({ length: 40 }, () => Array(80).fill(0));
 
-    // Generate L-shaped walls (Left and Right)
-    function generateLShapes() {
-        const positions = [
-            { x: 5, y: 5 }, { x: 15, y: 10 }, { x: 25, y: 20 },
-            { x: 35, y: 30 }, { x: 10, y: 25 },
-            { x: 50, y: 5 }, { x: 60, y: 15 }, { x: 70, y: 25 },
-            { x: 45, y: 35 }, { x: 20, y: 30 }
+    // Generate wall blocks of different sizes
+    function generateWalls() {
+        const wallPositions = [
+            { x: 5, y: 5, size: 2 }, { x: 20, y: 10, size: 4 }, { x: 35, y: 20, size: 6 },
+            { x: 10, y: 30, size: 2 }, { x: 50, y: 5, size: 4 },
+            { x: 60, y: 15, size: 6 }, { x: 45, y: 30, size: 4 }, { x: 70, y: 25, size: 2 }
         ];
 
-        positions.forEach(pos => {
-            // Left L shape
-            for (let i = 0; i < 3; i++) {
-                gameMap[pos.y][pos.x + i] = '!';
-                gameMap[pos.y + i][pos.x] = '!';
+        wallPositions.forEach(pos => {
+            for (let i = 0; i < pos.size; i++) {
+                for (let j = 0; j < pos.size; j++) {
+                    if (pos.x + i < 80 && pos.y + j < 40) {
+                        gameMap[pos.y + j][pos.x + i] = '!'; // Wall
+                    }
+                }
             }
-            // Right L shape
-            for (let i = 0; i < 3; i++) {
-                gameMap[pos.y][pos.x + 3 + i] = '!';
-                gameMap[pos.y + i][pos.x + 3] = '!';
-            }
-        });
-    }
-
-    // Generate + shaped walls
-    function generatePlusShapes() {
-        const plusPositions = [
-            { x: 15, y: 15 }, { x: 25, y: 25 }, { x: 30, y: 10 },
-            { x: 45, y: 15 }, { x: 50, y: 25 }, { x: 60, y: 20 }
-        ];
-
-        plusPositions.forEach(pos => {
-            gameMap[pos.y][pos.x] = '!';
-            gameMap[pos.y - 1][pos.x] = '!';
-            gameMap[pos.y + 1][pos.x] = '!';
-            gameMap[pos.y][pos.x - 1] = '!';
-            gameMap[pos.y][pos.x + 1] = '!';
         });
     }
 
@@ -104,8 +84,7 @@
         }
     }
 
-    generateLShapes();
-    generatePlusShapes();
+    generateWalls();
     addLakes();
 
     let playerPos = { x: 1, y: 1 };
@@ -129,7 +108,7 @@
                     cellDiv.textContent = "#";
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
-                    cellDiv.textContent = "!";
+                    cellDiv.textContent = "!"; // Wall representation
                 } else if (cell === 'w') {
                     cellDiv.classList.add("water");
                     cellDiv.textContent = "w"; // Lake representation
