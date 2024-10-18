@@ -59,8 +59,8 @@
 
 <script>
     const gameMap = Array.from({ length: 40 }, () => Array(80).fill(0));
-    const npcList = []; // List to store NPCs
-    let playerHealth = 100; // Player's initial health
+    const npcList = [];
+    let playerHealth = 100;
 
     // Generate wall blocks of different sizes
     function generateWalls() {
@@ -84,8 +84,8 @@
     // Function to add lakes (water)
     function addLakes() {
         for (let i = 0; i < 10; i++) {
-            const lakeX = Math.floor(Math.random() * 76) + 2; // Ensure lake is within bounds
-            const lakeY = Math.floor(Math.random() * 38) + 2; // Ensure lake is within bounds
+            const lakeX = Math.floor(Math.random() * 76) + 2;
+            const lakeY = Math.floor(Math.random() * 38) + 2;
 
             for (let j = 0; j < 3; j++) {
                 for (let k = 0; k < 3; k++) {
@@ -106,7 +106,7 @@
 
         npcPositions.forEach(npc => {
             if (gameMap[npc.y][npc.x] === 0) {
-                npc.health = 10; // Set initial health
+                npc.health = 10;
                 npcList.push(npc);
                 gameMap[npc.y][npc.x] = npc.type; // Place NPC on the map
             }
@@ -134,7 +134,7 @@
 
     let playerPos = { x: 1, y: 1 };
     let boxPos = { x: 5, y: 5 };
-    let isMoving = false; // Track if player is moving
+    let isMoving = false;
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
@@ -153,19 +153,19 @@
                     cellDiv.textContent = "#";
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
-                    cellDiv.textContent = "!"; // Wall representation
+                    cellDiv.textContent = "!";
                 } else if (cell === 'w') {
                     cellDiv.classList.add("water");
-                    cellDiv.textContent = "w"; // Lake representation
+                    cellDiv.textContent = "w";
                 } else if (cell === 'cow') {
                     cellDiv.classList.add("cow");
-                    cellDiv.textContent = "C"; // Cow representation
+                    cellDiv.textContent = "C";
                 } else if (cell === 'pig') {
                     cellDiv.classList.add("pig");
-                    cellDiv.textContent = "P"; // Pig representation
+                    cellDiv.textContent = "P";
                 } else if (cell === 'tree') {
                     cellDiv.classList.add("tree");
-                    cellDiv.textContent = "T"; // Tree representation
+                    cellDiv.textContent = "T";
                 } else {
                     cellDiv.classList.add("path");
                     cellDiv.textContent = "0";
@@ -175,12 +175,12 @@
             });
         });
 
-        mapDiv.innerHTML = ""; // Clear previous map
-        mapDiv.appendChild(fragment); // Append the fragment to the map
+        mapDiv.innerHTML = "";
+        mapDiv.appendChild(fragment);
     }
 
     function movePlayer(direction) {
-        if (isMoving) return; // Prevent movement while moving
+        if (isMoving) return;
         isMoving = true;
 
         const { x, y } = playerPos;
@@ -196,22 +196,22 @@
         const npcIndex = npcList.findIndex(npc => npc.x === newX && npc.y === newY);
         if (npcIndex !== -1) {
             const npc = npcList[npcIndex];
-            npc.health -= 1; // Player deals 1 damage
+            npc.health -= 1;
 
             if (npc.health <= 0) {
-                gameMap[npc.y][npc.x] = 0; // Remove NPC from the map
-                npcList.splice(npcIndex, 1); // Remove NPC from the list
+                gameMap[npc.y][npc.x] = 0;
+                npcList.splice(npcIndex, 1);
             }
-            isMoving = false; // Stop moving after attack
+            isMoving = false;
             renderMap();
             return;
         }
 
         // Check for collecting trees
         if (gameMap[newY][newX] === 'tree') {
-            playerHealth += 20; // Restore health
-            gameMap[newY][newX] = 0; // Remove tree from the map
-            isMoving = false; // Stop moving after collecting
+            playerHealth += 20;
+            gameMap[newY][newX] = 0;
+            isMoving = false;
             renderMap();
             return;
         }
@@ -222,15 +222,17 @@
             playerPos.y = newY;
         }
 
-        const moveDelay = gameMap[newY][newX] === 'w' ? 200 : 100; // Slow down in water
+        const moveDelay = gameMap[newY][newX] === 'w' ? 200 : 66; // Adjusted delay for water and normal terrain
         renderMap();
         setTimeout(() => {
-            isMoving = false; // Allow movement again after a short delay
-        }, moveDelay); // Adjust delay based on terrain
+            isMoving = false;
+        }, moveDelay);
     }
 
+    let npcMoveDelay = 1000; // Delay for NPC movement
     function moveNPCs() {
         npcList.forEach(npc => {
+            if (Math.random() < 0.5) return; // Skip movement randomly for smoother behavior
             const directions = [
                 { dx: 0, dy: 1 },   // Down
                 { dx: 0, dy: -1 },  // Up
