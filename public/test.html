@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map 40x80 with Custom Walls</title>
+    <title>Playable Map 40x80 with Custom Walls and Lakes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,6 +35,9 @@
         .box {
             background-color: orange;
             color: black;
+        }
+        .water {
+            background-color: lightblue;
         }
     </style>
 </head>
@@ -84,8 +87,26 @@
         });
     }
 
+    // Function to add lakes (water)
+    function addLakes() {
+        for (let i = 0; i < 10; i++) { // Create 10 lakes
+            const lakeX = Math.floor(Math.random() * 76) + 2; // Ensure lake is within bounds
+            const lakeY = Math.floor(Math.random() * 38) + 2; // Ensure lake is within bounds
+
+            // Create a small water area
+            for (let j = 0; j < 3; j++) {
+                for (let k = 0; k < 3; k++) {
+                    if (lakeX + j < 80 && lakeY + k < 40) {
+                        gameMap[lakeY + k][lakeX + j] = 'w'; // Water
+                    }
+                }
+            }
+        }
+    }
+
     generateLShapes();
     generatePlusShapes();
+    addLakes();
 
     let playerPos = { x: 1, y: 1 };
     let boxPos = { x: 5, y: 5 };
@@ -109,6 +130,9 @@
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
                     cellDiv.textContent = "!";
+                } else if (cell === 'w') {
+                    cellDiv.classList.add("water");
+                    cellDiv.textContent = "w"; // Lake representation
                 } else {
                     cellDiv.classList.add("path");
                     cellDiv.textContent = "0";
