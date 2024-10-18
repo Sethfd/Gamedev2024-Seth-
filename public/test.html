@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map with NPCs</title>
+    <title>Playable Map with NPCs and Trees</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,6 +47,10 @@
             background-color: pink;
             color: black;
         }
+        .tree {
+            background-color: green;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -56,6 +60,7 @@
 <script>
     const gameMap = Array.from({ length: 40 }, () => Array(80).fill(0));
     const npcList = []; // List to store NPCs
+    let playerHealth = 100; // Player's initial health
 
     // Generate wall blocks of different sizes
     function generateWalls() {
@@ -108,9 +113,24 @@
         });
     }
 
+    // Function to add trees
+    function addTrees() {
+        const treePositions = [
+            { x: 5, y: 20 }, { x: 10, y: 25 }, { x: 30, y: 5 },
+            { x: 50, y: 15 }, { x: 70, y: 10 }, { x: 75, y: 30 }
+        ];
+
+        treePositions.forEach(pos => {
+            if (gameMap[pos.y][pos.x] === 0) {
+                gameMap[pos.y][pos.x] = 'tree'; // Place tree on the map
+            }
+        });
+    }
+
     generateWalls();
     addLakes();
     addNPCs();
+    addTrees();
 
     let playerPos = { x: 1, y: 1 };
     let boxPos = { x: 5, y: 5 };
@@ -143,6 +163,9 @@
                 } else if (cell === 'pig') {
                     cellDiv.classList.add("pig");
                     cellDiv.textContent = "P"; // Pig representation
+                } else if (cell === 'tree') {
+                    cellDiv.classList.add("tree");
+                    cellDiv.textContent = "T"; // Tree representation
                 } else {
                     cellDiv.classList.add("path");
                     cellDiv.textContent = "0";
@@ -180,6 +203,15 @@
                 npcList.splice(npcIndex, 1); // Remove NPC from the list
             }
             isMoving = false; // Stop moving after attack
+            renderMap();
+            return;
+        }
+
+        // Check for collecting trees
+        if (gameMap[newY][newX] === 'tree') {
+            playerHealth += 20; // Restore health
+            gameMap[newY][newX] = 0; // Remove tree from the map
+            isMoving = false; // Stop moving after collecting
             renderMap();
             return;
         }
