@@ -45,12 +45,18 @@
 <script>
     const gameMap = Array.from({ length: 40 }, () => Array(40).fill(0));
 
-    // Create cross shape walls
+    // Create cross shape walls with openings
     const center = Math.floor(40 / 2);
     for (let i = 0; i < 40; i++) {
         gameMap[center][i] = '!'; // Horizontal line
         gameMap[i][center] = '!'; // Vertical line
     }
+
+    // Create openings in the cross
+    gameMap[center][10] = 0; // Opening in the horizontal line
+    gameMap[center][30] = 0; // Opening in the horizontal line
+    gameMap[10][center] = 0; // Opening in the vertical line
+    gameMap[30][center] = 0; // Opening in the vertical line
 
     // Generate L-shaped walls
     function generateLShapes() {
