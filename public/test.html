@@ -229,6 +229,34 @@
         }, moveDelay); // Adjust delay based on terrain
     }
 
+    function moveNPCs() {
+        npcList.forEach(npc => {
+            const directions = [
+                { dx: 0, dy: 1 },   // Down
+                { dx: 0, dy: -1 },  // Up
+                { dx: 1, dy: 0 },   // Right
+                { dx: -1, dy: 0 }   // Left
+            ];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            const newX = npc.x + randomDirection.dx;
+            const newY = npc.y + randomDirection.dy;
+
+            // Check if NPC can move to the new position
+            if (newX >= 0 && newX < 80 && newY >= 0 && newY < 40 && gameMap[newY][newX] === 0) {
+                gameMap[npc.y][npc.x] = 0; // Clear previous position
+                npc.x = newX;
+                npc.y = newY;
+                gameMap[newY][newX] = npc.type; // Move NPC to new position
+            }
+        });
+    }
+
+    function gameLoop() {
+        moveNPCs(); // Update NPC positions
+        renderMap();
+        requestAnimationFrame(gameLoop); // Continue the loop
+    }
+
     // Event listener for keydown events
     document.addEventListener('keydown', (event) => {
         const key = event.key.toLowerCase();
@@ -237,7 +265,8 @@
         }
     });
 
-    renderMap();
+    renderMap(); // Initial render
+    gameLoop(); // Start the game loop
 </script>
 
 </body>
