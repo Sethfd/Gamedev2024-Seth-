@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Map 40x40 with Autonomous Enemies</title>
+    <title>Playable Map 40x40 with Custom Walls</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,10 +32,6 @@
             background-color: blue;
             color: white;
         }
-        .enemy {
-            background-color: red;
-            color: white;
-        }
         .box {
             background-color: orange;
             color: black;
@@ -53,22 +49,30 @@
 <script>
     const gameMap = Array.from({ length: 40 }, () => Array(40).fill(0));
 
-    // Create walls using '!'
+    // Create cross shape walls
+    const center = Math.floor(40 / 2);
     for (let i = 0; i < 40; i++) {
-        gameMap[i][0] = '!'; // Left border
-        gameMap[i][39] = '!'; // Right border
-        gameMap[0][i] = '!'; // Top border
-        gameMap[39][i] = '!'; // Bottom border
+        gameMap[center][i] = '!'; // Horizontal line
+        gameMap[i][center] = '!'; // Vertical line
     }
 
-    // Adding some random walls in the middle
-    for (let i = 1; i < 39; i++) {
-        for (let j = 1; j < 39; j++) {
-            if (Math.random() < 0.2) { // 20% chance to place a wall
-                gameMap[i][j] = '!';
+    // Generate L-shaped walls
+    function generateLShapes() {
+        const positions = [
+            { x: 10, y: 10 }, { x: 20, y: 15 }, { x: 30, y: 20 },
+            { x: 10, y: 30 }, { x: 25, y: 25 }
+        ];
+
+        positions.forEach(pos => {
+            // Left L shape
+            for (let i = 0; i < 3; i++) {
+                gameMap[pos.y][pos.x + i] = '!'; // Horizontal line
+                gameMap[pos.y + i][pos.x] = '!'; // Vertical line
             }
-        }
+        });
     }
+
+    generateLShapes(); // Call the function to generate L shapes
 
     // Function to place doors
     function placeDoors() {
@@ -87,7 +91,6 @@
     }
 
     let playerPos = { x: 1, y: 1 };
-    let enemies = [{ x: 10, y: 10 }]; // Starting position of the enemy
     let boxPos = { x: 5, y: 5 }; // Initial position of the box
 
     placeDoors(); // Place doors after generating walls
@@ -117,14 +120,6 @@
                     cellDiv.classList.add("path");
                     cellDiv.textContent = "0"; // Path
                 }
-
-                // Render enemies
-                enemies.forEach(enemy => {
-                    if (x === enemy.x && y === enemy.y) {
-                        cellDiv.classList.add("enemy");
-                        cellDiv.textContent = "E"; // Enemy representation
-                    }
-                });
 
                 mapDiv.appendChild(cellDiv);
             });
@@ -165,87 +160,6 @@
         renderMap();
     }
 
-    function findPath(start, end) {
-        const queue = [start];
-        const visited = new Set();
-        const cameFrom = {};
-        const directions = [
-            { dx: 0, dy: 1 },   // Down
-            { dx: 0, dy: -1 },  // Up
-            { dx: 1, dy: 0 },   // Right
-            { dx: -1, dy: 0 },  // Left
-        ];
-
-        while (queue.length > 0) {
-            const current = queue.shift();
-            const currentPos = `${current.x},${current.y}`;
-
-            if (current.x === end.x && current.y === end.y) {
-                const path = [];
-                let step = currentPos;
-
-                while (step) {
-                    path.push(step);
-                    step = cameFrom[step];
-                }
-
-                return path.reverse().slice(1); // Return path excluding the start
-            }
-
-            for (const { dx, dy } of directions) {
-                const next = { x: current.x + dx, y: current.y + dy };
-                const nextPos = `${next.x},${next.y}`;
-
-                if (
-                    next.x >= 0 && next.x < 40 &&
-                    next.y >= 0 && next.y < 40 &&
-                    (gameMap[next.y][next.x] === 0 || gameMap[next.y][next.x] === '|') && 
-                    !visited.has(nextPos)
-                ) {
-                    visited.add(nextPos);
-                    queue.push(next);
-                    cameFrom[nextPos] = currentPos;
-                }
-            }
-        }
-
-        return []; // No path found
-    }
-
-    function updateEnemies() {
-        enemies.forEach(enemy => {
-            const path = findPath(enemy, playerPos);
-            if (path.length > 0) {
-                const nextStep = path[0].split(',').map(Number);
-                enemy.x = nextStep[0];
-                enemy.y = nextStep[1];
-            }
-        });
-    }
-
-    function checkCollision() {
-        enemies.forEach(enemy => {
-            if (playerPos.x === enemy.x && playerPos.y === enemy.y) {
-                alert("Game Over! You were caught by an enemy.");
-                resetGame();
-            }
-        });
-    }
-
-    function resetGame() {
-        playerPos = { x: 1, y: 1 };
-        enemies = [{ x: 10, y: 10 }]; // Reset enemy position
-        boxPos = { x: 5, y: 5 }; // Reset box position
-        renderMap();
-    }
-
-    function gameLoop() {
-        updateEnemies(); // Update enemy positions
-        checkCollision(); // Check for collisions
-        renderMap();
-        requestAnimationFrame(gameLoop); // Continue the loop
-    }
-
     // Event listener for keydown events
     document.addEventListener('keydown', (event) => {
         const key = event.key.toLowerCase();
@@ -255,7 +169,6 @@
     });
 
     renderMap(); // Initial render
-    gameLoop(); // Start the game loop
 </script>
 
 </body>
