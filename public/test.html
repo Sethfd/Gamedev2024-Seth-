@@ -45,22 +45,6 @@
 <script>
     const gameMap = Array.from({ length: 40 }, () => Array(80).fill(0));
 
-    // Create cross shape walls with openings
-    const centerY = Math.floor(40 / 2);
-    const centerX = Math.floor(80 / 2);
-    for (let i = 0; i < 80; i++) {
-        gameMap[centerY][i] = '!'; // Horizontal line
-    }
-    for (let i = 0; i < 40; i++) {
-        gameMap[i][centerX] = '!'; // Vertical line
-    }
-
-    // Create openings in the cross
-    gameMap[centerY][10] = 0;
-    gameMap[centerY][70] = 0;
-    gameMap[10][centerX] = 0;
-    gameMap[30][centerX] = 0;
-
     // Generate L-shaped walls (Left and Right)
     function generateLShapes() {
         const positions = [
@@ -105,10 +89,11 @@
 
     let playerPos = { x: 1, y: 1 };
     let boxPos = { x: 5, y: 5 };
+    let isMoving = false; // Track if player is moving
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
-        const fragment = document.createDocumentFragment(); // Use a document fragment for performance
+        const fragment = document.createDocumentFragment();
 
         gameMap.forEach((row, y) => {
             row.forEach((cell, x) => {
@@ -129,7 +114,7 @@
                     cellDiv.textContent = "0";
                 }
 
-                fragment.appendChild(cellDiv); // Append to the fragment
+                fragment.appendChild(cellDiv);
             });
         });
 
@@ -138,6 +123,9 @@
     }
 
     function movePlayer(direction) {
+        if (isMoving) return; // Prevent movement while moving
+        isMoving = true;
+
         const { x, y } = playerPos;
         let newX = x;
         let newY = y;
@@ -156,6 +144,7 @@
                 boxPos.x = boxNewX;
                 boxPos.y = boxNewY;
             } else {
+                isMoving = false; // Stop moving if can't push the box
                 return;
             }
         }
@@ -167,6 +156,9 @@
         }
 
         renderMap();
+        setTimeout(() => {
+            isMoving = false; // Allow movement again after a short delay
+        }, 100); // Delay in milliseconds
     }
 
     // Event listener for keydown events
