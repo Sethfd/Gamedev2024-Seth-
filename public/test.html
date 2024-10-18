@@ -56,10 +56,10 @@
     }
 
     // Create openings in the cross
-    gameMap[centerY][10] = 0; // Opening in the horizontal line
-    gameMap[centerY][70] = 0; // Opening in the horizontal line
-    gameMap[10][centerX] = 0; // Opening in the vertical line
-    gameMap[30][centerX] = 0; // Opening in the vertical line
+    gameMap[centerY][10] = 0;
+    gameMap[centerY][70] = 0;
+    gameMap[10][centerX] = 0;
+    gameMap[30][centerX] = 0;
 
     // Generate L-shaped walls (Left and Right)
     function generateLShapes() {
@@ -73,18 +73,13 @@
         positions.forEach(pos => {
             // Left L shape
             for (let i = 0; i < 3; i++) {
-                gameMap[pos.y][pos.x + i] = '!'; // Horizontal line
+                gameMap[pos.y][pos.x + i] = '!';
+                gameMap[pos.y + i][pos.x] = '!';
             }
-            for (let i = 0; i < 3; i++) {
-                gameMap[pos.y + i][pos.x] = '!'; // Vertical line
-            }
-
             // Right L shape
             for (let i = 0; i < 3; i++) {
-                gameMap[pos.y][pos.x + 3 + i] = '!'; // Horizontal line
-            }
-            for (let i = 0; i < 3; i++) {
-                gameMap[pos.y + i][pos.x + 3] = '!'; // Vertical line
+                gameMap[pos.y][pos.x + 3 + i] = '!';
+                gameMap[pos.y + i][pos.x + 3] = '!';
             }
         });
     }
@@ -97,23 +92,23 @@
         ];
 
         plusPositions.forEach(pos => {
-            gameMap[pos.y][pos.x] = '!'; // Center
-            gameMap[pos.y - 1][pos.x] = '!'; // Up
-            gameMap[pos.y + 1][pos.x] = '!'; // Down
-            gameMap[pos.y][pos.x - 1] = '!'; // Left
-            gameMap[pos.y][pos.x + 1] = '!'; // Right
+            gameMap[pos.y][pos.x] = '!';
+            gameMap[pos.y - 1][pos.x] = '!';
+            gameMap[pos.y + 1][pos.x] = '!';
+            gameMap[pos.y][pos.x - 1] = '!';
+            gameMap[pos.y][pos.x + 1] = '!';
         });
     }
 
-    generateLShapes(); // Call the function to generate L shapes
-    generatePlusShapes(); // Call the function to generate + shapes
+    generateLShapes();
+    generatePlusShapes();
 
     let playerPos = { x: 1, y: 1 };
-    let boxPos = { x: 5, y: 5 }; // Initial position of the box
+    let boxPos = { x: 5, y: 5 };
 
     function renderMap() {
         const mapDiv = document.getElementById("map");
-        mapDiv.innerHTML = ""; // Clear previous map
+        const fragment = document.createDocumentFragment(); // Use a document fragment for performance
 
         gameMap.forEach((row, y) => {
             row.forEach((cell, x) => {
@@ -122,26 +117,28 @@
 
                 if (x === playerPos.x && y === playerPos.y) {
                     cellDiv.classList.add("player");
-                    cellDiv.textContent = "P"; // Player representation
+                    cellDiv.textContent = "P";
                 } else if (x === boxPos.x && y === boxPos.y) {
                     cellDiv.classList.add("box");
-                    cellDiv.textContent = "#"; // Box representation
+                    cellDiv.textContent = "#";
                 } else if (cell === '!') {
                     cellDiv.classList.add("wall");
-                    cellDiv.textContent = "!"; // Wall
+                    cellDiv.textContent = "!";
                 } else {
                     cellDiv.classList.add("path");
-                    cellDiv.textContent = "0"; // Path
+                    cellDiv.textContent = "0";
                 }
 
-                mapDiv.appendChild(cellDiv);
+                fragment.appendChild(cellDiv); // Append to the fragment
             });
         });
+
+        mapDiv.innerHTML = ""; // Clear previous map
+        mapDiv.appendChild(fragment); // Append the fragment to the map
     }
 
     function movePlayer(direction) {
         const { x, y } = playerPos;
-
         let newX = x;
         let newY = y;
 
@@ -155,12 +152,11 @@
             const boxNewX = boxPos.x + (newX - x);
             const boxNewY = boxPos.y + (newY - y);
 
-            // Check if the new box position is valid (empty path)
             if (gameMap[boxNewY][boxNewX] === 0) {
                 boxPos.x = boxNewX;
                 boxPos.y = boxNewY;
             } else {
-                return; // Can't push the box
+                return;
             }
         }
 
@@ -181,7 +177,7 @@
         }
     });
 
-    renderMap(); // Initial render
+    renderMap();
 </script>
 
 </body>
