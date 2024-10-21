@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dino Jump Game</title>
+    <title>Dino Platformer Game</title>
     <style>
         body {
             margin: 0;
@@ -13,7 +13,7 @@
         #gameContainer {
             position: relative;
             width: 100%;
-            height: 200px;
+            height: 400px; /* Increased height for platformer */
             overflow: hidden;
             background-color: #e0f7fa; /* Sky color */
         }
@@ -21,31 +21,39 @@
         #ground {
             position: absolute;
             width: 100%;
-            height: 100px; /* Height for ground */
+            height: 20px; /* Height for ground */
             background-color: #8d6e63; /* Ground color */
             bottom: 0;
         }
 
         #dino {
             position: absolute;
-            bottom: 100px; /* Align with ground */
+            bottom: 20px; /* Align with ground */
             left: 50px;
-            width: 50px; /* Adjust size for better fit */
-            height: 50px; /* Adjust size for better fit */
+            width: 50px;
+            height: 50px;
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(10).png?raw=true'); /* Dino image */
-            background-size: contain; /* Maintain aspect ratio */
-            background-repeat: no-repeat; /* Prevent repeating */
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .platform {
+            position: absolute;
+            bottom: 100px; /* Platform height */
+            width: 80px;
+            height: 10px;
+            background-color: #4caf50; /* Platform color */
         }
 
         .cactus {
             position: absolute;
-            bottom: 100px; /* Align with ground */
+            bottom: 20px; /* Align with ground */
             right: -50px; /* Start off-screen */
-            width: 40px; /* Adjust size for better fit */
-            height: 60px; /* Adjust size for better fit */
+            width: 40px;
+            height: 60px;
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(7).png?raw=true'); /* Cactus image */
-            background-size: contain; /* Maintain aspect ratio */
-            background-repeat: no-repeat; /* Prevent repeating */
+            background-size: contain;
+            background-repeat: no-repeat;
         }
 
         .jump {
@@ -53,9 +61,9 @@
         }
 
         @keyframes jump {
-            0% { bottom: 100px; }
-            50% { bottom: 150px; } /* Adjust jump height */
-            100% { bottom: 100px; }
+            0% { bottom: 20px; }
+            50% { bottom: 80px; } /* Adjust jump height */
+            100% { bottom: 20px; }
         }
 
         #score {
@@ -72,21 +80,27 @@
         <div id="ground"></div>
         <div id="dino"></div>
         <div id="score">Score: 0</div>
+        <div class="platform" style="left: 200px;"></div>
+        <div class="platform" style="left: 400px;"></div>
+        <div class="platform" style="left: 600px;"></div>
     </div>
     <script>
         const dino = document.getElementById('dino');
         const scoreElement = document.getElementById('score');
 
         let score = 0;
+        let isJumping = false;
         let gameInterval = setInterval(updateScore, 1000);
 
         document.addEventListener('keydown', jump);
         
         function jump() {
-            if (!dino.classList.contains('jump')) {
+            if (!isJumping) {
+                isJumping = true;
                 dino.classList.add('jump');
                 setTimeout(() => {
                     dino.classList.remove('jump');
+                    isJumping = false;
                 }, 500);
             }
         }
@@ -95,13 +109,8 @@
             const newCactus = document.createElement('div');
             newCactus.className = 'cactus';
             newCactus.style.position = 'absolute';
-            newCactus.style.bottom = '100px'; 
+            newCactus.style.bottom = '20px'; 
             newCactus.style.right = '-50px'; 
-            newCactus.style.width = '40px'; /* Adjust size for better fit */
-            newCactus.style.height = '60px'; /* Adjust size for better fit */
-            newCactus.style.backgroundImage = 'url(https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(7).png?raw=true)';
-            newCactus.style.backgroundSize = 'contain'; /* Maintain aspect ratio */
-            newCactus.style.backgroundRepeat = 'no-repeat'; /* Prevent repeating */
             
             document.getElementById('gameContainer').appendChild(newCactus);
             
@@ -112,13 +121,12 @@
                     newCactus.remove();
                 } else {
                     newCactus.style.right = (parseInt(newCactus.style.right) + 5) + 'px'; // Adjust speed
-                    checkCollision(newCactus); // Check collision with the new cactus
+                    checkCollision(newCactus);
                 }
             }, 50);
         }
 
         setInterval(spawnCactus, 2000); // Spawn a cactus every 2 seconds
-        setInterval(checkCollision, 50);
 
         function checkCollision(cactus) {
             const dinoRect = dino.getBoundingClientRect();
@@ -127,7 +135,7 @@
             if (
                 dinoRect.left < cactusRect.right &&
                 dinoRect.right > cactusRect.left &&
-                dinoRect.bottom > cactusRect.top + 100 // Adjust for ground height
+                dinoRect.bottom > cactusRect.top + 20 // Adjust for ground height
             ) {
                 alert("Game Over! Your score was: " + score);
                 clearInterval(gameInterval);
