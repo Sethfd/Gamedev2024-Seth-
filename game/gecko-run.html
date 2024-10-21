@@ -13,7 +13,7 @@
         #gameContainer {
             position: relative;
             width: 100%;
-            height: 400px; /* Increased height for platformer */
+            height: 400px; /* Height for platformer */
             overflow: hidden;
             background-color: #e0f7fa; /* Sky color */
         }
@@ -39,21 +39,10 @@
 
         .platform {
             position: absolute;
-            bottom: 100px; /* Platform height */
+            bottom: 100px; /* Height of the platform */
             width: 80px;
             height: 10px;
             background-color: #4caf50; /* Platform color */
-        }
-
-        .cactus {
-            position: absolute;
-            bottom: 20px; /* Align with ground */
-            right: -50px; /* Start off-screen */
-            width: 40px;
-            height: 60px;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(7).png?raw=true'); /* Cactus image */
-            background-size: contain;
-            background-repeat: no-repeat;
         }
 
         .jump {
@@ -87,15 +76,17 @@
     <script>
         const dino = document.getElementById('dino');
         const scoreElement = document.getElementById('score');
+        const platforms = document.querySelectorAll('.platform');
 
         let score = 0;
         let isJumping = false;
+        let isGameOver = false;
         let gameInterval = setInterval(updateScore, 1000);
 
         document.addEventListener('keydown', jump);
         
         function jump() {
-            if (!isJumping) {
+            if (!isJumping && !isGameOver) {
                 isJumping = true;
                 dino.classList.add('jump');
                 setTimeout(() => {
@@ -105,47 +96,34 @@
             }
         }
 
-        function spawnCactus() {
-            const newCactus = document.createElement('div');
-            newCactus.className = 'cactus';
-            newCactus.style.position = 'absolute';
-            newCactus.style.bottom = '20px'; 
-            newCactus.style.right = '-50px'; 
-            
-            document.getElementById('gameContainer').appendChild(newCactus);
-            
-            let moveInterval = setInterval(() => {
-                const cactusRect = newCactus.getBoundingClientRect();
-                if (cactusRect.right < 0) {
-                    clearInterval(moveInterval);
-                    newCactus.remove();
-                } else {
-                    newCactus.style.right = (parseInt(newCactus.style.right) + 5) + 'px'; // Adjust speed
-                    checkCollision(newCactus);
-                }
-            }, 50);
-        }
-
-        setInterval(spawnCactus, 2000); // Spawn a cactus every 2 seconds
-
-        function checkCollision(cactus) {
+        function checkFall() {
             const dinoRect = dino.getBoundingClientRect();
-            const cactusRect = cactus.getBoundingClientRect();
+            let onPlatform = false;
 
-            if (
-                dinoRect.left < cactusRect.right &&
-                dinoRect.right > cactusRect.left &&
-                dinoRect.bottom > cactusRect.top + 20 // Adjust for ground height
-            ) {
+            platforms.forEach(platform => {
+                const platformRect = platform.getBoundingClientRect();
+                if (
+                    dinoRect.left < platformRect.right &&
+                    dinoRect.right > platformRect.left &&
+                    dinoRect.bottom > platformRect.top
+                ) {
+                    onPlatform = true;
+                }
+            });
+
+            if (!onPlatform && dinoRect.bottom < window.innerHeight) {
                 alert("Game Over! Your score was: " + score);
                 clearInterval(gameInterval);
-                document.location.reload(); // Restart the game
+                isGameOver = true; // Set game over state
             }
         }
 
         function updateScore() {
-            score++;
-            scoreElement.innerText = `Score: ${score}`;
+            if (!isGameOver) {
+                score++;
+                scoreElement.innerText = `Score: ${score}`;
+            }
+            checkFall(); // Check if dino has fallen
         }
     </script>
 </body>
