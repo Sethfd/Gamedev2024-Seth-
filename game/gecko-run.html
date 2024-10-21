@@ -15,6 +15,7 @@
             width: 100%;
             height: 200px;
             overflow: hidden;
+            background-color: #e0f7fa; /* Optional background color */
         }
 
         #sky {
@@ -22,7 +23,8 @@
             width: 100%;
             height: 100px; /* Height for sky */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(11).png?raw=true'); /* Sky image */
-            background-size: cover;
+            background-size: cover; /* Ensures the sky image covers the area */
+            background-position: center; /* Center the image */
             top: 0;
         }
 
@@ -31,7 +33,8 @@
             width: 100%;
             height: 100px; /* Height for ground */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(9).png?raw=true'); /* Ground image */
-            background-size: cover;
+            background-size: cover; /* Ensures the ground image covers the area */
+            background-position: center; /* Center the image */
             bottom: 0;
         }
 
@@ -39,30 +42,22 @@
             position: absolute;
             bottom: 100px; /* Align with ground */
             left: 50px;
-            width: 50px;
-            height: 50px;
+            width: 60px; /* Adjust size for better fit */
+            height: 60px; /* Adjust size for better fit */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(10).png?raw=true'); /* Dino image */
-            background-size: cover;
+            background-size: contain; /* Maintain aspect ratio */
+            background-repeat: no-repeat; /* Prevent repeating */
         }
 
-        #cactus {
+        .cactus {
             position: absolute;
             bottom: 100px; /* Align with ground */
             right: -50px; /* Start off-screen */
-            width: 50px;
-            height: 50px;
+            width: 40px; /* Adjust size for better fit */
+            height: 60px; /* Adjust size for better fit */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(7).png?raw=true'); /* Cactus image */
-            background-size: cover;
-            animation: moveCactus 2s linear infinite;
-        }
-
-        @keyframes moveCactus {
-            from {
-                right: -50px;
-            }
-            to {
-                right: 100%;
-            }
+            background-size: contain; /* Maintain aspect ratio */
+            background-repeat: no-repeat; /* Prevent repeating */
         }
 
         .jump {
@@ -71,7 +66,7 @@
 
         @keyframes jump {
             0% { bottom: 100px; }
-            50% { bottom: 200px; }
+            50% { bottom: 180px; } /* Slightly lower jump height */
             100% { bottom: 100px; }
         }
 
@@ -89,19 +84,17 @@
         <div id="sky"></div>
         <div id="ground"></div>
         <div id="dino"></div>
-        <div id="cactus"></div>
         <div id="score">Score: 0</div>
     </div>
     <script>
         const dino = document.getElementById('dino');
-        const cactus = document.getElementById('cactus');
         const scoreElement = document.getElementById('score');
 
         let score = 0;
         let gameInterval = setInterval(updateScore, 1000);
 
         document.addEventListener('keydown', jump);
-
+        
         function jump() {
             if (!dino.classList.contains('jump')) {
                 dino.classList.add('jump');
@@ -111,9 +104,36 @@
             }
         }
 
+        function spawnCactus() {
+            const newCactus = document.createElement('div');
+            newCactus.className = 'cactus';
+            newCactus.style.position = 'absolute';
+            newCactus.style.bottom = '100px'; 
+            newCactus.style.right = '-50px'; 
+            newCactus.style.width = '40px'; /* Adjust size for better fit */
+            newCactus.style.height = '60px'; /* Adjust size for better fit */
+            newCactus.style.backgroundImage = 'url(https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(7).png?raw=true)';
+            newCactus.style.backgroundSize = 'contain'; /* Maintain aspect ratio */
+            newCactus.style.backgroundRepeat = 'no-repeat'; /* Prevent repeating */
+            
+            document.getElementById('gameContainer').appendChild(newCactus);
+            
+            let moveInterval = setInterval(() => {
+                const cactusRect = newCactus.getBoundingClientRect();
+                if (cactusRect.right < 0) {
+                    clearInterval(moveInterval);
+                    newCactus.remove();
+                } else {
+                    newCactus.style.right = (parseInt(newCactus.style.right) + 5) + 'px'; // Adjust speed
+                    checkCollision(newCactus); // Check collision with the new cactus
+                }
+            }, 50);
+        }
+
+        setInterval(spawnCactus, 2000); // Spawn a cactus every 2 seconds
         setInterval(checkCollision, 50);
 
-        function checkCollision() {
+        function checkCollision(cactus) {
             const dinoRect = dino.getBoundingClientRect();
             const cactusRect = cactus.getBoundingClientRect();
 
