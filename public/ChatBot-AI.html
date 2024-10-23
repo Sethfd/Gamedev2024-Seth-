@@ -3,300 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Chatbot</title>
+    <title>Silly Chatbot</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #chatbox { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
-        #userInput { width: calc(100% - 80px); margin-right: 10px; }
-        button { padding: 10px; }
-        .message { margin: 5px 0; }
-        .user { color: blue; }
-        .bot { color: green; }
-        .loading { font-style: italic; color: gray; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin: 20px;
+        }
+        #chatbox {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+        }
+        button {
+            padding: 10px;
+        }
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
 
-<h1>Simple Chatbot</h1>
+<h1>Silly Chatbot</h1>
 <div id="chatbox"></div>
-<input type="text" id="userInput" placeholder="Type your message..." />
-<button onclick="sendMessage()">Send</button>
+<input type="text" id="userInput" placeholder="Type your question..." onkeydown="checkEnter(event)">
+<button onclick="getResponse()">Send</button>
 
 <script>
-    const responses = {
-        greet: [
-            "Hello!", "Hi there!", "Greetings!", "Howdy!",
-            "What's up?", "Hey!", "Salutations!", "Hello, friend!",
-            "Hi! How can I assist you today?", "Good to see you!",
-            "Hey there! What can I do for you?", "Hi! How's your day going?"
-        ],
-        bye: [
-            "Goodbye!", "See you later!", "Take care!", "Farewell!",
-            "Catch you later!", "Until next time!", "Bye! Have a great day!",
-            "See you soon!", "Adios!", "So long!",
-            "Take care! Until next time!", "I’ll be here when you need me!"
-        ],
-        thanks: [
-            "You're welcome!", "No problem!", "Glad to help!",
-            "Anytime!", "My pleasure!", "Happy to assist!",
-            "No worries!", "You got it!", "Absolutely!", "Sure thing!",
-            "It was my pleasure!", "Just doing my job!", "I'm happy to help!"
-        ],
-        questions: [
-            "How can I help you?", "What would you like to know?",
-            "Is there something specific you need?", "Feel free to ask me anything!",
-            "What’s on your mind?", "How can I assist you today?",
-            "Do you have a question for me?", "What can I do for you?",
-            "Is there anything you'd like to discuss?", "I'm all ears for your questions!"
-        ],
-        json: [
-            "JSON stands for JavaScript Object Notation and is used for data interchange.",
-            "A JSON object is a collection of key/value pairs enclosed in curly braces.",
-            "JSON is easy for humans to read and write, and easy for machines to parse and generate.",
-            "You can parse JSON using JavaScript's `JSON.parse()` method."
-        ],
-        events: [
-            "JavaScript events are actions that occur in the browser, such as clicks or key presses.",
-            "You can listen for events using `addEventListener()` method.",
-            "Common events include 'click', 'mouseover', 'keypress', and 'load'.",
-            "Events can be triggered manually using methods like `dispatchEvent()`."
-        ],
-        arrays: [
-            "An array is a list-like object in JavaScript that can hold multiple values.",
-            "You can create an array using square brackets, e.g., `let arr = []`.",
-            "Common array methods include `push()`, `pop()`, `map()`, and `filter()`.",
-            "Arrays are zero-indexed, meaning the first element is at index 0."
-        ],
-        javascript: [
-            "JavaScript is a versatile programming language primarily used for web development.",
-            "You can use JavaScript to manipulate HTML and CSS, create dynamic content, and handle events.",
-            "JavaScript supports both object-oriented and functional programming paradigms.",
-            "Common JavaScript features include functions, objects, and asynchronous programming."
-        ],
-        objects: [
-            "In JavaScript, an object is a collection of properties, each with a key and a value.",
-            "You can create an object using curly braces, e.g., `let obj = { key: value }`.",
-            "Objects can also contain methods, which are functions stored as object properties.",
-            "You can access object properties using dot notation or bracket notation."
-        ],
-        css: [
-            "CSS stands for Cascading Style Sheets and is used to style HTML documents.",
-            "You can apply styles to elements using selectors, properties, and values.",
-            "CSS can be included in HTML via `<style>` tags or linked externally using `<link>`.",
-            "Common properties include `color`, `font-size`, `margin`, and `padding`."
-        ],
-        html: [
-            "HTML stands for HyperText Markup Language and is the standard language for creating web pages.",
-            "HTML elements are defined by tags, e.g., `<p>`, `<h1>`, `<div>`, and more.",
-            "You can structure content with headings, paragraphs, links, and lists.",
-            "HTML forms are created using the `<form>` tag to collect user input."
-        ],
-        python: [
-            "Python is a high-level programming language known for its readability.",
-            "It supports multiple programming paradigms, including procedural and object-oriented.",
-            "Common uses of Python include web development, data analysis, and machine learning.",
-            "You can create a list in Python using square brackets, e.g., `my_list = []`."
-        ],
-        sql: [
-            "SQL stands for Structured Query Language and is used to communicate with databases.",
-            "Common SQL commands include `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.",
-            "You can filter results using the `WHERE` clause.",
-            "SQL databases are structured in tables, with rows representing records and columns representing fields."
-        ],
-        algorithms: [
-            "An algorithm is a step-by-step procedure for solving a problem.",
-            "Common algorithms include sorting (like bubble sort) and searching (like binary search).",
-            "Algorithms can be analyzed for time and space complexity.",
-            "Understanding algorithms is crucial for optimizing code performance."
-        ],
-        apis: [
-            "An API (Application Programming Interface) allows different software applications to communicate.",
-            "APIs can be RESTful, using HTTP requests to perform CRUD operations.",
-            "Commonly used APIs include those for social media platforms and payment gateways.",
-            "You can interact with an API using tools like Postman or through code with fetch in JavaScript."
-        ],
-        machineLearning: [
-            "Machine learning is a subset of artificial intelligence that enables systems to learn from data.",
-            "Common algorithms include supervised learning (like regression) and unsupervised learning (like clustering).",
-            "Machine learning models can be trained using libraries like TensorFlow or Scikit-learn.",
-            "It's used in various applications, such as image recognition, natural language processing, and recommendation systems."
-        ],
-        more: {
-            json: [
-                "You can also validate JSON using various online tools.",
-                "JSON supports nested structures, allowing objects to contain other objects or arrays."
-            ],
-            events: [
-                "Event delegation is a useful technique for managing events on multiple child elements.",
-                "Events can also bubble up the DOM, allowing for parent elements to listen for events triggered by children."
-            ],
-            arrays: [
-                "You can use the `map()` method to create a new array with the results of calling a function on every element.",
-                "The `filter()` method creates a new array with all elements that pass the test implemented by the provided function."
-            ],
-            javascript: [
-                "JavaScript can run in various environments, including web browsers and server-side using Node.js.",
-                "It supports asynchronous programming with promises and async/await syntax."
-            ],
-            objects: [
-                "You can use the `Object.keys()` method to get an array of an object's keys.",
-                "JavaScript also supports prototype-based inheritance for objects."
-            ],
-            css: [
-                "CSS allows for responsive designs using media queries.",
-                "Flexbox and Grid are powerful layout systems in CSS."
-            ],
-            html: [
-                "HTML5 introduced new elements like `<header>`, `<footer>`, and `<article>` for better semantics.",
-                "You can embed multimedia elements using `<audio>` and `<video>` tags."
-            ],
-            python: [
-                "Python has a rich ecosystem of libraries for various tasks, including NumPy for numerical computing and Pandas for data analysis.",
-                "It's widely used in web development with frameworks like Django and Flask."
-            ],
-            sql: [
-                "SQL supports joins to combine data from multiple tables.",
-                "You can create views in SQL to simplify complex queries."
-            ],
-            algorithms: [
-                "Algorithms can be implemented in various programming languages, and their efficiency can vary significantly between them.",
-                "Understanding big O notation helps in analyzing algorithm performance."
-            ],
-            apis: [
-                "APIs can return data in different formats, such as JSON or XML.",
-                "Rate limiting is often implemented in APIs to control the number of requests a client can make."
-            ],
-            machineLearning: [
-                "Supervised learning requires labeled data, while unsupervised learning works with unlabeled data.",
-                "Deep learning is a subset of machine learning that uses neural networks."
-            ]
-        },
-        motivational: [
-            "Believe in yourself! You can achieve anything!",
-            "Every day is a new beginning. Take a deep breath and start again.",
-            "You are stronger than you think!",
-            "Keep pushing forward, you got this!",
-            "Success is not the key to happiness. Happiness is the key to success!",
-            "Dream big and dare to fail!",
-            "You are capable of amazing things!"
-        ],
-        random: [
-            "Here's a fun fact: A shrimp's heart is located in its head!",
-            "Did you know? The longest time between two twins being born is 87 days!",
-            "Here's a quirky thought: A snail can sleep for three years!",
-            "Did you know? The unicorn is Scotland's national animal!",
-            "Here's something to ponder: You can't hum while holding your nose!"
-        ],
-        default: [
-            "I'm not sure how to respond to that.", "Could you rephrase that?",
-            "That's interesting! Tell me more.", "I'm here to listen.",
-            "I don't quite understand. Can you elaborate?", "What do you mean by that?",
-            "Sorry, I'm not sure about that.", "Can you ask something else?",
-            "That’s a new one for me!", "I’m still learning, but I’m here to help!"
-        ]
-    };
+    const responses = [
+        "Sure, but only if the spaghetti dances first!",
+        "Absolutely, but first, let's discuss the meaning of life with a llama.",
+        "Of course! Right after I finish my ice cream sandwich with sprinkles.",
+        "Yes, but only on Tuesdays during a full moon!",
+        "That sounds great, but do you have a pet rock?",
+        "Why not! Just remember, penguins can't fly, but they can certainly surf!",
+        "If I had a nickel for every time I heard that, I'd have a whole collection of buttons!",
+        "Only if the clouds decide to wear hats today!",
+        "Sure! But my goldfish might get jealous.",
+        "Of course, but let’s first train a squirrel to juggle!",
+        "Definitely! As long as we have a dance party with invisible friends.",
+        "Sure, but my cactus needs a backstory first!",
+        "Yes! But only if unicorns can join our meeting!",
+        "Absolutely, but you have to promise to wear mismatched socks!",
+        "Only if we can communicate through interpretive dance!",
+        "Of course! Just remind me to invite the flying turtles.",
+        "Definitely! But only if the moon is made of cheese!",
+        "Yes, but my imaginary friend has a prior engagement!",
+        "Of course! As long as we wear sunglasses at night!",
+        "Sure, but we need to ask the rubber duck for permission!",
+        "Absolutely! But I need to consult my crystal ball first!",
+        "Only if we can fly to Mars on a giant paper airplane!",
+        "Yes, but we must first summon the great wizard of silliness!",
+        "Sure! But let's promise not to take ourselves too seriously!",
+        "Of course! Just remember to bring your favorite pair of socks!",
+        "Absolutely, but my pet goldfish wants to join the conversation!",
+        "Sure, but I need to check if my toaster is feeling artistic!",
+        "Only if we can wear capes while doing it!",
+        "Of course! But only after we have a tea party with talking muffins.",
+        "Absolutely! Just remind me to charge my battery-operated unicorn.",
+        "Yes, but my shoes might protest against wearing mismatched laces!",
+        "Sure! But only if we can dance with the moonbeams!",
+        "Definitely! As long as the jellybeans agree to the terms!",
+        "Of course! Just don't forget to feed the imaginary dragon!",
+        "Absolutely! But only if we can have a parade for invisible elephants!"
+    ];
 
-    let lastTopic = "";
+    let enterCount = 0;
 
-    function respond(userInput) {
-        userInput = userInput.toLowerCase();
-
-        if (userInput.includes("tell me more") && lastTopic) {
-            return getRandomResponse(responses.more[lastTopic]);
-        }
-
-        if (userInput.includes("hi") || userInput.includes("hello")) {
-            lastTopic = "greet";
-            return getRandomResponse(responses.greet);
-        } else if (userInput.includes("bye")) {
-            lastTopic = "bye";
-            return getRandomResponse(responses.bye);
-        } else if (userInput.includes("thank")) {
-            lastTopic = "thanks";
-            return getRandomResponse(responses.thanks);
-        } else if (userInput.includes("how") || userInput.includes("what")) {
-            lastTopic = "questions";
-            return getRandomResponse(responses.questions);
-        } else if (userInput.includes("json")) {
-            lastTopic = "json";
-            return getRandomResponse(responses.json);
-        } else if (userInput.includes("events")) {
-            lastTopic = "events";
-            return getRandomResponse(responses.events);
-        } else if (userInput.includes("arrays")) {
-            lastTopic = "arrays";
-            return getRandomResponse(responses.arrays);
-        } else if (userInput.includes("javascript")) {
-            lastTopic = "javascript";
-            return getRandomResponse(responses.javascript);
-        } else if (userInput.includes("objects")) {
-            lastTopic = "objects";
-            return getRandomResponse(responses.objects);
-        } else if (userInput.includes("css")) {
-            lastTopic = "css";
-            return getRandomResponse(responses.css);
-        } else if (userInput.includes("html")) {
-            lastTopic = "html";
-            return getRandomResponse(responses.html);
-        } else if (userInput.includes("python")) {
-            lastTopic = "python";
-            return getRandomResponse(responses.python);
-        } else if (userInput.includes("sql")) {
-            lastTopic = "sql";
-            return getRandomResponse(responses.sql);
-        } else if (userInput.includes("algorithm")) {
-            lastTopic = "algorithms";
-            return getRandomResponse(responses.algorithms);
-        } else if (userInput.includes("api")) {
-            lastTopic = "apis";
-            return getRandomResponse(responses.apis);
-        } else if (userInput.includes("machine learning")) {
-            lastTopic = "machineLearning";
-            return getRandomResponse(responses.machineLearning);
-        } else if (userInput.includes("motivate") || userInput.includes("inspire")) {
-            lastTopic = "motivational";
-            return getRandomResponse(responses.motivational);
-        } else if (userInput.includes("random")) {
-            lastTopic = "random";
-            return getRandomResponse(responses.random);
-        } else {
-            lastTopic = "default";
-            return getRandomResponse(responses.default);
-        }
-    }
-
-    function getRandomResponse(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
-
-    function sendMessage() {
-        const userInput = document.getElementById("userInput").value;
-        if (userInput) {
-            addMessageToChat("You: " + userInput, "user");
-            addMessageToChat("Bot: Bot is typing...", "loading");
-            setTimeout(() => {
-                const botResponse = respond(userInput);
-                addMessageToChat("Bot: " + botResponse, "bot");
-            }, 1000); // Simulate delay
-            document.getElementById("userInput").value = ""; // Clear input
-        }
-    }
-
-    function addMessageToChat(message, type) {
-        const chatbox = document.getElementById("chatbox");
-        const msgElement = document.createElement("div");
-        msgElement.className = "message " + type;
-        msgElement.textContent = message;
-        chatbox.appendChild(msgElement);
-        chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to bottom
-    }
-
-    // Add event listener for the Enter key
-    document.getElementById("userInput").addEventListener("keypress", function(event) {
+    function checkEnter(event) {
         if (event.key === "Enter") {
-            sendMessage();
+            enterCount++;
+            if (enterCount === 2) {
+                getResponse();
+                enterCount = 0; // Reset the count after sending
+            }
+        } else {
+            enterCount = 0; // Reset if any other key is pressed
         }
-    });
+    }
+
+    function getResponse() {
+        const userInput = document.getElementById('userInput').value;
+        if (userInput.toLowerCase() === 'exit' || userInput.toLowerCase() === 'quit') {
+            document.getElementById('chatbox').innerHTML += "<div>Silly Bot: Bye! Don't forget to feed your imaginary unicorn!</div>";
+            document.getElementById('userInput').disabled = true;
+            return;
+        }
+
+        // Random chance to not respond
+        const chanceToRespond = Math.random();
+        if (chanceToRespond < 0.2) { // 20% chance to not respond
+            document.getElementById('chatbox').innerHTML += `<div class="error">Silly Bot: Oops! I can't answer that right now!</div>`;
+        } else {
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            document.getElementById('chatbox').innerHTML += `<div>You: ${userInput}</div>`;
+            document.getElementById('chatbox').innerHTML += `<div>Silly Bot: ${randomResponse}</div>`;
+        }
+        
+        document.getElementById('userInput').value = '';
+        document.getElementById('chatbox').scrollTop = chatbox.scrollHeight; // Auto scroll
+    }
 </script>
 
 </body>
