@@ -27,11 +27,12 @@
             position: absolute;
             bottom: 50px; /* Initial position above ground */
             left: 100px;
-            width: 50px; /* Adjust width according to your sprite */
-            height: 50px; /* Adjust height according to your sprite */
+            width: 50px; /* Adjust according to your sprite */
+            height: 50px; /* Adjust according to your sprite */
             background-size: cover; /* Images will cover the player div */
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* New player image */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Player image */
+            z-index: 10; /* Ensure the player is above the model */
         }
 
         #ground {
@@ -40,6 +41,17 @@
             width: 100%;
             height: 50px; /* Height of the ground */
             background-color: #228B22; /* Forest Green */
+        }
+
+        .model {
+            position: absolute;
+            bottom: 50px; /* Position model above the ground */
+            left: 100px; /* Align with the player's left position */
+            width: 70px; /* Width of the model */
+            height: 70px; /* Height of the model */
+            background-color: #a52a2a; /* Brown color for the model */
+            border-radius: 25px; /* To create a more rounded appearance */
+            z-index: 1; /* Behind the player */
         }
 
         .tree {
@@ -66,6 +78,7 @@
 </head>
 <body>
     <div id="game-container">
+        <div class="model"></div> <!-- CSS model -->
         <div id="player"></div>
         <div id="ground"></div>
         <div id="tree1" class="tree"></div> <!-- First tree -->
