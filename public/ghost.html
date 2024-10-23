@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Platformer</title>
+    <title>Simple Platformer with Trees</title>
     <style>
         body {
             margin: 0;
@@ -27,11 +27,11 @@
             position: absolute;
             bottom: 50px; /* Initial position above ground */
             left: 100px;
-            width: 50px; /* Width of the player sprite */
-            height: 50px; /* Height of the player sprite */
+            width: 50px; /* Adjust width according to your sprite */
+            height: 50px; /* Adjust height according to your sprite */
             background-size: cover; /* Images will cover the player div */
             background-repeat: no-repeat;
-            background-image: url('path/to/your/sprite1.png'); /* Default starting image */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* New player image */
         }
 
         #ground {
@@ -41,12 +41,35 @@
             height: 50px; /* Height of the ground */
             background-color: #228B22; /* Forest Green */
         }
+
+        .tree {
+            position: absolute;
+            bottom: 50px; /* Position trees above the ground */
+            width: 100px; /* Width of the tree */
+            height: 100px; /* Height of the tree */
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        /* Example tree styles: replace these URLs with your actual tree PNG image paths */
+        #tree1 {
+            left: 200px; /* Position of the first tree */
+            background-image: url('https://example.com/tree1.png'); /* Tree image */
+        }
+
+        #tree2 {
+            left: 400px; /* Position of the second tree */
+            background-image: url('https://example.com/tree2.png'); /* Tree image */
+        }
+
     </style>
 </head>
 <body>
     <div id="game-container">
         <div id="player"></div>
         <div id="ground"></div>
+        <div id="tree1" class="tree"></div> <!-- First tree -->
+        <div id="tree2" class="tree"></div> <!-- Second tree -->
     </div>
     <script>
         const player = document.getElementById('player');
@@ -58,59 +81,53 @@
         let gravity = 2;
         let frame = 0;
 
-        // Animation frames (add your PNG images here)
+        // Animation frames (You can add more frames if necessary)
         const playerFrames = [
-            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(14).png?raw=true',
-            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(17).png?raw=true',
-            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(14).png?raw=true',
-            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(17).png?raw=true'
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true', // New player image
+            // You can add more frames for player animation here if needed
         ];
 
-        const totalFrames = playerFrames.length; // Total frames in your sprite sheet
-        const frameDuration = 100; // Duration for each frame in milliseconds
+        const totalFrames = playerFrames.length; 
+        const frameDuration = 100; 
         let lastFrameTime = 0;
 
         // Event listener for the space key to jump
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' && !isJumping) {
                 isJumping = true;
-                jumpHeight = 0; // Reset jump height on new jump
+                jumpHeight = 0; 
             }
         });
 
         // Game loop
         function gameLoop(timestamp) {
-            // Jumping logic
             if (isJumping) {
-                jumpHeight += gravity; // Increase jump height
-                player.style.bottom = `${50 + 100 - jumpHeight}px`; // Move player upwards
+                jumpHeight += gravity; 
+                player.style.bottom = `${50 + 100 - jumpHeight}px`; 
 
-                // Check if the player needs to come down
                 if (jumpHeight >= 100) {
-                    isJumping = false; // Stop jumping
+                    isJumping = false; 
                 }
             } else {
-                // The player is falling back down
                 if (parseInt(player.style.bottom) < 50) {
-                    jumpHeight += gravity; // Update falling height
+                    jumpHeight += gravity; 
                     player.style.bottom = `${parseInt(player.style.bottom) + gravity}px`;
                 } else {
-                    player.style.bottom = '50px'; // Reset to ground level
+                    player.style.bottom = '50px'; 
                 }
             }
 
-            // Handle player animation
             if (!isJumping && jumpHeight === 0) {
                 if (timestamp - lastFrameTime >= frameDuration) {
-                    frame = (frame + 1) % totalFrames; // Cycle through frames
-                    player.style.backgroundImage = `url(${playerFrames[frame]})`; // Update background image
-                    lastFrameTime = timestamp; // Update last frame time
+                    frame = (frame + 1) % totalFrames; 
+                    player.style.backgroundImage = `url(${playerFrames[frame]})`; 
+                    lastFrameTime = timestamp; 
                 }
             } else {
-                player.style.backgroundImage = `url(${playerFrames[0]})`; // Set to idle frame when jumping
+                player.style.backgroundImage = `url(${playerFrames[0]})`; 
             }
 
-            requestAnimationFrame(gameLoop); // Loop the game
+            requestAnimationFrame(gameLoop); 
         }
 
         // Start the game loop
