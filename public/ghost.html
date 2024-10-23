@@ -1,1 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Platformer</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #87CEEB; /* Light blue background */
+        }
 
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            overflow: hidden;
+            background-color: #ffffff; /* White background for the game area */
+            border: 2px solid #000;
+        }
+
+        #player {
+            position: absolute;
+            bottom: 50px; /* Initial position above ground */
+            left: 100px;
+            width: 50px; /* Width of the player sprite */
+            height: 50px; /* Height of the player sprite */
+            background-size: cover; /* Images will cover the player div */
+            background-repeat: no-repeat;
+            background-image: url('path/to/your/sprite1.png'); /* Default starting image */
+        }
+
+        #ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px; /* Height of the ground */
+            background-color: #228B22; /* Forest Green */
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="ground"></div>
+    </div>
+    <script>
+        const player = document.getElementById('player');
+        const ground = document.getElementById('ground');
+
+        // Player state
+        let isJumping = false;
+        let jumpHeight = 0;
+        let gravity = 2;
+        let frame = 0;
+
+        // Animation frames (add your PNG images here)
+        const playerFrames = [
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(14).png?raw=true',
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(17).png?raw=true',
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(14).png?raw=true',
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/game/pixil-frame-0%20(17).png?raw=true'
+        ];
+
+        const totalFrames = playerFrames.length; // Total frames in your sprite sheet
+        const frameDuration = 100; // Duration for each frame in milliseconds
+        let lastFrameTime = 0;
+
+        // Event listener for the space key to jump
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && !isJumping) {
+                isJumping = true;
+                jumpHeight = 0; // Reset jump height on new jump
+            }
+        });
+
+        // Game loop
+        function gameLoop(timestamp) {
+            // Jumping logic
+            if (isJumping) {
+                jumpHeight += gravity; // Increase jump height
+                player.style.bottom = `${50 + 100 - jumpHeight}px`; // Move player upwards
+
+                // Check if the player needs to come down
+                if (jumpHeight >= 100) {
+                    isJumping = false; // Stop jumping
+                }
+            } else {
+                // The player is falling back down
+                if (parseInt(player.style.bottom) < 50) {
+                    jumpHeight += gravity; // Update falling height
+                    player.style.bottom = `${parseInt(player.style.bottom) + gravity}px`;
+                } else {
+                    player.style.bottom = '50px'; // Reset to ground level
+                }
+            }
+
+            // Handle player animation
+            if (!isJumping && jumpHeight === 0) {
+                if (timestamp - lastFrameTime >= frameDuration) {
+                    frame = (frame + 1) % totalFrames; // Cycle through frames
+                    player.style.backgroundImage = `url(${playerFrames[frame]})`; // Update background image
+                    lastFrameTime = timestamp; // Update last frame time
+                }
+            } else {
+                player.style.backgroundImage = `url(${playerFrames[0]})`; // Set to idle frame when jumping
+            }
+
+            requestAnimationFrame(gameLoop); // Loop the game
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>
