@@ -133,15 +133,22 @@
                 const playerRect = player.getBoundingClientRect();
                 const obstacleRect = obstacle.getBoundingClientRect();
                 if (
-                    playerRect.x < obstacleRect.x + obstacleRect.width &&
-                    playerRect.x + playerRect.width > obstacleRect.x &&
-                    playerRect.y < obstacleRect.y + obstacleRect.height &&
-                    playerRect.y + playerRect.height > obstacleRect.y
+                    playerRect.left < obstacleRect.left + obstacleRect.width &&
+                    playerRect.left + playerRect.width > obstacleRect.left &&
+                    playerRect.bottom > obstacleRect.top
                 ) {
                     alert('Game Over! Your score: ' + score);
                     clearInterval(interval);
+                    resetGame();
                 }
             }, 20);
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreDisplay.innerText = 'Score: ' + score;
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
         }
 
         // Create obstacles at intervals
