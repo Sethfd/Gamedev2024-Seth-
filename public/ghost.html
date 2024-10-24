@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Platformer with Trees</title>
+    <title>Forest Platformer</title>
     <style>
         body {
             margin: 0;
@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #87CEEB; /* Light blue background */
+            background-color: #87CEEB; /* Light blue background for sky */
         }
 
         #game-container {
@@ -19,8 +19,10 @@
             width: 800px;
             height: 600px;
             overflow: hidden;
-            background-color: #ffffff; /* White background for the game area */
+            background-color: #ffffff; /* Background for the game area */
             border: 2px solid #000;
+            background-image: url('https://yourdomain.com/path/to/forest-background.png'); /* Add a forest background */
+            background-size: cover;
         }
 
         #player {
@@ -63,15 +65,25 @@
             background-repeat: no-repeat;
         }
 
-        /* Example tree styles: replace these URLs with your actual tree PNG image paths */
+        /* Example tree styles with provided image URL */
         #tree1 {
-            left: 200px; /* Position of the first tree */
-            background-image: url('https://example.com/tree1.png'); /* Tree image */
+            left: 100px; /* Position of the first tree */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
         }
 
         #tree2 {
-            left: 400px; /* Position of the second tree */
-            background-image: url('https://example.com/tree2.png'); /* Tree image */
+            left: 300px; /* Position of the second tree */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
+        }
+
+        #tree3 {
+            left: 500px; /* Position of the third tree */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
+        }
+
+        #tree4 {
+            left: 700px; /* Position of the fourth tree */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
         }
 
     </style>
@@ -83,6 +95,8 @@
         <div id="ground"></div>
         <div id="tree1" class="tree"></div> <!-- First tree -->
         <div id="tree2" class="tree"></div> <!-- Second tree -->
+        <div id="tree3" class="tree"></div> <!-- Third tree -->
+        <div id="tree4" class="tree"></div> <!-- Fourth tree -->
     </div>
     <script>
         const player = document.getElementById('player');
