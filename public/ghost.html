@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #87CEEB; /* Light blue background for sky */
+            background-color: #001f3f; /* Dark blue background for sky */
         }
 
         #game-container {
@@ -21,7 +21,6 @@
             overflow: hidden;
             background-color: #ffffff; /* Background for the game area */
             border: 2px solid #000;
-            background-size: cover;
         }
 
         #player {
@@ -34,6 +33,7 @@
             background-repeat: no-repeat;
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(19).png?raw=true'); /* Updated player image */
             z-index: 10; /* Ensure the player is above the model */
+            transition: left 0.1s; /* Smooth transition for horizontal movement */
         }
 
         #ground {
@@ -84,8 +84,8 @@
         #tree8 { left: 350px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
 
         /* Tall trees */
-        #tallTree1 { left: 200px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(21).png?raw=true'); }
-        #tallTree2 { left: 400px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(21).png?raw=true'); }
+        #tallTree1 { left: 200px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(22).png?raw=true'); }
+        #tallTree2 { left: 400px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(22).png?raw=true'); }
 
     </style>
 </head>
@@ -115,6 +115,7 @@
         let gravity = 2;
         let frame = 0;
         let positionX = 100; // Player's X position
+        const speed = 5; // Movement speed
 
         // Animation frames
         const playerFrames = [
@@ -132,12 +133,12 @@
                 jumpHeight = 0; 
             }
             if (event.code === 'ArrowLeft') {
-                positionX -= 5; // Move left
+                positionX -= speed; // Move left
                 if (positionX < 0) positionX = 0; // Prevent going off-screen
                 player.style.left = `${positionX}px`;
             }
             if (event.code === 'ArrowRight') {
-                positionX += 5; // Move right
+                positionX += speed; // Move right
                 if (positionX > 750) positionX = 750; // Prevent going off-screen
                 player.style.left = `${positionX}px`;
             }
