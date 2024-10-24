@@ -45,17 +45,6 @@
             background-color: #228B22; /* Forest Green */
         }
 
-        .model {
-            position: absolute;
-            bottom: 50px; /* Position model above the ground */
-            left: 100px; /* Align with the player's left position */
-            width: 70px; /* Width of the model */
-            height: 70px; /* Height of the model */
-            background-color: #a52a2a; /* Brown color for the model */
-            border-radius: 25px; /* To create a more rounded appearance */
-            z-index: 1; /* Behind the player */
-        }
-
         .tree {
             position: absolute;
             bottom: 50px; /* Position trees above the ground */
@@ -66,20 +55,19 @@
         }
 
         /* Example tree styles */
-        #tree1 { left: 100px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree2 { left: 300px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree3 { left: 500px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree4 { left: 700px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree5 { left: 150px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree6 { left: 450px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree7 { left: 650px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree8 { left: 350px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree1 { left: 300px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree2 { left: 500px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree3 { left: 700px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree4 { left: 900px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree5 { left: 1100px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree6 { left: 1300px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree7 { left: 1500px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree8 { left: 1700px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
 
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div class="model"></div> <!-- CSS model -->
         <div id="player"></div>
         <div id="ground"></div>
         <div id="tree1" class="tree"></div> <!-- First tree -->
@@ -94,6 +82,7 @@
     <script>
         const player = document.getElementById('player');
         const ground = document.getElementById('ground');
+        const trees = document.querySelectorAll('.tree');
 
         // Player state
         let positionX = 100; // Player's X position
@@ -116,13 +105,26 @@
                 positionX -= speed; // Move left
                 if (positionX < 0) positionX = 0; // Prevent going off-screen
                 player.style.left = `${positionX}px`;
+                moveTrees(speed); // Move trees left
             }
             if (event.code === 'ArrowRight') {
                 positionX += speed; // Move right
                 if (positionX > window.innerWidth - 50) positionX = window.innerWidth - 50; // Prevent going off-screen
                 player.style.left = `${positionX}px`;
+                moveTrees(-speed); // Move trees right
             }
         });
+
+        // Function to move trees
+        function moveTrees(amount) {
+            trees.forEach(tree => {
+                const currentLeft = parseInt(tree.style.left);
+                tree.style.left = `${currentLeft + amount}px`; // Move trees
+                if (currentLeft < -100) { // Reset tree position if it goes off-screen
+                    tree.style.left = `${window.innerWidth}px`;
+                }
+            });
+        }
 
         // Game loop
         function gameLoop(timestamp) {
