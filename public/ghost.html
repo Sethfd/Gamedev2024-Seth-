@@ -21,7 +21,6 @@
             overflow: hidden;
             background-color: #ffffff; /* Background for the game area */
             border: 2px solid #000;
-            background-image: url('https://yourdomain.com/path/to/forest-background.png'); /* Add a forest background */
             background-size: cover;
         }
 
@@ -65,26 +64,28 @@
             background-repeat: no-repeat;
         }
 
-        /* Example tree styles with provided image URL */
-        #tree1 {
-            left: 100px; /* Position of the first tree */
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
+        .tall-tree {
+            position: absolute;
+            bottom: 50px; /* Position tall trees above the ground */
+            width: 80px; /* Width of the tall tree */
+            height: 150px; /* Height of the tall tree */
+            background-size: cover;
+            background-repeat: no-repeat;
         }
 
-        #tree2 {
-            left: 300px; /* Position of the second tree */
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
-        }
+        /* Example tree styles */
+        #tree1 { left: 100px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree2 { left: 300px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree3 { left: 500px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree4 { left: 700px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree5 { left: 150px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree6 { left: 450px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree7 { left: 650px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
+        #tree8 { left: 350px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
 
-        #tree3 {
-            left: 500px; /* Position of the third tree */
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
-        }
-
-        #tree4 {
-            left: 700px; /* Position of the fourth tree */
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Tree image */
-        }
+        /* Tall trees */
+        #tallTree1 { left: 200px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(21).png?raw=true'); }
+        #tallTree2 { left: 400px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(21).png?raw=true'); }
 
     </style>
 </head>
@@ -97,6 +98,12 @@
         <div id="tree2" class="tree"></div> <!-- Second tree -->
         <div id="tree3" class="tree"></div> <!-- Third tree -->
         <div id="tree4" class="tree"></div> <!-- Fourth tree -->
+        <div id="tree5" class="tree"></div> <!-- Fifth tree -->
+        <div id="tree6" class="tree"></div> <!-- Sixth tree -->
+        <div id="tree7" class="tree"></div> <!-- Seventh tree -->
+        <div id="tree8" class="tree"></div> <!-- Eighth tree -->
+        <div id="tallTree1" class="tall-tree"></div> <!-- First tall tree -->
+        <div id="tallTree2" class="tall-tree"></div> <!-- Second tall tree -->
     </div>
     <script>
         const player = document.getElementById('player');
