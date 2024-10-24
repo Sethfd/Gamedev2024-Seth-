@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forest Platformer</title>
     <style>
+        * {
+            box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
+        }
+
         body {
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            overflow: hidden; /* Hide scrollbars */
             background-color: #001f3f; /* Dark blue background for sky */
         }
 
         #game-container {
-            position: relative;
-            width: 800px;
-            height: 600px;
+            position: absolute;
+            width: 100vw; /* Full width of viewport */
+            height: 100vh; /* Full height of viewport */
             overflow: hidden;
-            background-color: #ffffff; /* Background for the game area */
+            background-color: #001f3f; /* Dark blue background for the game area */
             border: 2px solid #000;
         }
 
@@ -31,7 +32,7 @@
             height: 50px; /* Adjust according to your sprite */
             background-size: cover; /* Images will cover the player div */
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(19).png?raw=true'); /* Updated player image */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(23).png?raw=true'); /* New player image */
             z-index: 10; /* Ensure the player is above the model */
             transition: left 0.1s; /* Smooth transition for horizontal movement */
         }
@@ -64,15 +65,6 @@
             background-repeat: no-repeat;
         }
 
-        .tall-tree {
-            position: absolute;
-            bottom: 50px; /* Position tall trees above the ground */
-            width: 80px; /* Width of the tall tree */
-            height: 150px; /* Height of the tall tree */
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
-
         /* Example tree styles */
         #tree1 { left: 100px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
         #tree2 { left: 300px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
@@ -82,10 +74,6 @@
         #tree6 { left: 450px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
         #tree7 { left: 650px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
         #tree8 { left: 350px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-
-        /* Tall trees */
-        #tallTree1 { left: 200px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(22).png?raw=true'); }
-        #tallTree2 { left: 400px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(22).png?raw=true'); }
 
     </style>
 </head>
@@ -102,36 +90,28 @@
         <div id="tree6" class="tree"></div> <!-- Sixth tree -->
         <div id="tree7" class="tree"></div> <!-- Seventh tree -->
         <div id="tree8" class="tree"></div> <!-- Eighth tree -->
-        <div id="tallTree1" class="tall-tree"></div> <!-- First tall tree -->
-        <div id="tallTree2" class="tall-tree"></div> <!-- Second tall tree -->
     </div>
     <script>
         const player = document.getElementById('player');
         const ground = document.getElementById('ground');
 
         // Player state
-        let isJumping = false;
-        let jumpHeight = 0;
-        let gravity = 2;
-        let frame = 0;
         let positionX = 100; // Player's X position
         const speed = 5; // Movement speed
 
         // Animation frames
         const playerFrames = [
-            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(19).png?raw=true', // Updated player image
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(23).png?raw=true' // New player image
+            // You can add more frames if you have them
         ];
 
         const totalFrames = playerFrames.length; 
         const frameDuration = 100; 
         let lastFrameTime = 0;
+        let frame = 0;
 
         // Event listener for key presses
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space' && !isJumping) {
-                isJumping = true;
-                jumpHeight = 0; 
-            }
             if (event.code === 'ArrowLeft') {
                 positionX -= speed; // Move left
                 if (positionX < 0) positionX = 0; // Prevent going off-screen
@@ -139,37 +119,17 @@
             }
             if (event.code === 'ArrowRight') {
                 positionX += speed; // Move right
-                if (positionX > 750) positionX = 750; // Prevent going off-screen
+                if (positionX > window.innerWidth - 50) positionX = window.innerWidth - 50; // Prevent going off-screen
                 player.style.left = `${positionX}px`;
             }
         });
 
         // Game loop
         function gameLoop(timestamp) {
-            if (isJumping) {
-                jumpHeight += gravity; 
-                player.style.bottom = `${50 + 100 - jumpHeight}px`; 
-
-                if (jumpHeight >= 100) {
-                    isJumping = false; 
-                }
-            } else {
-                if (parseInt(player.style.bottom) < 50) {
-                    jumpHeight += gravity; 
-                    player.style.bottom = `${parseInt(player.style.bottom) + gravity}px`;
-                } else {
-                    player.style.bottom = '50px'; 
-                }
-            }
-
-            if (!isJumping && jumpHeight === 0) {
-                if (timestamp - lastFrameTime >= frameDuration) {
-                    frame = (frame + 1) % totalFrames; 
-                    player.style.backgroundImage = `url(${playerFrames[frame]})`; 
-                    lastFrameTime = timestamp; 
-                }
-            } else {
-                player.style.backgroundImage = `url(${playerFrames[0]})`; 
+            if (timestamp - lastFrameTime >= frameDuration) {
+                frame = (frame + 1) % totalFrames; 
+                player.style.backgroundImage = `url(${playerFrames[frame]})`; 
+                lastFrameTime = timestamp; 
             }
 
             requestAnimationFrame(gameLoop); 
