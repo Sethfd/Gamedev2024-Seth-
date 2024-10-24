@@ -27,13 +27,24 @@
         .error {
             color: red;
         }
+        .instructions {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
 <h1>Silly Chatbot</h1>
+<div class="instructions">
+    <strong>Instructions:</strong><br>
+    1. Type your question in the input box.<br>
+    2. Press <strong>Shift + Ctrl + Alt</strong> + a letter (e.g., 'a') to submit your question.<br>
+    3. The bot will respond with a silly answer or a quirky message!
+</div>
 <div id="chatbox"></div>
-<input type="text" id="userInput" placeholder="Type your question..." onkeydown="checkEnter(event)">
+<input type="text" id="userInput" placeholder="Type your question..." onkeydown="checkKeys(event)">
 <button onclick="getResponse()">Send</button>
 
 <script>
@@ -77,20 +88,17 @@
 
     let enterCount = 0;
 
-    function checkEnter(event) {
-        if (event.key === "Enter") {
-            enterCount++;
-            if (enterCount === 2) {
+    function checkKeys(event) {
+        if (event.shiftKey && event.ctrlKey && event.altKey) {
+            // Check if a letter key is pressed
+            if (event.key.length === 1 && event.key.match(/[a-zA-Z]/)) {
                 getResponse();
-                enterCount = 0; // Reset the count after sending
             }
-        } else {
-            enterCount = 0; // Reset if any other key is pressed
         }
     }
 
     function getResponse() {
-        const userInput = document.getElementById('userInput').value;
+        const userInput = document.getElementById('userInput').value.trim();
         if (userInput.toLowerCase() === 'exit' || userInput.toLowerCase() === 'quit') {
             document.getElementById('chatbox').innerHTML += "<div>Silly Bot: Bye! Don't forget to feed your imaginary unicorn!</div>";
             document.getElementById('userInput').disabled = true;
@@ -106,7 +114,7 @@
             document.getElementById('chatbox').innerHTML += `<div>You: ${userInput}</div>`;
             document.getElementById('chatbox').innerHTML += `<div>Silly Bot: ${randomResponse}</div>`;
         }
-        
+
         document.getElementById('userInput').value = '';
         document.getElementById('chatbox').scrollTop = chatbox.scrollHeight; // Auto scroll
     }
