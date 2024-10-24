@@ -31,7 +31,7 @@
             height: 50px; /* Adjust according to your sprite */
             background-size: cover; /* Images will cover the player div */
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); /* Player image */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(19).png?raw=true'); /* Updated player image */
             z-index: 10; /* Ensure the player is above the model */
         }
 
@@ -93,22 +93,32 @@
         let jumpHeight = 0;
         let gravity = 2;
         let frame = 0;
+        let positionX = 100; // Player's X position
 
-        // Animation frames (You can add more frames if necessary)
+        // Animation frames
         const playerFrames = [
-            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true', // New player image
-            // You can add more frames for player animation here if needed
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(19).png?raw=true', // Updated player image
         ];
 
         const totalFrames = playerFrames.length; 
         const frameDuration = 100; 
         let lastFrameTime = 0;
 
-        // Event listener for the space key to jump
+        // Event listener for key presses
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' && !isJumping) {
                 isJumping = true;
                 jumpHeight = 0; 
+            }
+            if (event.code === 'ArrowLeft') {
+                positionX -= 5; // Move left
+                if (positionX < 0) positionX = 0; // Prevent going off-screen
+                player.style.left = `${positionX}px`;
+            }
+            if (event.code === 'ArrowRight') {
+                positionX += 5; // Move right
+                if (positionX > 750) positionX = 750; // Prevent going off-screen
+                player.style.left = `${positionX}px`;
             }
         });
 
