@@ -12,7 +12,7 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #001f3f;
+            background-color: #001f3f; /* Dark blue background */
         }
 
         #game-container {
@@ -20,9 +20,6 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(28).png?raw=true');
-            background-size: cover;
-            background-repeat: no-repeat;
             border: 2px solid #000;
         }
 
@@ -55,7 +52,7 @@
             background-size: cover;
         }
 
-        .tree {
+        .gravestone {
             position: absolute;
             bottom: 50px;
             width: 100px;
@@ -63,6 +60,22 @@
             background-size: cover;
             background-repeat: no-repeat;
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(26).png?raw=true');
+        }
+
+        .soul {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(29).png?raw=true'); /* New soul PNG */
+            opacity: 1;
+            animation: rise 1s forwards; /* Animation to make the soul rise */
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
         }
 
         #score {
@@ -88,13 +101,13 @@
         <div id="player"></div>
         <div id="ground"></div>
         <div id="score">Score: 0</div>
-        <div id="interaction-message">Interacting with tree!</div> <!-- Interaction message -->
+        <div id="interaction-message">Interacting with gravestone!</div>
     </div>
     <script>
         const player = document.getElementById('player');
         const scoreDisplay = document.getElementById('score');
         const interactionMessage = document.getElementById('interaction-message');
-        const trees = [];
+        const gravestones = [];
         let score = 0;
 
         const playerState = {
@@ -102,17 +115,38 @@
             speed: 5,
         };
 
-        function createTree(xPosition) {
-            const tree = document.createElement('div');
-            tree.classList.add('tree');
-            tree.style.left = `${xPosition}px`;
-            document.getElementById('game-container').appendChild(tree);
-            trees.push(tree);
+        function createGravestone() {
+            let xPosition;
+            let overlaps;
+            const gravestoneWidth = 100;
+
+            do {
+                overlaps = false;
+                xPosition = Math.random() * (window.innerWidth - gravestoneWidth); // Ensure gravestones fit in view
+
+                // Check for overlap with existing gravestones
+                for (const gravestone of gravestones) {
+                    const gravestoneRect = gravestone.getBoundingClientRect();
+                    if (
+                        xPosition < gravestoneRect.right &&
+                        xPosition + gravestoneWidth > gravestoneRect.left
+                    ) {
+                        overlaps = true; // Found an overlap
+                        break;
+                    }
+                }
+            } while (overlaps);
+
+            const gravestone = document.createElement('div');
+            gravestone.classList.add('gravestone');
+            gravestone.style.left = `${xPosition}px`;
+            document.getElementById('game-container').appendChild(gravestone);
+            gravestones.push(gravestone);
         }
 
-        // Create 6 trees at random positions
+        // Create 6 gravestones at random positions without overlapping
         for (let i = 0; i < 6; i++) {
-            createTree(Math.random() * (window.innerWidth - 100)); // Ensure trees fit in view
+            createGravestone();
         }
 
         document.addEventListener('keydown', (event) => {
@@ -128,30 +162,53 @@
                 player.style.left = `${playerState.positionX}px`;
                 player.style.transform = 'scaleX(1)'; // Normal orientation
             }
-            if (event.code === 'Space') { // Interact with trees
-                interactWithTree();
+            if (event.code === 'Space') { // Interact with gravestones
+                interactWithGravestone();
             }
         });
 
-        function interactWithTree() {
-            trees.forEach(tree => {
-                const treeRect = tree.getBoundingClientRect();
+        function interactWithGravestone() {
+            let interacted = false; // To check if interaction occurred
+            gravestones.forEach(gravestone => {
+                const gravestoneRect = gravestone.getBoundingClientRect();
                 const playerRect = player.getBoundingClientRect();
 
-                // Check if the player is close enough to the tree
+                // Check if the player is close enough to the gravestone
                 if (
-                    playerRect.left < treeRect.right &&
-                    playerRect.right > treeRect.left &&
-                    playerRect.top < treeRect.bottom &&
-                    playerRect.bottom > treeRect.top
+                    playerRect.left < gravestoneRect.right &&
+                    playerRect.right > gravestoneRect.left &&
+                    playerRect.top < gravestoneRect.bottom &&
+                    playerRect.bottom > gravestoneRect.top
                 ) {
                     score += 1; // Increase score
                     scoreDisplay.innerText = `Score: ${score}`; // Update score display
+                    interacted = true; // Interaction happened
                     interactionMessage.style.display = 'block'; // Show interaction message
+
+                    // Create and animate the soul
+                    createSoul(gravestoneRect.left + gravestoneRect.width / 2, gravestoneRect.top);
+                    
                     setTimeout(() => {
                         interactionMessage.style.display = 'none'; // Hide after 1 second
                     }, 1000);
                 }
+            });
+
+            if (!interacted) {
+                interactionMessage.style.display = 'none'; // Hide if no interaction occurred
+            }
+        }
+
+        function createSoul(x, y) {
+            const soul = document.createElement('div');
+            soul.classList.add('soul');
+            soul.style.left = `${x - 15}px`; // Center the soul over the gravestone
+            soul.style.top = `${y - 50}px`; // Position above the gravestone
+            document.getElementById('game-container').appendChild(soul);
+
+            // Remove the soul after the animation ends
+            soul.addEventListener('animationend', () => {
+                soul.remove();
             });
         }
 
