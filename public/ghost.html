@@ -24,12 +24,6 @@
             border: 2px solid #000;
         }
 
-        #scene {
-            position: relative;
-            display: flex; /* Arrange elements in a row for side-scrolling */
-            transition: transform 0.1s; /* Smooth transition for movement */
-        }
-
         #player {
             position: absolute;
             bottom: 50px; /* Initial position above ground */
@@ -40,20 +34,20 @@
             background-repeat: no-repeat;
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(23).png?raw=true'); /* New player image */
             z-index: 10; /* Ensure the player is above the model */
-            transition: bottom 0.1s; /* Smooth transition for vertical movement */
+            transition: left 0.1s, bottom 0.1s; /* Smooth transition for movement */
         }
 
         #ground {
             position: absolute;
             bottom: 0;
-            width: 200%; /* Make it wider to prevent empty space */
+            width: 100%; /* Full width of the game area */
             height: 50px; /* Height of the ground */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(24).png?raw=true'); /* Ground image */
             background-size: cover; /* Cover the entire ground area */
         }
 
         .tree {
-            position: absolute; /* Trees will be positioned absolutely within the scene */
+            position: absolute;
             bottom: 50px; /* Position trees above the ground */
             width: 100px; /* Width of the tree */
             height: 100px; /* Height of the tree */
@@ -64,11 +58,8 @@
 
         /* Example tree styles */
         #tree1 { left: 300px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree2 { left: 600px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree3 { left: 900px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree4 { left: 1200px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        #tree5 { left: 1500px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
-        /* Add more trees as needed... */
+        /* ... (other trees) ... */
+        #tree18 { left: 3700px; background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(18).png?raw=true'); }
 
         @keyframes sway {
             0% { transform: translateY(0); }
@@ -82,33 +73,26 @@
             left: 10px;
             color: white;
             font-size: 24px;
-            z-index: 15; /* Make sure the score is above other elements */
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div id="scene">
-            <div id="player"></div>
-            <div id="ground"></div>
-            <div id="score">Score: 0</div>
-            <div id="tree1" class="tree"></div>
-            <div id="tree2" class="tree"></div>
-            <div id="tree3" class="tree"></div>
-            <div id="tree4" class="tree"></div>
-            <div id="tree5" class="tree"></div>
-            <!-- Add more trees as needed... -->
-        </div>
+        <div id="player"></div>
+        <div id="ground"></div>
+        <div id="score">Score: 0</div>
+        <div id="tree1" class="tree"></div>
+        <!-- ... (other trees) ... -->
+        <div id="tree18" class="tree"></div>
     </div>
     <script>
         const player = document.getElementById('player');
         const ground = document.getElementById('ground');
         const trees = document.querySelectorAll('.tree');
         const scoreDisplay = document.getElementById('score');
-        const scene = document.getElementById('scene');
 
         // Player state
-        let positionX = 0; // Player's X position (centered)
+        let positionX = 100; // Player's X position
         const speed = 5; // Movement speed
         let isJumping = false;
         let jumpHeight = 150;
@@ -129,13 +113,15 @@
         document.addEventListener('keydown', (event) => {
             if (event.code === 'ArrowLeft') {
                 positionX -= speed; // Move left
-                if (positionX < -window.innerWidth / 2) positionX = -window.innerWidth / 2; // Prevent going too far left
-                scene.style.transform = `translateX(${positionX}px)`; // Move the scene left
+                if (positionX < 0) positionX = 0; // Prevent going off-screen
+                player.style.left = `${positionX}px`;
+                moveTrees(speed); // Move trees left
             }
             if (event.code === 'ArrowRight') {
                 positionX += speed; // Move right
-                if (positionX > 0) positionX = 0; // Prevent going too far right
-                scene.style.transform = `translateX(${positionX}px)`; // Move the scene right
+                if (positionX > window.innerWidth - 50) positionX = window.innerWidth - 50; // Prevent going off-screen
+                player.style.left = `${positionX}px`;
+                moveTrees(-speed); // Move trees right
             }
             if (event.code === 'Space' && !isJumping) {
                 isJumping = true; // Set jumping state
@@ -145,7 +131,7 @@
         function moveTrees(amount) {
             trees.forEach(tree => {
                 const currentLeft = parseInt(tree.style.left);
-                tree.style.left = `${currentLeft - amount}px`; // Move trees
+                tree.style.left = `${currentLeft + amount}px`; // Move trees
                 if (currentLeft < -100) { // Reset tree position if it goes off-screen
                     tree.style.left = `${window.innerWidth}px`;
                     score += 1; // Increase score when trees reset
