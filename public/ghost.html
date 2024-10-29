@@ -20,17 +20,7 @@
             height: 100vh;
             overflow: hidden;
             border: 2px solid #000;
-        }
-
-        #sky {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(35).png?raw=true'); /* New sky image */
-            background-size: cover;
-            z-index: 1; /* Behind other elements */
+            background-color: #001f3f; /* Optional background color */
         }
 
         #player {
@@ -90,7 +80,7 @@
 
         .star {
             position: absolute;
-            width: 30px; /* Adjust size as needed */
+            width: 30px;
             height: 30px;
             background-size: cover;
             background-repeat: no-repeat;
@@ -124,65 +114,60 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            width: 50px; /* Adjust size as needed */
+            width: 50px;
             height: 50px;
             background-size: cover;
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(34).png?raw=true');
+        }
+
+        #willow-tree {
+            position: absolute;
+            bottom: 100px;
+            left: 50px;
+            width: 100px;
+            height: auto;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(36).png?raw=true');
+            background-size: cover;
+            z-index: 10;
+        }
+
+        #story {
+            position: absolute;
+            bottom: 120px;
+            left: 50px;
+            color: white;
+            font-size: 18px;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div id="sky"></div> <!-- Sky background -->
         <div id="player"></div>
         <div id="ground"></div>
         <div id="score">Score: 0</div>
-        <div id="interaction-message">Interacting with gravestone!</div>
+        <div id="interaction-message">Interacting with willow tree!</div>
         <div id="moon"></div>
+        <div id="willow-tree"></div> <!-- Willow tree -->
+        <div id="story">You perished under the willow tree, forever bound to this realm...</div> <!-- Story text -->
     </div>
     <script>
         const player = document.getElementById('player');
         const scoreDisplay = document.getElementById('score');
         const interactionMessage = document.getElementById('interaction-message');
-        const gravestones = [];
+        const storyDisplay = document.getElementById('story');
         let score = 0;
 
         const playerState = {
-            positionX: 100, // Fixed initial position
+            positionX: 100,
             speed: 5,
         };
 
-        function createGravestone() {
-            let xPosition;
-            let overlaps;
-            const gravestoneWidth = 100;
-
-            do {
-                overlaps = false;
-                xPosition = Math.random() * (window.innerWidth - gravestoneWidth);
-
-                for (const gravestone of gravestones) {
-                    const gravestoneRect = gravestone.getBoundingClientRect();
-                    if (
-                        xPosition < gravestoneRect.right &&
-                        xPosition + gravestoneWidth > gravestoneRect.left
-                    ) {
-                        overlaps = true;
-                        break;
-                    }
-                }
-            } while (overlaps);
-
-            const gravestone = document.createElement('div');
-            gravestone.classList.add('gravestone');
-            gravestone.style.left = `${xPosition}px`;
-            document.getElementById('game-container').appendChild(gravestone);
-            gravestones.push(gravestone);
-        }
-
-        for (let i = 0; i < 6; i++) {
-            createGravestone();
-        }
+        const willowTree = document.getElementById('willow-tree');
 
         document.addEventListener('keydown', (event) => {
             if (event.code === 'KeyA') {
@@ -198,70 +183,33 @@
                 player.style.transform = 'scaleX(1)';
             }
             if (event.code === 'Space') {
-                interactWithGravestone();
+                interactWithWillowTree();
             }
         });
 
-        function interactWithGravestone() {
-            let interacted = false;
-            gravestones.forEach(gravestone => {
-                const gravestoneRect = gravestone.getBoundingClientRect();
-                const playerRect = player.getBoundingClientRect();
+        function interactWithWillowTree() {
+            const willowRect = willowTree.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
 
-                if (
-                    playerRect.left < gravestoneRect.right &&
-                    playerRect.right > gravestoneRect.left &&
-                    playerRect.top < gravestoneRect.bottom &&
-                    playerRect.bottom > gravestoneRect.top
-                ) {
-                    score += 1;
-                    scoreDisplay.innerText = `Score: ${score}`;
-                    interacted = true;
-                    interactionMessage.style.display = 'block';
+            if (
+                playerRect.left < willowRect.right &&
+                playerRect.right > willowRect.left &&
+                playerRect.top < willowRect.bottom &&
+                playerRect.bottom > willowRect.top
+            ) {
+                interactionMessage.style.display = 'block';
+                storyDisplay.style.display = 'block';
 
-                    createSoul(gravestoneRect.left + gravestoneRect.width / 2, gravestoneRect.top);
-                    createStar(gravestoneRect.left + gravestoneRect.width / 2 - 15, gravestoneRect.top - 50);
+                setTimeout(() => {
+                    interactionMessage.style.display = 'none'; // Hide after interaction
+                }, 1000);
 
-                    setTimeout(() => {
-                        interactionMessage.style.display = 'none';
-                    }, 1000);
-                }
-            });
-
-            if (!interacted) {
-                interactionMessage.style.display = 'none';
+                // Hide the story text after 5 seconds
+                setTimeout(() => {
+                    storyDisplay.style.display = 'none';
+                }, 5000);
             }
         }
-
-        function createStar(x, y) {
-            const star = document.createElement('div');
-            star.classList.add('star');
-            star.style.left = `${x}px`;
-            star.style.top = `${y}px`;
-            document.getElementById('game-container').appendChild(star);
-
-            setTimeout(() => {
-                star.remove();
-            }, 2000);
-        }
-
-        function createSoul(x, y) {
-            const soul = document.createElement('div');
-            soul.classList.add('soul');
-            soul.style.left = `${x - 15}px`;
-            soul.style.top = `${y - 50}px`;
-            document.getElementById('game-container').appendChild(soul);
-
-            soul.addEventListener('animationend', () => {
-                soul.remove();
-            });
-        }
-
-        function gameLoop() {
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
     </script>
 </body>
 </html>
