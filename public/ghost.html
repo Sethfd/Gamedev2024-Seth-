@@ -31,7 +31,7 @@
             height: 50px;
             background-size: cover;
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(25).png?raw=true'); /* Forward image */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(37).png?raw=true'); /* Backward image */
             z-index: 10;
             transition: left 0.1s;
             animation: sway 1s infinite alternate;
@@ -150,7 +150,7 @@
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 5px;
-            display: none; /* Hidden by default */
+            display: none;
         }
     </style>
 </head>
@@ -159,11 +159,11 @@
         <div id="player"></div>
         <div id="ground"></div>
         <div id="score">Score: 0</div>
-        <div id="timer">Time: 30</div> <!-- Timer display -->
-        <div id="interaction-message">Interacting with willow tree!</div>
+        <div id="timer">Time: 30</div>
+        <div id="interaction-message">Interacting!</div>
         <div id="moon"></div>
-        <div id="willow-tree"></div> <!-- Willow tree -->
-        <div id="story">You perished under the willow tree, forever bound to this realm...</div> <!-- Story text -->
+        <div id="willow-tree"></div>
+        <div id="story">You perished under the willow tree, forever bound to this realm...</div>
     </div>
     <script>
         const player = document.getElementById('player');
@@ -172,25 +172,39 @@
         const interactionMessage = document.getElementById('interaction-message');
         const storyDisplay = document.getElementById('story');
         let score = 0;
-        let timeLeft = 30; // 30 seconds timer
+        let timeLeft = 30;
 
         const playerState = {
             positionX: 100,
             speed: 5,
         };
 
-        const willowTree = document.getElementById('willow-tree');
+        const gravestones = [];
+        const gravestoneCount = 6;
 
-        // Start the timer
+        // Timer setup
         const timerInterval = setInterval(() => {
             timeLeft -= 1;
             timerDisplay.innerText = `Time: ${timeLeft}`;
 
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                alert("Time's up! Game Over!"); // Alert when time is up
+                alert("Time's up! Game Over!");
             }
         }, 1000);
+
+        // Create gravestones
+        function createGravestones() {
+            for (let i = 0; i < gravestoneCount; i++) {
+                const gravestone = document.createElement('div');
+                gravestone.classList.add('gravestone');
+                gravestone.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+                document.getElementById('game-container').appendChild(gravestone);
+                gravestones.push(gravestone);
+            }
+        }
+
+        createGravestones();
 
         document.addEventListener('keydown', (event) => {
             if (event.code === 'KeyA') { // Move left
@@ -208,44 +222,73 @@
                 player.style.transform = 'scaleX(1)'; // Normal orientation
             }
             if (event.code === 'Space') {
+                interactWithGravestones();
                 interactWithWillowTree();
             }
         });
 
+        function interactWithGravestones() {
+            let interacted = false;
+
+            gravestones.forEach(gravestone => {
+                const gravestoneRect = gravestone.getBoundingClientRect();
+                const playerRect = player.getBoundingClientRect();
+
+                if (
+                    playerRect.left < gravestoneRect.right &&
+                    playerRect.right > gravestoneRect.left &&
+                    playerRect.top < gravestoneRect.bottom &&
+                    playerRect.bottom > gravestoneRect.top
+                ) {
+                    score += 1; // Increase score
+                    scoreDisplay.innerText = `Score: ${score}`;
+                    interacted = true;
+                    interactionMessage.style.display = 'block';
+
+                    createSoul(gravestoneRect.left + gravestoneRect.width / 2, gravestoneRect.top);
+
+                    setTimeout(() => {
+                        interactionMessage.style.display = 'none'; // Hide after 1 second
+                    }, 1000);
+                }
+            });
+
+            if (!interacted) {
+                interactionMessage.style.display = 'none'; // Hide if no interaction occurred
+            }
+        }
+
         function interactWithWillowTree() {
-            const willowRect = willowTree.getBoundingClientRect();
+            const willowTree = document.getElementById('willow-tree');
+            const willowTreeRect = willowTree.getBoundingClientRect();
             const playerRect = player.getBoundingClientRect();
 
             if (
-                playerRect.left < willowRect.right &&
-                playerRect.right > willowRect.left &&
-                playerRect.top < willowRect.bottom &&
-                playerRect.bottom > willowRect.top
+                playerRect.left < willowTreeRect.right &&
+                playerRect.right > willowTreeRect.left &&
+                playerRect.top < willowTreeRect.bottom &&
+                playerRect.bottom > willowTreeRect.top
             ) {
-                interactionMessage.style.display = 'block';
                 storyDisplay.style.display = 'block';
-
-                setTimeout(() => {
-                    interactionMessage.style.display = 'none'; // Hide after interaction
-                }, 1000);
-
-                // Hide the story text after 5 seconds
                 setTimeout(() => {
                     storyDisplay.style.display = 'none';
-                }, 5000);
+                }, 3000); // Hide after 3 seconds
             }
         }
 
-        function createGravestones() {
-            for (let i = 0; i < 6; i++) {
-                const gravestone = document.createElement('div');
-                gravestone.classList.add('gravestone');
-                gravestone.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-                document.getElementById('game-container').appendChild(gravestone);
-            }
+        function createSoul(x, y) {
+            const soul = document.createElement('div');
+            soul.classList.add('soul');
+            soul.style.left = `${x - 15}px`;
+            soul.style.top = `${y - 50}px`;
+            document.getElementById('game-container').appendChild(soul);
+
+            soul.addEventListener('animationend', () => {
+                soul.remove();
+            });
         }
 
-        createGravestones(); // Create gravestones on load
+        createGravestones();
     </script>
 </body>
 </html>
