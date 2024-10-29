@@ -59,7 +59,7 @@
             height: 100px;
             background-size: cover;
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(26).png?raw=true');
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(33).png?raw=true'); /* New gravestone image */
         }
 
         .soul {
@@ -68,14 +68,29 @@
             height: 30px;
             background-size: cover;
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(29).png?raw=true'); /* New soul PNG */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(29).png?raw=true');
             opacity: 1;
-            animation: rise 1s forwards; /* Animation to make the soul rise */
+            animation: rise 1s forwards;
         }
 
         @keyframes rise {
             0% { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        .star {
+            position: absolute;
+            width: 30px; /* Adjust size as needed */
+            height: 30px;
+            background-size: cover;
+            background-repeat: no-repeat;
+            animation: twinkle 0.6s infinite steps(3);
+        }
+
+        @keyframes twinkle {
+            0%, 33%, 66%, 100% { 
+                background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(30).png?raw=true'); 
+            }
         }
 
         #score {
@@ -92,7 +107,7 @@
             left: 10px;
             color: white;
             font-size: 18px;
-            display: none; /* Hidden by default */
+            display: none;
         }
     </style>
 </head>
@@ -122,16 +137,15 @@
 
             do {
                 overlaps = false;
-                xPosition = Math.random() * (window.innerWidth - gravestoneWidth); // Ensure gravestones fit in view
+                xPosition = Math.random() * (window.innerWidth - gravestoneWidth);
 
-                // Check for overlap with existing gravestones
                 for (const gravestone of gravestones) {
                     const gravestoneRect = gravestone.getBoundingClientRect();
                     if (
                         xPosition < gravestoneRect.right &&
                         xPosition + gravestoneWidth > gravestoneRect.left
                     ) {
-                        overlaps = true; // Found an overlap
+                        overlaps = true;
                         break;
                     }
                 }
@@ -144,69 +158,78 @@
             gravestones.push(gravestone);
         }
 
-        // Create 6 gravestones at random positions without overlapping
         for (let i = 0; i < 6; i++) {
             createGravestone();
         }
 
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'KeyA') { // Move left
+            if (event.code === 'KeyA') {
                 playerState.positionX -= playerState.speed;
-                playerState.positionX = Math.max(playerState.positionX, 0); // Prevent going off-screen
+                playerState.positionX = Math.max(playerState.positionX, 0);
                 player.style.left = `${playerState.positionX}px`;
-                player.style.transform = 'scaleX(-1)'; // Flip the image
+                player.style.transform = 'scaleX(-1)';
             }
-            if (event.code === 'KeyD') { // Move right
+            if (event.code === 'KeyD') {
                 playerState.positionX += playerState.speed;
-                playerState.positionX = Math.min(playerState.positionX, window.innerWidth - 50); // Prevent going off-screen
+                playerState.positionX = Math.min(playerState.positionX, window.innerWidth - 50);
                 player.style.left = `${playerState.positionX}px`;
-                player.style.transform = 'scaleX(1)'; // Normal orientation
+                player.style.transform = 'scaleX(1)';
             }
-            if (event.code === 'Space') { // Interact with gravestones
+            if (event.code === 'Space') {
                 interactWithGravestone();
             }
         });
 
         function interactWithGravestone() {
-            let interacted = false; // To check if interaction occurred
+            let interacted = false;
             gravestones.forEach(gravestone => {
                 const gravestoneRect = gravestone.getBoundingClientRect();
                 const playerRect = player.getBoundingClientRect();
 
-                // Check if the player is close enough to the gravestone
                 if (
                     playerRect.left < gravestoneRect.right &&
                     playerRect.right > gravestoneRect.left &&
                     playerRect.top < gravestoneRect.bottom &&
                     playerRect.bottom > gravestoneRect.top
                 ) {
-                    score += 1; // Increase score
-                    scoreDisplay.innerText = `Score: ${score}`; // Update score display
-                    interacted = true; // Interaction happened
-                    interactionMessage.style.display = 'block'; // Show interaction message
+                    score += 1;
+                    scoreDisplay.innerText = `Score: ${score}`;
+                    interacted = true;
+                    interactionMessage.style.display = 'block';
 
-                    // Create and animate the soul
                     createSoul(gravestoneRect.left + gravestoneRect.width / 2, gravestoneRect.top);
-                    
+                    createStar(gravestoneRect.left + gravestoneRect.width / 2 - 15, gravestoneRect.top - 50);
+
                     setTimeout(() => {
-                        interactionMessage.style.display = 'none'; // Hide after 1 second
+                        interactionMessage.style.display = 'none';
                     }, 1000);
                 }
             });
 
             if (!interacted) {
-                interactionMessage.style.display = 'none'; // Hide if no interaction occurred
+                interactionMessage.style.display = 'none';
             }
+        }
+
+        function createStar(x, y) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${x}px`;
+            star.style.top = `${y}px`;
+            document.getElementById('game-container').appendChild(star);
+
+            setTimeout(() => {
+                star.remove();
+            }, 2000);
         }
 
         function createSoul(x, y) {
             const soul = document.createElement('div');
             soul.classList.add('soul');
-            soul.style.left = `${x - 15}px`; // Center the soul over the gravestone
-            soul.style.top = `${y - 50}px`; // Position above the gravestone
+            soul.style.left = `${x - 15}px`;
+            soul.style.top = `${y - 50}px`;
             document.getElementById('game-container').appendChild(soul);
 
-            // Remove the soul after the animation ends
             soul.addEventListener('animationend', () => {
                 soul.remove();
             });
