@@ -59,7 +59,6 @@
             height: 100px;
             background-size: cover;
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(33).png?raw=true');
         }
 
         .soul {
@@ -186,6 +185,10 @@
 
         const gravestones = [];
         const gravestoneCount = 6;
+        const gravestoneImages = [
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(33).png?raw=true',
+            'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(39).png?raw=true' // New gravestone image
+        ];
 
         // Start the game
         startTimer();
@@ -217,6 +220,10 @@
                 // Generate a random position
                 const gravestoneX = Math.random() * (window.innerWidth - 100);
                 gravestone.style.left = `${gravestoneX}px`;
+
+                // Randomly select a gravestone image
+                const randomIndex = Math.floor(Math.random() * gravestoneImages.length);
+                gravestone.style.backgroundImage = `url(${gravestoneImages[randomIndex]})`;
 
                 // Check for overlaps
                 const overlap = gravestones.some(existingGravestone => {
