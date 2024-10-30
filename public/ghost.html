@@ -68,7 +68,7 @@
             height: 30px;
             background-size: cover;
             background-repeat: no-repeat;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(29).png?raw=true');
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(38).png?raw=true'); /* New soul image */
             opacity: 1;
             animation: rise 1s forwards;
         }
@@ -137,6 +137,19 @@
             border-radius: 5px;
             display: none;
         }
+
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -149,6 +162,11 @@
         <div id="moon"></div>
         <div id="willow-tree"></div>
         <div id="story">You perished under the willow tree, forever bound to this realm...</div>
+        <div id="game-over">
+            <h2>Game Over!</h2>
+            <p>Your Score: <span id="final-score">0</span></p>
+            <button onclick="restartGame()">Restart</button>
+        </div>
     </div>
     <script>
         const player = document.getElementById('player');
@@ -156,8 +174,10 @@
         const timerDisplay = document.getElementById('timer');
         const interactionMessage = document.getElementById('interaction-message');
         const storyDisplay = document.getElementById('story');
+        const gameOverDisplay = document.getElementById('game-over');
         let score = 0;
         let timeLeft = 30;
+        let timerInterval;
 
         const playerState = {
             positionX: 100,
@@ -167,43 +187,71 @@
         const gravestones = [];
         const gravestoneCount = 6;
 
-        // Timer setup
-        const timerInterval = setInterval(() => {
-            timeLeft -= 1;
-            timerDisplay.innerText = `Time: ${timeLeft}`;
+        // Start the game
+        startTimer();
+        createGravestones();
 
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert("Time's up! Game Over!");
-            }
-        }, 1000);
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft -= 1;
+                timerDisplay.innerText = `Time: ${timeLeft}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameOverDisplay.style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+        }
 
         // Create gravestones
         function createGravestones() {
-            for (let i = 0; i < gravestoneCount; i++) {
+            while (gravestones.length < gravestoneCount) {
                 const gravestone = document.createElement('div');
                 gravestone.classList.add('gravestone');
-                gravestone.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-                document.getElementById('game-container').appendChild(gravestone);
-                gravestones.push(gravestone);
+
+                // Generate a random position
+                const gravestoneX = Math.random() * (window.innerWidth - 100);
+                gravestone.style.left = `${gravestoneX}px`;
+
+                // Check for overlaps
+                const overlap = gravestones.some(existingGravestone => {
+                    const existingRect = existingGravestone.getBoundingClientRect();
+                    const newRect = { left: gravestoneX, right: gravestoneX + 100, top: window.innerHeight - 100, bottom: window.innerHeight - 50 };
+
+                    return (
+                        newRect.left < existingRect.right &&
+                        newRect.right > existingRect.left &&
+                        newRect.top < existingRect.bottom &&
+                        newRect.bottom > existingRect.top
+                    );
+                });
+
+                if (!overlap) {
+                    gravestone.style.bottom = '50px';
+                    document.getElementById('game-container').appendChild(gravestone);
+                    gravestones.push(gravestone);
+                }
             }
         }
-
-        createGravestones();
 
         document.addEventListener('keydown', (event) => {
             if (event.code === 'KeyA') { // Move left
                 playerState.positionX -= playerState.speed;
                 playerState.positionX = Math.max(playerState.positionX, 0);
                 player.style.left = `${playerState.positionX}px`;
-                player.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(25).png?raw=true')"; // Forward image
+                player.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(37).png?raw=true')"; // Backward image
                 player.style.transform = 'scaleX(-1)'; // Flip the image
             }
             if (event.code === 'KeyD') { // Move right
                 playerState.positionX += playerState.speed;
                 playerState.positionX = Math.min(playerState.positionX, window.innerWidth - 50);
                 player.style.left = `${playerState.positionX}px`;
-                player.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(37).png?raw=true')"; // Backward image
+                player.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(25).png?raw=true')"; // Forward image
                 player.style.transform = 'scaleX(1)'; // Normal orientation
             }
             if (event.code === 'Space') {
@@ -273,7 +321,24 @@
             });
         }
 
-        createGravestones();
+        function restartGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.innerText = `Score: ${score}`;
+            timerDisplay.innerText = `Time: ${timeLeft}`;
+            gameOverDisplay.style.display = 'none';
+
+            // Reset player position
+            playerState.positionX = 100;
+            player.style.left = `${playerState.positionX}px`;
+
+            // Clear existing gravestones
+            gravestones.forEach(gravestone => gravestone.remove());
+            gravestones.length = 0;
+
+            createGravestones();
+            startTimer();
+        }
     </script>
 </body>
 </html>
