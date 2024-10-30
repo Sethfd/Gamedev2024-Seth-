@@ -62,6 +62,10 @@
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(33).png?raw=true');
         }
 
+        .glowing {
+            box-shadow: 0 0 20px #ffff00, 0 0 30px #ffff00;
+        }
+
         .soul {
             position: absolute;
             width: 30px;
@@ -158,7 +162,7 @@
         <div id="ground"></div>
         <div id="score">Score: 0</div>
         <div id="timer">Time: 30</div>
-        <div id="interaction-message">Interacting!</div>
+        <div id="interaction-message">Soul Saved!</div>
         <div id="moon"></div>
         <div id="willow-tree"></div>
         <div id="story">You perished under the willow tree, forever bound to this realm...</div>
@@ -186,6 +190,7 @@
 
         const gravestones = [];
         const gravestoneCount = 6;
+        let currentGravestoneIndex = -1; // Index of the current gravestone to interact with
 
         // Start the game
         startTimer();
@@ -214,11 +219,9 @@
                 const gravestone = document.createElement('div');
                 gravestone.classList.add('gravestone');
 
-                // Generate a random position
                 const gravestoneX = Math.random() * (window.innerWidth - 100);
                 gravestone.style.left = `${gravestoneX}px`;
 
-                // Check for overlaps
                 const overlap = gravestones.some(existingGravestone => {
                     const existingRect = existingGravestone.getBoundingClientRect();
                     const newRect = { left: gravestoneX, right: gravestoneX + 100, top: window.innerHeight - 100, bottom: window.innerHeight - 50 };
@@ -237,6 +240,17 @@
                     gravestones.push(gravestone);
                 }
             }
+
+            setRandomGlowingGravestone(); // Set an initial glowing gravestone
+        }
+
+        function setRandomGlowingGravestone() {
+            // Remove glowing class from all gravestones
+            gravestones.forEach(gravestone => gravestone.classList.remove('glowing'));
+
+            // Choose a new random gravestone
+            currentGravestoneIndex = Math.floor(Math.random() * gravestones.length);
+            gravestones[currentGravestoneIndex].classList.add('glowing');
         }
 
         document.addEventListener('keydown', (event) => {
@@ -263,28 +277,34 @@
         function interactWithGravestones() {
             let interacted = false;
 
-            gravestones.forEach(gravestone => {
-                const gravestoneRect = gravestone.getBoundingClientRect();
-                const playerRect = player.getBoundingClientRect();
+            // Check interaction only with the glowing gravestone
+            const targetGravestone = gravestones[currentGravestoneIndex];
+            const gravestoneRect = targetGravestone.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
 
-                if (
-                    playerRect.left < gravestoneRect.right &&
-                    playerRect.right > gravestoneRect.left &&
-                    playerRect.top < gravestoneRect.bottom &&
-                    playerRect.bottom > gravestoneRect.top
-                ) {
-                    score += 1; // Increase score
-                    scoreDisplay.innerText = `Score: ${score}`;
-                    interacted = true;
-                    interactionMessage.style.display = 'block';
+            if (
+                playerRect.left < gravestoneRect.right &&
+                playerRect.right > gravestoneRect.left &&
+                playerRect.top < gravestoneRect.bottom &&
+                playerRect.bottom > gravestoneRect.top
+            ) {
+                score += 1; // Increase score
+                scoreDisplay.innerText = `Score: ${score}`;
+                interacted = true;
+                interactionMessage.innerText = "Soul Saved!"; // Change message here
+                interactionMessage.style.display = 'block';
 
-                    createSoul(gravestoneRect.left + gravestoneRect.width / 2, gravestoneRect.top);
+                createSoul(gravestoneRect.left + gravestoneRect.width / 2, gravestoneRect.top);
+                
+                // Set a new glowing gravestone after interaction
+                setTimeout(() => {
+                    setRandomGlowingGravestone(); // Change to a new glowing gravestone
+                }, 1000); // Wait for 1 second before changing
 
-                    setTimeout(() => {
-                        interactionMessage.style.display = 'none'; // Hide after 1 second
-                    }, 1000);
-                }
-            });
+                setTimeout(() => {
+                    interactionMessage.style.display = 'none'; // Hide after 1 second
+                }, 1000);
+            }
 
             if (!interacted) {
                 interactionMessage.style.display = 'none'; // Hide if no interaction occurred
@@ -336,7 +356,7 @@
             gravestones.forEach(gravestone => gravestone.remove());
             gravestones.length = 0;
 
-            createGravestones();
+            createGravestones(); // Create new gravestones and set glowing one
             startTimer();
         }
     </script>
