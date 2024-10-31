@@ -14,13 +14,15 @@
             background-color: white;
             font-family: Arial, sans-serif;
             position: relative;
+            cursor: none; /* Hide default cursor */
         }
         #gameCanvas {
             border: 1px solid black;
             position: relative;
             width: 800px;
             height: 600px;
-            background-color: #f0f0f0;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(43).png?raw=true'); /* Background image */
+            background-size: cover;
             overflow: hidden;
         }
         .target {
@@ -70,12 +72,13 @@
         let score = 0;
 
         // Move crosshair with mouse
-        canvas.addEventListener('mousemove', (e) => {
+        document.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             crosshair.style.left = e.clientX - rect.left - 15 + 'px'; // Center the crosshair
             crosshair.style.top = e.clientY - rect.top - 15 + 'px';
         });
 
+        // Create targets
         function createTarget() {
             const target = document.createElement('div');
             target.classList.add('target');
