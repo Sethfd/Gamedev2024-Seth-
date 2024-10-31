@@ -3,63 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shooting Game</title>
+    <title>Target Clicking Game</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            background-color: white;
-            font-family: Arial, sans-serif;
-            position: relative;
-            cursor: none; /* Hide default cursor */
-        }
-        #gameCanvas {
-            border: 1px solid black;
-            position: relative;
-            width: 800px;
-            height: 600px;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(43).png?raw=true'); /* Background image */
-            background-size: cover;
             overflow: hidden;
         }
-        .target {
-            position: absolute;
-            width: 40px; /* Adjust size as needed */
-            height: 40px; /* Adjust size as needed */
-            background-color: transparent; /* Ensure transparency for background image */
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f0f0f0;
         }
-        .target::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
+        #gameCanvas {
+            position: relative;
             width: 100%;
             height: 100%;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(40).png?raw=true'); /* Target image */
-            background-size: cover;
         }
         .crosshair {
             position: absolute;
-            width: 50px; /* Updated size */
-            height: 50px; /* Updated size */
+            width: 200px; /* Updated size */
+            height: 200px; /* Updated size */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(41).png?raw=true'); /* Crosshair image */
             background-size: cover;
             pointer-events: none; /* Prevent mouse events */
+            transform: translate(-50%, -50%); /* Center the crosshair */
         }
         #score {
             position: absolute;
             top: 10px;
             left: 10px;
             font-size: 24px;
+            color: #333;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #333;
+        }
+        .target {
+            position: absolute;
+            width: 40px; /* Target size */
+            height: 40px; /* Target size */
+            background-color: red; /* Target color */
+            border-radius: 50%; /* Make it circular */
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <div id="score">Score: 0</div>
+        <div id="timer">Time: 30</div>
         <div id="gameCanvas">
             <div class="crosshair" id="crosshair"></div>
         </div>
@@ -68,14 +64,17 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
         const crosshair = document.getElementById('crosshair');
         let score = 0;
+        let timeLeft = 30;
+        let timerId;
 
         // Move crosshair with mouse
         document.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
-            crosshair.style.left = e.clientX - rect.left - 25 + 'px'; // Center the crosshair
-            crosshair.style.top = e.clientY - rect.top - 25 + 'px';
+            crosshair.style.left = e.clientX - rect.left + 'px'; // Center the crosshair
+            crosshair.style.top = e.clientY - rect.top + 'px';
         });
 
         // Create targets
@@ -118,10 +117,25 @@
             animate();
         }
 
+        // Timer function
+        function startTimer() {
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = `Time: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    alert(`Game over! Your score is: ${score}`);
+                    location.reload(); // Reload the game
+                }
+            }, 1000);
+        }
+
         // Create initial targets
         for (let i = 0; i < 5; i++) {
             createTarget();
         }
+
+        startTimer();
     </script>
 </body>
 </html>
