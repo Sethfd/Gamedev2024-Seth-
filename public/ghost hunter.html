@@ -22,8 +22,8 @@
         }
         .crosshair {
             position: absolute;
-            width: 200px; /* Updated size */
-            height: 200px; /* Updated size */
+            width: 200px; /* Crosshair size */
+            height: 200px; /* Crosshair size */
             background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(41).png?raw=true'); /* Crosshair image */
             background-size: cover;
             pointer-events: none; /* Prevent mouse events */
@@ -45,8 +45,8 @@
         }
         .target {
             position: absolute;
-            width: 40px; /* Target size */
-            height: 40px; /* Target size */
+            width: 80px; /* Increased target size */
+            height: 80px; /* Increased target size */
             background-color: red; /* Target color */
             border-radius: 50%; /* Make it circular */
         }
@@ -81,22 +81,33 @@
         function createTarget() {
             const target = document.createElement('div');
             target.classList.add('target');
-            target.style.left = Math.random() * (canvas.clientWidth - 40) + 'px';
-            target.style.top = Math.random() * (canvas.clientHeight - 40) + 'px';
+            target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
+            target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
             canvas.appendChild(target);
 
-            target.addEventListener('click', () => {
-                score++;
-                scoreDisplay.innerText = `Score: ${score}`;
-                target.remove();
-                createTarget();
+            target.addEventListener('click', (e) => {
+                const crosshairRect = crosshair.getBoundingClientRect();
+                const targetRect = target.getBoundingClientRect();
+
+                // Check if crosshair is over the target
+                if (
+                    crosshairRect.left < targetRect.right &&
+                    crosshairRect.right > targetRect.left &&
+                    crosshairRect.top < targetRect.bottom &&
+                    crosshairRect.bottom > targetRect.top
+                ) {
+                    score++;
+                    scoreDisplay.innerText = `Score: ${score}`;
+                    target.remove();
+                    createTarget();
+                }
             });
 
             moveTarget(target);
         }
 
         function moveTarget(target) {
-            const speed = 3;
+            const speed = 1; // Decreased speed
             let dx = Math.random() < 0.5 ? speed : -speed;
             let dy = Math.random() < 0.5 ? speed : -speed;
 
