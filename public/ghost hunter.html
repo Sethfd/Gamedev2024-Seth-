@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shooting Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 1px solid black;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+        .target {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: red;
+            border-radius: 50%;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="score">Score: 0</div>
+        <div id="gameCanvas" style="width: 800px; height: 600px;"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+
+        function createTarget() {
+            const target = document.createElement('div');
+            target.classList.add('target');
+            target.style.left = Math.random() * (canvas.clientWidth - 40) + 'px';
+            target.style.top = Math.random() * (canvas.clientHeight - 40) + 'px';
+            canvas.appendChild(target);
+
+            target.addEventListener('click', () => {
+                score++;
+                scoreDisplay.innerText = `Score: ${score}`;
+                target.remove();
+                createTarget();
+            });
+
+            moveTarget(target);
+        }
+
+        function moveTarget(target) {
+            const speed = 3;
+            let dx = Math.random() < 0.5 ? speed : -speed;
+            let dy = Math.random() < 0.5 ? speed : -speed;
+
+            function animate() {
+                const rect = target.getBoundingClientRect();
+                if (rect.left + dx < 0 || rect.right + dx > canvas.clientWidth) {
+                    dx = -dx;
+                }
+                if (rect.top + dy < 0 || rect.bottom + dy > canvas.clientHeight) {
+                    dy = -dy;
+                }
+
+                target.style.left = rect.left + dx + 'px';
+                target.style.top = rect.top + dy + 'px';
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        for (let i = 0; i < 5; i++) {
+            createTarget();
+        }
+    </script>
+</body>
+</html>
