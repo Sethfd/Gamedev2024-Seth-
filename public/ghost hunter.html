@@ -45,8 +45,8 @@
         }
         .target {
             position: absolute;
-            width: 80px; /* Increased target size */
-            height: 80px; /* Increased target size */
+            width: 80px; /* Target size */
+            height: 80px; /* Target size */
             background-color: red; /* Target color */
             border-radius: 50%; /* Make it circular */
         }
@@ -107,7 +107,7 @@
         }
 
         function moveTarget(target) {
-            const speed = 1; // Decreased speed
+            const speed = 3; // Increased speed
             let dx = Math.random() < 0.5 ? speed : -speed;
             let dy = Math.random() < 0.5 ? speed : -speed;
 
