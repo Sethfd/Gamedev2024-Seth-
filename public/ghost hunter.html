@@ -16,6 +16,7 @@
             width: 100vw;
             height: 100vh;
             background-color: #f0f0f0;
+            display: none; /* Hide game container initially */
         }
         #gameCanvas {
             position: relative;
@@ -69,7 +70,7 @@
         .target.pop {
             animation: pop 0.3s ease forwards; /* Apply the pop effect */
         }
-        #pauseMenu {
+        #pauseMenu, #gameOver, #mainMenu {
             position: fixed;
             top: 0;
             left: 0;
@@ -77,19 +78,31 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
             z-index: 10; /* Ensure it appears above other elements */
+            display: none; /* Hide by default */
+            text-align: center;
+            color: white;
         }
-        #gameOver {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-            z-index: 10; /* Ensure it appears above other elements */
+        #mainMenu {
+            display: flex; /* Center contents */
+            justify-content: center;
+            align-items: center;
+        }
+        #mainMenu div {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
+    <div id="mainMenu">
+        <div>
+            <h1>Target Clicking Game</h1>
+            <p>Click on the targets as fast as you can!</p>
+            <button id="startButton">Start Game</button>
+        </div>
+    </div>
+
     <div id="gameContainer">
         <div id="score">Score: 0</div>
         <div id="timer">Time: 30</div>
@@ -98,16 +111,16 @@
         </div>
     </div>
 
-    <div id="pauseMenu" style="display: none;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; text-align: center;">
+    <div id="pauseMenu">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px;">
             <h2>Game Paused</h2>
             <p>Your Score: <span id="pausedScore">0</span></p>
             <button id="resumeButton">Resume</button>
         </div>
     </div>
 
-    <div id="gameOver" style="display: none;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; text-align: center;">
+    <div id="gameOver">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px;">
             <h2>Game Over</h2>
             <p>Your Score: <span id="finalScore">0</span></p>
             <button id="restartButton">Restart</button>
@@ -119,10 +132,19 @@
         const scoreDisplay = document.getElementById('score');
         const timerDisplay = document.getElementById('timer');
         const crosshair = document.getElementById('crosshair');
+        const mainMenu = document.getElementById('mainMenu');
+        const gameContainer = document.getElementById('gameContainer');
         let score = 0;
         let timeLeft = 30;
         let timerId;
         let isPaused = false;
+
+        // Start the game
+        document.getElementById('startButton').addEventListener('click', () => {
+            mainMenu.style.display = 'none'; // Hide the main menu
+            gameContainer.style.display = 'block'; // Show game container
+            startGame(); // Start the game
+        });
 
         // Move crosshair with pointer events
         document.addEventListener('pointermove', (e) => {
@@ -130,6 +152,17 @@
             crosshair.style.left = e.clientX - rect.left + 'px'; // Center the crosshair
             crosshair.style.top = e.clientY - rect.top + 'px';
         });
+
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.innerText = `Score: ${score}`;
+            timerDisplay.innerText = `Time: ${timeLeft}`;
+            for (let i = 0; i < 5; i++) {
+                createTarget();
+            }
+            startTimer(); // Start the timer
+        }
 
         // Create targets
         function createTarget() {
@@ -221,6 +254,7 @@
             scoreDisplay.innerText = `Score: ${score}`;
             timerDisplay.innerText = `Time: ${timeLeft}`;
             document.getElementById('gameOver').style.display = 'none'; // Hide game over message
+            canvas.innerHTML = ''; // Clear targets
             for (let i = 0; i < 5; i++) {
                 createTarget();
             }
@@ -243,12 +277,8 @@
             }
         });
 
-        // Create initial targets
-        for (let i = 0; i < 5; i++) {
-            createTarget();
-        }
-
-        startTimer();
+        // Show main menu initially
+        mainMenu.style.display = 'flex'; // Show the main menu
     </script>
 </body>
 </html>
