@@ -51,6 +51,20 @@
             background-size: cover;
             border-radius: 50%; /* Make it circular */
         }
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2); /* Scale up */
+            }
+            100% {
+                transform: scale(1); /* Scale back to original size */
+            }
+        }
+        .target.pop {
+            animation: pop 0.3s ease forwards; /* Apply the pop effect */
+        }
     </style>
 </head>
 <body>
@@ -71,8 +85,8 @@
         let timeLeft = 30;
         let timerId;
 
-        // Move crosshair with mouse
-        document.addEventListener('mousemove', (e) => {
+        // Move crosshair with pointer events
+        document.addEventListener('pointermove', (e) => {
             const rect = canvas.getBoundingClientRect();
             crosshair.style.left = e.clientX - rect.left + 'px'; // Center the crosshair
             crosshair.style.top = e.clientY - rect.top + 'px';
@@ -86,7 +100,8 @@
             target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
             canvas.appendChild(target);
 
-            target.addEventListener('click', (e) => {
+            // Updated event listener for target hit
+            target.addEventListener('pointerdown', (e) => {
                 const crosshairRect = crosshair.getBoundingClientRect();
                 const targetRect = target.getBoundingClientRect();
 
@@ -97,10 +112,13 @@
                     crosshairRect.top < targetRect.bottom &&
                     crosshairRect.bottom > targetRect.top
                 ) {
-                    score++;
-                    scoreDisplay.innerText = `Score: ${score}`;
-                    target.remove();
-                    createTarget();
+                    target.classList.add('pop'); // Add pop effect
+                    setTimeout(() => {
+                        score++;
+                        scoreDisplay.innerText = `Score: ${score}`;
+                        target.remove();
+                        createTarget();
+                    }, 300); // Wait for the animation to finish before removing the target
                 }
             });
 
