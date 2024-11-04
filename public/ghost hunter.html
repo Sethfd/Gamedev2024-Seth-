@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Target Clicking Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             overflow: hidden;
+            font-family: 'Press Start 2P', cursive; /* Apply pixel font */
         }
         #gameContainer {
             position: relative;
@@ -35,6 +37,7 @@
             left: 10px;
             font-size: 24px;
             color: #333;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5); /* Optional: add some shadow for depth */
         }
         #timer {
             position: absolute;
@@ -42,6 +45,7 @@
             right: 10px;
             font-size: 24px;
             color: #333;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5); /* Optional: add some shadow for depth */
         }
         .target {
             position: absolute;
@@ -65,6 +69,24 @@
         .target.pop {
             animation: pop 0.3s ease forwards; /* Apply the pop effect */
         }
+        #pauseMenu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            z-index: 10; /* Ensure it appears above other elements */
+        }
+        #gameOver {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            z-index: 10; /* Ensure it appears above other elements */
+        }
     </style>
 </head>
 <body>
@@ -76,6 +98,22 @@
         </div>
     </div>
 
+    <div id="pauseMenu" style="display: none;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; text-align: center;">
+            <h2>Game Paused</h2>
+            <p>Your Score: <span id="pausedScore">0</span></p>
+            <button id="resumeButton">Resume</button>
+        </div>
+    </div>
+
+    <div id="gameOver" style="display: none;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; text-align: center;">
+            <h2>Game Over</h2>
+            <p>Your Score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart</button>
+        </div>
+    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const scoreDisplay = document.getElementById('score');
@@ -84,6 +122,7 @@
         let score = 0;
         let timeLeft = 30;
         let timerId;
+        let isPaused = false;
 
         // Move crosshair with pointer events
         document.addEventListener('pointermove', (e) => {
@@ -154,11 +193,55 @@
                 timerDisplay.innerText = `Time: ${timeLeft}`;
                 if (timeLeft <= 0) {
                     clearInterval(timerId);
-                    alert(`Game over! Your score is: ${score}`);
-                    location.reload(); // Reload the game
+                    document.getElementById('finalScore').innerText = score; // Show final score
+                    document.getElementById('gameOver').style.display = 'block'; // Show game over message
                 }
             }, 1000);
         }
+
+        // Function to pause the game
+        function pauseGame() {
+            clearInterval(timerId); // Stop the timer
+            isPaused = true; // Set paused state
+            document.getElementById('pausedScore').innerText = score; // Show current score in pause menu
+            document.getElementById('pauseMenu').style.display = 'block'; // Show the pause menu
+        }
+
+        // Function to resume the game
+        function resumeGame() {
+            startTimer(); // Restart the timer
+            isPaused = false; // Reset paused state
+            document.getElementById('pauseMenu').style.display = 'none'; // Hide the pause menu
+        }
+
+        // Restart the game
+        function restartGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.innerText = `Score: ${score}`;
+            timerDisplay.innerText = `Time: ${timeLeft}`;
+            document.getElementById('gameOver').style.display = 'none'; // Hide game over message
+            for (let i = 0; i < 5; i++) {
+                createTarget();
+            }
+            startTimer(); // Restart the timer
+        }
+
+        // Event listener for the resume button
+        document.getElementById('resumeButton').addEventListener('click', resumeGame);
+        // Event listener for the restart button
+        document.getElementById('restartButton').addEventListener('click', restartGame);
+
+        // Add event listener to pause the game with a key press (e.g., "P")
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'p' || e.key === 'P') {
+                if (isPaused) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            }
+        });
 
         // Create initial targets
         for (let i = 0; i < 5; i++) {
