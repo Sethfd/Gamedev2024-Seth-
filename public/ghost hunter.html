@@ -9,30 +9,30 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: 'Press Start 2P', cursive; /* Apply pixel font */
+            font-family: 'Press Start 2P', cursive;
         }
         #gameContainer {
             position: relative;
             width: 100vw;
             height: 100vh;
             background-color: #f0f0f0;
-            display: none; /* Hide game container initially */
+            display: none;
         }
         #gameCanvas {
             position: relative;
             width: 100%;
             height: 100%;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(46).png?raw=true'); /* New Game Canvas background */
-            background-size: cover; /* Cover the entire canvas */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(46).png?raw=true');
+            background-size: cover;
         }
         .crosshair {
             position: absolute;
-            width: 100px; /* Crosshair size */
-            height: 100px; /* Crosshair size */
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(45).png?raw=true'); /* New Crosshair image */
+            width: 100px;
+            height: 100px;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(45).png?raw=true');
             background-size: cover;
-            pointer-events: none; /* Prevent mouse events */
-            transform: translate(-50%, -50%); /* Center the crosshair */
+            pointer-events: none;
+            transform: translate(-50%, -50%);
         }
         #score {
             position: absolute;
@@ -40,7 +40,6 @@
             left: 10px;
             font-size: 24px;
             color: #333;
-            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5); /* Optional: add some shadow for depth */
         }
         #timer {
             position: absolute;
@@ -48,55 +47,32 @@
             right: 10px;
             font-size: 24px;
             color: #333;
-            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5); /* Optional: add some shadow for depth */
         }
         .target {
             position: absolute;
-            width: 80px; /* Target size */
-            height: 80px; /* Target size */
+            width: 80px;
+            height: 80px;
             background-size: cover;
-            border-radius: 50%; /* Make it circular */
+            border-radius: 50%;
         }
         .special {
-            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.6); /* Glowing effect */
-            border: 3px solid gold; /* Make special targets look different */
-            transform: scale(1.2); /* Make special targets larger */
+            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.6);
+            border: 3px solid gold;
+            transform: scale(1.2);
         }
         @keyframes pop {
             0% {
                 transform: scale(1);
             }
             50% {
-                transform: scale(1.2); /* Scale up */
+                transform: scale(1.2);
             }
             100% {
-                transform: scale(1); /* Scale back to original size */
+                transform: scale(1);
             }
         }
         .target.pop {
-            animation: pop 0.3s ease forwards; /* Apply the pop effect */
-        }
-        #pauseMenu, #gameOver, #mainMenu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-            z-index: 10; /* Ensure it appears above other elements */
-            display: none; /* Hide by default */
-            text-align: center;
-            color: white;
-        }
-        #mainMenu {
-            display: flex; /* Center contents */
-            justify-content: center;
-            align-items: center;
-        }
-        #mainMenu div {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
+            animation: pop 0.3s ease forwards;
         }
     </style>
 </head>
@@ -145,17 +121,15 @@
         let timerId;
         let isPaused = false;
 
-        // Start the game
         document.getElementById('startButton').addEventListener('click', () => {
-            mainMenu.style.display = 'none'; // Hide the main menu
-            gameContainer.style.display = 'block'; // Show game container
-            startGame(); // Start the game
+            mainMenu.style.display = 'none';
+            gameContainer.style.display = 'block';
+            startGame();
         });
 
-        // Move crosshair with pointer events
         document.addEventListener('pointermove', (e) => {
             const rect = canvas.getBoundingClientRect();
-            crosshair.style.left = e.clientX - rect.left + 'px'; // Center the crosshair
+            crosshair.style.left = e.clientX - rect.left + 'px';
             crosshair.style.top = e.clientY - rect.top + 'px';
         });
 
@@ -167,101 +141,111 @@
             for (let i = 0; i < 5; i++) {
                 createTarget();
             }
-            startTimer(); // Start the timer
+            startTimer();
         }
 
-        // Create targets
         function createTarget() {
             const target = document.createElement('div');
             target.classList.add('target');
             
-            // 5% chance to create a special target
             if (Math.random() < 0.05) {
-                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(47).png?raw=true')"; // Special target image
-                target.classList.add('special'); // Add special class for styling
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(47).png?raw=true')";
+                target.classList.add('special');
             } else {
-                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(44).png?raw=true')"; // Regular target image
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(44).png?raw=true')";
             }
             
             target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
             target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
             canvas.appendChild(target);
 
-            // Updated event listener for target hit
-            target.addEventListener('pointerdown', (e) => {
+            const targetData = {
+                element: target,
+                x: parseFloat(target.style.left),
+                y: parseFloat(target.style.top),
+                dx: Math.random() < 0.5 ? 1 : -1,
+                dy: Math.random() < 0.5 ? 1 : -1,
+                speed: 2
+            };
+
+            animateTarget(targetData);
+
+            target.addEventListener('pointerdown', () => {
                 const crosshairRect = crosshair.getBoundingClientRect();
                 const targetRect = target.getBoundingClientRect();
-
-                // Check if crosshair is over the target
                 if (
                     crosshairRect.left < targetRect.right &&
                     crosshairRect.right > targetRect.left &&
                     crosshairRect.top < targetRect.bottom &&
                     crosshairRect.bottom > targetRect.top
                 ) {
-                    target.classList.add('pop'); // Add pop effect
+                    target.classList.add('pop');
                     setTimeout(() => {
                         score++;
                         scoreDisplay.innerText = `Score: ${score}`;
                         target.remove();
-                        createTarget(); // Create a new target after the current one is clicked
-                    }, 300); // Wait for the animation to finish before removing the target
+                        createTarget();
+                    }, 300);
                 }
             });
-
-            moveTarget(target); // Move the target around the canvas
         }
 
-        // Function to move target randomly
-        function moveTarget(target) {
-            setInterval(() => {
-                target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
-                target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
-            }, 2000); // Move every 2 seconds
+        function animateTarget(targetData) {
+            function update() {
+                targetData.x += targetData.dx * targetData.speed;
+                targetData.y += targetData.dy * targetData.speed;
+
+                if (targetData.x <= 0 || targetData.x >= canvas.clientWidth - 80) {
+                    targetData.dx = -targetData.dx; // Reverse direction on X-axis
+                }
+                if (targetData.y <= 0 || targetData.y >= canvas.clientHeight - 80) {
+                    targetData.dy = -targetData.dy; // Reverse direction on Y-axis
+                }
+
+                targetData.element.style.left = targetData.x + 'px';
+                targetData.element.style.top = targetData.y + 'px';
+
+                requestAnimationFrame(update); // Continue the animation
+            }
+
+            update(); // Start the animation loop
         }
 
-        // Timer for the game
         function startTimer() {
             timerId = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    timerDisplay.innerText = `Time: ${timeLeft}`;
-                } else {
+                timeLeft--;
+                timerDisplay.innerText = `Time: ${timeLeft}`;
+                if (timeLeft <= 0) {
                     clearInterval(timerId);
                     endGame();
                 }
             }, 1000);
         }
 
-        // End the game
         function endGame() {
             gameContainer.style.display = 'none';
-            const finalScoreDisplay = document.getElementById('finalScore');
-            finalScoreDisplay.innerText = score;
+            document.getElementById('finalScore').innerText = score;
             document.getElementById('gameOver').style.display = 'block';
         }
 
-        // Restart the game
         document.getElementById('restartButton').addEventListener('click', () => {
             document.getElementById('gameOver').style.display = 'none';
             gameContainer.style.display = 'block';
             startGame();
         });
 
-        // Pause the game
         function pauseGame() {
             if (!isPaused) {
                 isPaused = true;
-                clearInterval(timerId); // Stop the timer
+                clearInterval(timerId);
                 document.getElementById('pausedScore').innerText = score;
                 document.getElementById('pauseMenu').style.display = 'block';
             }
         }
 
-        // Resume the game
         document.getElementById('resumeButton').addEventListener('click', () => {
             isPaused = false;
-            startTimer(); // Restart the timer
+            startTimer();
             document.getElementById('pauseMenu').style.display = 'none';
         });
     </script>
