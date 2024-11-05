@@ -54,9 +54,13 @@
             position: absolute;
             width: 80px; /* Target size */
             height: 80px; /* Target size */
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(44).png?raw=true'); /* Target image */
             background-size: cover;
             border-radius: 50%; /* Make it circular */
+        }
+        .special {
+            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.6); /* Glowing effect */
+            border: 3px solid gold; /* Make special targets look different */
+            transform: scale(1.2); /* Make special targets larger */
         }
         @keyframes pop {
             0% {
@@ -170,6 +174,15 @@
         function createTarget() {
             const target = document.createElement('div');
             target.classList.add('target');
+            
+            // 5% chance to create a special target
+            if (Math.random() < 0.05) {
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(47).png?raw=true')"; // Special target image
+                target.classList.add('special'); // Add special class for styling
+            } else {
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(44).png?raw=true')"; // Regular target image
+            }
+            
             target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
             target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
             canvas.appendChild(target);
@@ -191,92 +204,65 @@
                         score++;
                         scoreDisplay.innerText = `Score: ${score}`;
                         target.remove();
-                        createTarget();
+                        createTarget(); // Create a new target after the current one is clicked
                     }, 300); // Wait for the animation to finish before removing the target
                 }
             });
 
-            moveTarget(target);
+            moveTarget(target); // Move the target around the canvas
         }
 
+        // Function to move target randomly
         function moveTarget(target) {
-            const speed = 3; // Increased speed
-            let dx = Math.random() < 0.5 ? speed : -speed;
-            let dy = Math.random() < 0.5 ? speed : -speed;
-
-            function animate() {
-                const rect = target.getBoundingClientRect();
-                if (rect.left + dx < 0 || rect.right + dx > canvas.clientWidth) {
-                    dx = -dx;
-                }
-                if (rect.top + dy < 0 || rect.bottom + dy > canvas.clientHeight) {
-                    dy = -dy;
-                }
-
-                target.style.left = rect.left + dx + 'px';
-                target.style.top = rect.top + dy + 'px';
-
-                requestAnimationFrame(animate);
-            }
-            animate();
+            setInterval(() => {
+                target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
+                target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
+            }, 2000); // Move every 2 seconds
         }
 
-        // Timer function
+        // Timer for the game
         function startTimer() {
             timerId = setInterval(() => {
-                timeLeft--;
-                timerDisplay.innerText = `Time: ${timeLeft}`;
-                if (timeLeft <= 0) {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timerDisplay.innerText = `Time: ${timeLeft}`;
+                } else {
                     clearInterval(timerId);
-                    document.getElementById('finalScore').innerText = score; // Show final score
-                    document.getElementById('gameOver').style.display = 'block'; // Show game over message
+                    endGame();
                 }
             }, 1000);
         }
 
-        // Function to pause the game
-        function pauseGame() {
-            clearInterval(timerId); // Stop the timer
-            isPaused = true; // Set paused state
-            document.getElementById('pausedScore').innerText = score; // Show current score in pause menu
-            document.getElementById('pauseMenu').style.display = 'block'; // Show the pause menu
-        }
-
-        // Function to resume the game
-        function resumeGame() {
-            startTimer(); // Restart the timer
-            isPaused = false; // Reset paused state
-            document.getElementById('pauseMenu').style.display = 'none'; // Hide the pause menu
+        // End the game
+        function endGame() {
+            gameContainer.style.display = 'none';
+            const finalScoreDisplay = document.getElementById('finalScore');
+            finalScoreDisplay.innerText = score;
+            document.getElementById('gameOver').style.display = 'block';
         }
 
         // Restart the game
-        function restartGame() {
-            score = 0;
-            timeLeft = 30;
-            scoreDisplay.innerText = `Score: ${score}`;
-            timerDisplay.innerText = `Time: ${timeLeft}`;
-            document.getElementById('gameOver').style.display = 'none'; // Hide game over message
-            canvas.innerHTML = ''; // Clear targets
-            for (let i = 0; i < 5; i++) {
-                createTarget();
+        document.getElementById('restartButton').addEventListener('click', () => {
+            document.getElementById('gameOver').style.display = 'none';
+            gameContainer.style.display = 'block';
+            startGame();
+        });
+
+        // Pause the game
+        function pauseGame() {
+            if (!isPaused) {
+                isPaused = true;
+                clearInterval(timerId); // Stop the timer
+                document.getElementById('pausedScore').innerText = score;
+                document.getElementById('pauseMenu').style.display = 'block';
             }
-            startTimer(); // Restart the timer
         }
 
-        // Event listener for the resume button
-        document.getElementById('resumeButton').addEventListener('click', resumeGame);
-        // Event listener for the restart button
-        document.getElementById('restartButton').addEventListener('click', restartGame);
-
-        // Add event listener to pause the game with a key press (e.g., "P")
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'p' || e.key === 'P') {
-                if (isPaused) {
-                    resumeGame();
-                } else {
-                    pauseGame();
-                }
-            }
+        // Resume the game
+        document.getElementById('resumeButton').addEventListener('click', () => {
+            isPaused = false;
+            startTimer(); // Restart the timer
+            document.getElementById('pauseMenu').style.display = 'none';
         });
     </script>
 </body>
