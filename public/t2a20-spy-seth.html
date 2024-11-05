@@ -1,26 +1,254 @@
-<h1 align=center>t2a20-spy-seth.html</h1>
-<textarea id="myArea01" rows=4 cols=70>Hello how are you</textarea><br> 
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target Clicking Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Press Start 2P', cursive;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f0f0f0;
+            display: none;
+        }
+        #gameCanvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(46).png?raw=true');
+            background-size: cover;
+        }
+        .crosshair {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(45).png?raw=true');
+            background-size: cover;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #333;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #333;
+        }
+        .target {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-size: cover;
+            border-radius: 50%;
+        }
+        .special {
+            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.6);
+            border: 3px solid gold;
+            transform: scale(1.2);
+        }
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .target.pop {
+            animation: pop 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="mainMenu">
+        <div>
+            <h1>Target Clicking Game</h1>
+            <p>Click on the targets as fast as you can!</p>
+            <button id="startButton">Start Game</button>
+        </div>
+    </div>
 
+    <div id="gameContainer">
+        <div id="score">Score: 0</div>
+        <div id="timer">Time: 30</div>
+        <div id="gameCanvas">
+            <div class="crosshair" id="crosshair"></div>
+        </div>
+    </div>
 
-<input type=button value="encrypt" onclick="{
-   let myTemp = ''
-   myString = document.getElementById('myArea01').value.toLowerCase().split('')
-   for (let myLoop=0;   myLoop < myString.length; myLoop++){
-      myTemp = myString[myLoop]
-      if (myString[myLoop] == 'e') {myTemp  = 'f'} 
-      if (myString[myLoop] == 'h') {myTemp  = 'i'} 
-      myString[myLoop] = myTemp
-   }
-   document.getElementById('myArea02').value = myString.join('')
-}"><br><br>
+    <div id="pauseMenu">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px;">
+            <h2>Game Paused</h2>
+            <p>Your Score: <span id="pausedScore">0</span></p>
+            <button id="resumeButton">Resume</button>
+        </div>
+    </div>
 
+    <div id="gameOver">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px;">
+            <h2>Game Over</h2>
+            <p>Your Score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart</button>
+        </div>
+    </div>
 
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const crosshair = document.getElementById('crosshair');
+        const mainMenu = document.getElementById('mainMenu');
+        const gameContainer = document.getElementById('gameContainer');
+        let score = 0;
+        let timeLeft = 30;
+        let timerId;
+        let isPaused = false;
 
-<textarea id="myArea02" rows=4 cols=70></textarea><br> 
+        document.getElementById('startButton').addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            gameContainer.style.display = 'block';
+            startGame();
+        });
 
-<input type=button value="decrypt" onclick="{
-   alert('Sorry, you have to do this!')
-}"><br><br>
+        document.addEventListener('pointermove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            crosshair.style.left = e.clientX - rect.left + 'px';
+            crosshair.style.top = e.clientY - rect.top + 'px';
+        });
 
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.innerText = `Score: ${score}`;
+            timerDisplay.innerText = `Time: ${timeLeft}`;
+            for (let i = 0; i < 5; i++) {
+                createTarget();
+            }
+            startTimer();
+        }
 
-<textarea id="myArea03" rows=4 cols=70></textarea><br> 
+        function createTarget() {
+            const target = document.createElement('div');
+            target.classList.add('target');
+            
+            if (Math.random() < 0.05) {
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(47).png?raw=true')";
+                target.classList.add('special');
+            } else {
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(44).png?raw=true')";
+            }
+            
+            target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
+            target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
+            canvas.appendChild(target);
+
+            const targetData = {
+                element: target,
+                x: parseFloat(target.style.left),
+                y: parseFloat(target.style.top),
+                dx: Math.random() < 0.5 ? 1 : -1,
+                dy: Math.random() < 0.5 ? 1 : -1,
+                speed: 2
+            };
+
+            animateTarget(targetData);
+
+            target.addEventListener('pointerdown', () => {
+                const crosshairRect = crosshair.getBoundingClientRect();
+                const targetRect = target.getBoundingClientRect();
+                if (
+                    crosshairRect.left < targetRect.right &&
+                    crosshairRect.right > targetRect.left &&
+                    crosshairRect.top < targetRect.bottom &&
+                    crosshairRect.bottom > targetRect.top
+                ) {
+                    target.classList.add('pop');
+                    setTimeout(() => {
+                        score++;
+                        scoreDisplay.innerText = `Score: ${score}`;
+                        target.remove();
+                        createTarget();
+                    }, 300);
+                }
+            });
+        }
+
+        function animateTarget(targetData) {
+            function update() {
+                targetData.x += targetData.dx * targetData.speed;
+                targetData.y += targetData.dy * targetData.speed;
+
+                if (targetData.x <= 0 || targetData.x >= canvas.clientWidth - 80) {
+                    targetData.dx = -targetData.dx; // Reverse direction on X-axis
+                }
+                if (targetData.y <= 0 || targetData.y >= canvas.clientHeight - 80) {
+                    targetData.dy = -targetData.dy; // Reverse direction on Y-axis
+                }
+
+                targetData.element.style.left = targetData.x + 'px';
+                targetData.element.style.top = targetData.y + 'px';
+
+                requestAnimationFrame(update); // Continue the animation
+            }
+
+            update(); // Start the animation loop
+        }
+
+        function startTimer() {
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = `Time: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameContainer.style.display = 'none';
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        document.getElementById('restartButton').addEventListener('click', () => {
+            document.getElementById('gameOver').style.display = 'none';
+            gameContainer.style.display = 'block';
+            startGame();
+        });
+
+        function pauseGame() {
+            if (!isPaused) {
+                isPaused = true;
+                clearInterval(timerId);
+                document.getElementById('pausedScore').innerText = score;
+                document.getElementById('pauseMenu').style.display = 'block';
+            }
+        }
+
+        document.getElementById('resumeButton').addEventListener('click', () => {
+            isPaused = false;
+            startTimer();
+            document.getElementById('pauseMenu').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
+ 
