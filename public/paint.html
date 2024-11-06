@@ -86,6 +86,7 @@
             <button class="shape-btn" id="line-btn" onclick="setDrawingMode('line')">Line</button>
             <button class="shape-btn" id="square-btn" onclick="setDrawingMode('square')">Square</button>
             <button class="shape-btn" id="circle-btn" onclick="setDrawingMode('circle')">Circle</button>
+            <button class="shape-btn" id="eraser-btn" onclick="setDrawingMode('eraser')">Eraser</button>
         </div>
 
         <!-- Canvas Section -->
@@ -99,7 +100,8 @@
         let painting = false;
         let penSize = 5;
         let currentColor = '#000000';
-        let drawMode = 'freehand'; // Current drawing mode (freehand, line, square, circle)
+        let backgroundColor = '#f7f7f7'; // This is the background color of the canvas (for erasing)
+        let drawMode = 'freehand'; // Current drawing mode (freehand, line, square, circle, eraser)
         let startX, startY; // Starting point for shapes
 
         // Start painting or drawing shapes
@@ -108,7 +110,7 @@
             startX = e.clientX - canvas.offsetLeft;
             startY = e.clientY - canvas.offsetTop;
 
-            if (drawMode === 'freehand') {
+            if (drawMode === 'freehand' || drawMode === 'eraser') {
                 draw(e);
             }
         }
@@ -137,7 +139,7 @@
 
                 ctx.lineWidth = penSize;
                 ctx.lineCap = 'round';
-                ctx.strokeStyle = currentColor;
+                ctx.strokeStyle = (drawMode === 'eraser') ? backgroundColor : currentColor;
                 ctx.lineTo(x, y);
                 ctx.stroke();
             }
@@ -157,7 +159,7 @@
             let x = e.clientX - canvas.offsetLeft;
             let y = e.clientY - canvas.offsetTop;
             ctx.lineWidth = penSize;
-            ctx.strokeStyle = currentColor;
+            ctx.strokeStyle = (drawMode === 'eraser') ? backgroundColor : currentColor;
             ctx.beginPath();
 
             switch (drawMode) {
