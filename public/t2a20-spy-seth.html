@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryption/Decryption Tool</title>
+    <title>Number to Letter Decryption Tools</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             height: 100vh;
+            flex-direction: column;
         }
         .container {
             background-color: #fff;
@@ -22,6 +23,7 @@
             padding: 20px;
             width: 100%;
             max-width: 600px;
+            margin-bottom: 30px;
         }
         h1 {
             text-align: center;
@@ -51,6 +53,13 @@
         input[type="button"]:hover {
             background-color: #45a049;
         }
+        .clear-button {
+            background-color: #f44336;
+            margin-top: 10px;
+        }
+        .clear-button:hover {
+            background-color: #e53935;
+        }
         .alert {
             background-color: #f8d7da;
             color: #721c24;
@@ -63,45 +72,102 @@
 </head>
 <body>
 
+<!-- Number to Letter Decryption -->
 <div class="container">
-    <h1>Encryption Tool</h1>
+    <h1>Number to Letter Decryption</h1>
 
-    <!-- Textarea for input -->
-    <textarea id="myArea01" rows="4" placeholder="Enter your message here..."></textarea><br>
+    <textarea id="myArea01" rows="4" cols="70" placeholder="Enter numeric code here (e.g., 1 2 3 4)"></textarea><br>
 
-    <!-- Encrypt button -->
-    <input type="button" value="Encrypt" onclick="encryptText()"><br><br>
+    <input type="button" value="Decrypt" onclick="decryptNumberToLetter()"><br><br>
 
-    <!-- Textarea for encrypted text -->
-    <textarea id="myArea02" rows="4" readonly placeholder="Encrypted message will appear here..."></textarea><br>
+    <textarea id="myArea02" rows="4" cols="70" readonly placeholder="Decrypted message will appear here"></textarea><br>
 
-    <!-- Decrypt button (Alert only for now) -->
-    <input type="button" value="Decrypt" onclick="decryptText()"><br><br>
+    <input type="button" class="clear-button" value="Clear" onclick="clearFields('myArea01', 'myArea02')">
 
-    <!-- Textarea for decrypted text -->
-    <textarea id="myArea03" rows="4" readonly placeholder="Decrypted message (to be added)"></textarea><br>
+    <div class="alert" id="errorAlert1" style="display: none;">Please enter a valid numeric code (1-26 only).</div>
+</div>
 
-    <!-- Decryption alert -->
-    <div class="alert" id="decryptionAlert" style="display: none;">Sorry, you have to do this manually!</div>
+<!-- Number One to One Letter Decryption -->
+<div class="container">
+    <h1>Number One to One Letter Decryption</h1>
+
+    <textarea id="myArea03" rows="4" cols="70" placeholder="Enter numeric code here (e.g., 1 2 3 4)"></textarea><br>
+
+    <input type="button" value="Decrypt" onclick="decryptNumberOneToOne()"><br><br>
+
+    <textarea id="myArea04" rows="4" cols="70" readonly placeholder="Decrypted message will appear here"></textarea><br>
+
+    <input type="button" class="clear-button" value="Clear" onclick="clearFields('myArea03', 'myArea04')">
+
+    <div class="alert" id="errorAlert2" style="display: none;">Please enter a valid numeric code.</div>
 </div>
 
 <script>
-    // Encrypt function
-    function encryptText() {
-        let myTemp = '';
-        let myString = document.getElementById('myArea01').value.toLowerCase().split('');
-        for (let myLoop = 0; myLoop < myString.length; myLoop++) {
-            myTemp = myString[myLoop];
-            if (myString[myLoop] == 'e') { myTemp = 'f'; }
-            if (myString[myLoop] == 'h') { myTemp = 'i'; }
-            myString[myLoop] = myTemp;
+    // Mapping from numbers (1-26) to letters (a-z) for Number to Letter Decryption
+    const numberToLetter = {
+        '1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e', '6': 'f', '7': 'g', '8': 'h', '9': 'i',
+        '10': 'j', '11': 'k', '12': 'l', '13': 'm', '14': 'n', '15': 'o', '16': 'p', '17': 'q', '18': 'r',
+        '19': 's', '20': 't', '21': 'u', '22': 'v', '23': 'w', '24': 'x', '25': 'y', '26': 'z'
+    };
+
+    // Mapping from numbers (1-9) to their word equivalents (e.g., "1" to "one")
+    const numberToWord = {
+        '1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five',
+        '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine'
+    };
+
+    // Function to decrypt Number to Letter
+    function decryptNumberToLetter() {
+        let input = document.getElementById('myArea01').value.trim();
+
+        // Validate if input contains only numbers and spaces
+        if (!/^[\d\s]+$/.test(input)) {
+            document.getElementById('errorAlert1').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('errorAlert1').style.display = 'none';
         }
-        document.getElementById('myArea02').value = myString.join('');
+
+        // Split input by spaces (e.g., '1 2 3' becomes ['1', '2', '3'])
+        let numberArray = input.split(' ');
+
+        let decryptedText = numberArray.map(number => {
+            // For each number, map to the corresponding letter
+            return numberToLetter[number] || '';  // Return empty if invalid
+        }).join('');  // Join letters into one string
+
+        document.getElementById('myArea02').value = decryptedText;
     }
 
-    // Decrypt function (for now just shows an alert)
-    function decryptText() {
-        document.getElementById('decryptionAlert').style.display = 'block';
+    // Function to decrypt Number One to One Letter
+    function decryptNumberOneToOne() {
+        let input = document.getElementById('myArea03').value.trim();
+
+        // Validate if input contains only numbers and spaces
+        if (!/^[\d\s]+$/.test(input)) {
+            document.getElementById('errorAlert2').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('errorAlert2').style.display = 'none';
+        }
+
+        // Split input by spaces (e.g., '1 2 3' becomes ['1', '2', '3'])
+        let numberArray = input.split(' ');
+
+        let decryptedText = numberArray.map(number => {
+            // For each number, map to its corresponding word
+            return numberToWord[number] || '';  // Return empty if invalid
+        }).join(' ');  // Join words into a sentence
+
+        document.getElementById('myArea04').value = decryptedText;
+    }
+
+    // Function to clear input and output fields
+    function clearFields(inputId, outputId) {
+        document.getElementById(inputId).value = '';
+        document.getElementById(outputId).value = '';
+        document.getElementById('errorAlert1').style.display = 'none';
+        document.getElementById('errorAlert2').style.display = 'none';
     }
 </script>
 
