@@ -8,22 +8,24 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
             background-color: #f7f7f7;
         }
 
-        canvas {
-            border: 2px solid #000;
-            cursor: crosshair;
+        .container {
+            display: flex;
         }
 
         .controls {
-            margin: 20px;
+            margin-right: 20px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
         }
 
         .color-picker {
@@ -50,6 +52,7 @@
             color: white;
             border: none;
             cursor: pointer;
+            width: 120px;
         }
 
         .shape-btn:focus {
@@ -59,30 +62,34 @@
         .shape-btn.active {
             background-color: #ff9800;
         }
+
+        canvas {
+            border: 2px solid #000;
+            cursor: crosshair;
+        }
     </style>
 </head>
 <body>
-    <h1>Painting Game</h1>
-    
-    <!-- Canvas -->
-    <canvas id="paintCanvas" width="800" height="600"></canvas>
+    <div class="container">
+        <!-- Controls Section -->
+        <div class="controls">
+            <h3>Choose Color</h3>
+            <input type="color" id="colorWheel" class="color-picker" value="#000000" onchange="changeColor(this.value)" />
 
-    <div class="controls">
-        <h3>Choose Color</h3>
-        
-        <!-- Color Picker -->
-        <input type="color" id="colorWheel" class="color-picker" value="#000000" onchange="changeColor(this.value)" />
+            <h3>Pen Size</h3>
+            <input type="range" id="pen-size" min="1" max="20" value="5" onchange="changePenSize(this.value)" />
 
-        <h3>Pen Size</h3>
-        <input type="range" id="pen-size" min="1" max="20" value="5" onchange="changePenSize(this.value)" />
+            <button id="clear-btn" onclick="clearCanvas()">Clear Canvas</button>
 
-        <button id="clear-btn" onclick="clearCanvas()">Clear Canvas</button>
-        
-        <h3>Select Drawing Mode</h3>
-        <button class="shape-btn" id="freehand-btn" onclick="setDrawingMode('freehand')">Freehand</button>
-        <button class="shape-btn" id="line-btn" onclick="setDrawingMode('line')">Line</button>
-        <button class="shape-btn" id="square-btn" onclick="setDrawingMode('square')">Square</button>
-        <button class="shape-btn" id="circle-btn" onclick="setDrawingMode('circle')">Circle</button>
+            <h3>Select Drawing Mode</h3>
+            <button class="shape-btn" id="freehand-btn" onclick="setDrawingMode('freehand')">Freehand</button>
+            <button class="shape-btn" id="line-btn" onclick="setDrawingMode('line')">Line</button>
+            <button class="shape-btn" id="square-btn" onclick="setDrawingMode('square')">Square</button>
+            <button class="shape-btn" id="circle-btn" onclick="setDrawingMode('circle')">Circle</button>
+        </div>
+
+        <!-- Canvas Section -->
+        <canvas id="paintCanvas" width="800" height="600"></canvas>
     </div>
 
     <script>
@@ -126,7 +133,7 @@
             ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
         }
 
-        // Draw shapes
+        // Draw shapes (Line, Square, Circle) without fill (outline only)
         function drawShape(e) {
             if (!painting) return;
 
@@ -140,19 +147,19 @@
                 case 'line':
                     ctx.moveTo(startX, startY);
                     ctx.lineTo(x, y);
-                    ctx.stroke();
+                    ctx.stroke(); // Only outline (no fill)
                     break;
 
                 case 'square':
                     let size = Math.max(Math.abs(x - startX), Math.abs(y - startY));
-                    ctx.rect(startX, startY, size, size);
-                    ctx.stroke();
+                    ctx.rect(startX, startY, size, size); // Draw square outline
+                    ctx.stroke(); // Only outline (no fill)
                     break;
 
                 case 'circle':
                     let radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
-                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
-                    ctx.stroke();
+                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI); // Draw circle outline
+                    ctx.stroke(); // Only outline (no fill)
                     break;
 
                 default:
