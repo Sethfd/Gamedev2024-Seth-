@@ -42,6 +42,23 @@
         #pen-size {
             margin-top: 10px;
         }
+
+        .shape-btn {
+            margin: 5px;
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .shape-btn:focus {
+            outline: none;
+        }
+
+        .shape-btn.active {
+            background-color: #ff9800;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +77,12 @@
         <input type="range" id="pen-size" min="1" max="20" value="5" onchange="changePenSize(this.value)" />
 
         <button id="clear-btn" onclick="clearCanvas()">Clear Canvas</button>
+        
+        <h3>Select Drawing Mode</h3>
+        <button class="shape-btn" id="freehand-btn" onclick="setDrawingMode('freehand')">Freehand</button>
+        <button class="shape-btn" id="line-btn" onclick="setDrawingMode('line')">Line</button>
+        <button class="shape-btn" id="square-btn" onclick="setDrawingMode('square')">Square</button>
+        <button class="shape-btn" id="circle-btn" onclick="setDrawingMode('circle')">Circle</button>
     </div>
 
     <script>
@@ -69,20 +92,27 @@
         let painting = false;
         let penSize = 5;
         let currentColor = '#000000';
+        let drawMode = 'freehand'; // Current drawing mode (freehand, line, square, circle)
+        let startX, startY; // Starting point for shapes
 
-        // Start painting
+        // Start painting or drawing shapes
         function startPosition(e) {
             painting = true;
-            draw(e);
+            startX = e.clientX - canvas.offsetLeft;
+            startY = e.clientY - canvas.offsetTop;
+
+            if (drawMode === 'freehand') {
+                draw(e);
+            }
         }
 
-        // End painting
+        // End painting or drawing shapes
         function endPosition() {
             painting = false;
             ctx.beginPath();
         }
 
-        // Draw function
+        // Draw function for freehand mode
         function draw(e) {
             if (!painting) return;
 
@@ -96,9 +126,44 @@
             ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
         }
 
+        // Draw shapes
+        function drawShape(e) {
+            if (!painting) return;
+
+            let x = e.clientX - canvas.offsetLeft;
+            let y = e.clientY - canvas.offsetTop;
+            ctx.lineWidth = penSize;
+            ctx.strokeStyle = currentColor;
+            ctx.beginPath();
+
+            switch (drawMode) {
+                case 'line':
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    break;
+
+                case 'square':
+                    let size = Math.max(Math.abs(x - startX), Math.abs(y - startY));
+                    ctx.rect(startX, startY, size, size);
+                    ctx.stroke();
+                    break;
+
+                case 'circle':
+                    let radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    break;
+
+                default:
+                    draw(e); // Freehand drawing
+                    break;
+            }
+        }
+
         // Event listeners for drawing
         canvas.addEventListener('mousedown', startPosition);
-        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mousemove', drawShape);
         canvas.addEventListener('mouseup', endPosition);
         canvas.addEventListener('mouseout', endPosition);
 
@@ -115,6 +180,14 @@
         // Clear the canvas
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Set the current drawing mode
+        function setDrawingMode(mode) {
+            drawMode = mode;
+            // Update button active state
+            document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${mode}-btn`).classList.add('active');
         }
     </script>
 </body>
