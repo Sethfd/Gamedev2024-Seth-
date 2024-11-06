@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number to Letter Decryption</title>
+</head>
+<body>
+
+    <h1 align="center">Number to Letter Decryption</h1>
+
+    <textarea id="myArea01" rows="4" cols="70" placeholder="Enter numeric code here (e.g., 835553 479 153 999)"></textarea><br>
+
+    <input type="button" value="Decrypt" onclick="decryptText()"><br><br>
+
+    <textarea id="myArea02" rows="4" cols="70" placeholder="Decrypted message will appear here"></textarea><br>
+
+    <script>
+        // Define a mapping from numbers (1-9) to letters (a-z)
+        const numberToLetter = {
+            '1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e', '6': 'f', '7': 'g', '8': 'h', '9': 'i',
+            '10': 'j', '11': 'k', '12': 'l', '13': 'm', '14': 'n', '15': 'o', '16': 'p', '17': 'q', '18': 'r',
+            '19': 's', '20': 't', '21': 'u', '22': 'v', '23': 'w', '24': 'x', '25': 'y', '26': 'z'
+        };
+
+        // Function to decrypt the input string
+        function decryptText() {
+            let input = document.getElementById('myArea01').value.trim();
+            
+            // Split input by spaces (e.g., '835553 479 153 999' becomes ['835553', '479', '153', '999'])
+            let numberArray = input.split(' ');
+
+            let decryptedText = numberArray.map(numberGroup => {
+                // For each group of numbers, map each number to its corresponding letter
+                return numberGroup.split('').map(num => {
+                    // Check if the number exists in the mapping
+                    if (numberToLetter[num]) {
+                        return numberToLetter[num];
+                    } else {
+                        return ''; // Handle any invalid characters (non-numeric, etc.)
+                    }
+                }).join(''); // Join the letters in the current group
+            }).join(' '); // Join the groups of letters back into a sentence
+            
+            document.getElementById('myArea02').value = decryptedText;
+        }
+    </script>
+
+</body>
+</html>
