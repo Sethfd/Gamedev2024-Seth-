@@ -66,6 +66,14 @@
         canvas {
             border: 2px solid #000;
             cursor: crosshair;
+            position: relative;
+        }
+
+        #preview {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            background-color: rgba(0, 0, 0, 0.2); /* Light shadow effect for preview */
         }
     </style>
 </head>
@@ -77,7 +85,7 @@
             <input type="color" id="colorWheel" class="color-picker" value="#000000" onchange="changeColor(this.value)" />
 
             <h3>Pen Size</h3>
-            <input type="range" id="pen-size" min="1" max="20" value="5" onchange="changePenSize(this.value)" />
+            <input type="range" id="pen-size" min="1" max="50" value="5" onchange="changePenSize(this.value)" />
 
             <button id="clear-btn" onclick="clearCanvas()">Clear Canvas</button>
 
@@ -93,14 +101,18 @@
         <canvas id="paintCanvas" width="800" height="600"></canvas>
     </div>
 
+    <!-- Preview Circle (for brush/eraser size) -->
+    <div id="preview"></div>
+
     <script>
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
+        const preview = document.getElementById('preview');
 
         let painting = false;
         let penSize = 5;
         let currentColor = '#000000';
-        let backgroundColor = '#f7f7f7'; // This is the background color of the canvas (for erasing)
+        let backgroundColor = '#f7f7f7'; // Background color (used for erasing)
         let drawMode = 'freehand'; // Current drawing mode (freehand, line, square, circle, eraser)
         let startX, startY; // Starting point for shapes
 
@@ -198,9 +210,18 @@
             currentColor = color;
         }
 
-        // Change pen size
+        // Change pen size and update preview
         function changePenSize(size) {
             penSize = size;
+            updatePreview(); // Update preview when pen size changes
+        }
+
+        // Update preview circle for brush/eraser size
+        function updatePreview() {
+            const radius = penSize / 2;
+            preview.style.width = `${penSize}px`;
+            preview.style.height = `${penSize}px`;
+            preview.style.borderRadius = '50%';
         }
 
         // Clear the canvas
@@ -214,7 +235,21 @@
             // Update button active state
             document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`${mode}-btn`).classList.add('active');
+            updatePreview(); // Update preview when mode changes
         }
+
+        // Update preview position
+        canvas.addEventListener('mousemove', function(e) {
+            const mouseX = e.clientX - canvas.offsetLeft;
+            const mouseY = e.clientY - canvas.offsetTop;
+
+            // Show preview near the mouse cursor
+            preview.style.left = `${mouseX - penSize / 2}px`;
+            preview.style.top = `${mouseY - penSize / 2}px`;
+        });
+        
+        // Initialize the preview circle
+        updatePreview();
     </script>
 </body>
 </html>
