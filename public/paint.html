@@ -119,18 +119,35 @@
             ctx.beginPath();
         }
 
-        // Draw function for freehand mode
+        // Draw function for freehand mode with smoothness
         function draw(e) {
             if (!painting) return;
 
-            ctx.lineWidth = penSize;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = currentColor;
+            const currentX = e.clientX - canvas.offsetLeft;
+            const currentY = e.clientY - canvas.offsetTop;
 
-            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
-            ctx.stroke();
+            // Line smoothing logic: Draw intermediate points
+            const distance = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+            const steps = Math.max(Math.floor(distance / 2), 1); // Adjust step size for smoother lines
+
+            // Draw intermediate points between last and current position
+            for (let i = 1; i <= steps; i++) {
+                const x = startX + (currentX - startX) * (i / steps);
+                const y = startY + (currentY - startY) * (i / steps);
+
+                ctx.lineWidth = penSize;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = currentColor;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
             ctx.beginPath();
-            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.moveTo(currentX, currentY); // Update the starting point for the next segment
+
+            // Update starting point for next mouse move
+            startX = currentX;
+            startY = currentY;
         }
 
         // Draw shapes (Line, Square, Circle) without fill (outline only)
