@@ -205,9 +205,9 @@
                             timeLeft -= 5;  // Decrease time by 5 seconds if it's a bomb
                         } else if (target.classList.contains('special')) {
                             score += 2;  // Increase score if it's a special target
-                            timeLeft += 1;  // Add 1 second to time if it's a special target
                         } else {
                             score++;  // Regular target, just increase score by 1
+                            timeLeft += 1;
                         }
 
                         // Ensure time doesn't go negative
