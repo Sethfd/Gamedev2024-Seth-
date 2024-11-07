@@ -1,17 +1,52 @@
 <h2 align="center">t2a08-canvas by Fred</h2>
-Click the button below to display the image on the canvas. <br><br>
+Click the button below to display the image on the canvas.<br><br>
 
-<!-- Button to load and draw an image from URL -->
-<input type="button" value="Draw Image from URL" onclick="drawImageFromURL()"><br><br>
+<!-- Toolbar for drawing and erasing -->
+<div style="text-align:center;">
+   <button onclick="setMode('draw')">Draw</button>
+   <button onclick="setMode('erase')">Erase</button>
+   <button onclick="drawImageFromURL()">Draw Image from URL</button>
+   <button onclick="clearCanvas()">Clear Canvas</button><br><br>
 
-<!-- Canvas to draw the image -->
+   <!-- Brush settings -->
+   Brush size: <input type="range" id="brushSize" min="1" max="20" value="5" onchange="updateBrushSize()"> <br>
+   Brush color: <input type="color" id="brushColor" onchange="updateBrushColor()">
+</div><br>
+
+<!-- Canvas to draw on -->
 <canvas id="myCoolTag" width="1000" height="600" style="border:1px solid #000000;"></canvas>
 
 <script>
-   // Set up global variables for the canvas and its context
+   // Set up global variables
    let myCanvas = document.getElementById('myCoolTag');
    let myContext = myCanvas.getContext('2d');
-   let img = new Image();  // Create a new Image object
+   let isDrawing = false; // Is the user currently drawing?
+   let isErasing = false; // Is the user currently erasing?
+   let brushSize = 5; // Default brush size
+   let brushColor = '#000000'; // Default brush color
+   let img = new Image(); // Image object for drawing the image
+   let lastX = 0, lastY = 0; // Last mouse position
+
+   // Set the drawing mode (either draw or erase)
+   function setMode(mode) {
+      if (mode === 'draw') {
+         isDrawing = true;
+         isErasing = false;
+      } else if (mode === 'erase') {
+         isDrawing = false;
+         isErasing = true;
+      }
+   }
+
+   // Update brush size from input
+   function updateBrushSize() {
+      brushSize = document.getElementById('brushSize').value;
+   }
+
+   // Update brush color from input
+   function updateBrushColor() {
+      brushColor = document.getElementById('brushColor').value;
+   }
 
    // Function to draw and scale an image from a URL with animation
    function drawImageFromURL() {
@@ -78,5 +113,54 @@ Click the button below to display the image on the canvas. <br><br>
          myContext.fillText('Failed to load image.', myCanvas.width / 2, myCanvas.height / 2);
       };
    }
-</script>
 
+   // Clear the canvas
+   function clearCanvas() {
+      myContext.clearRect(0, 0, myCanvas.width, myCanvas.height);
+   }
+
+   // Handle mouse events for drawing
+   myCanvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+   });
+
+   myCanvas.addEventListener('mousemove', (e) => {
+      if (isDrawing || isErasing) {
+         const currentX = e.offsetX;
+         const currentY = e.offsetY;
+
+         if (isDrawing) {
+            // Draw the line when drawing
+            myContext.beginPath();
+            myContext.lineWidth = brushSize;
+            myContext.lineCap = 'round';
+            myContext.strokeStyle = brushColor;
+
+            myContext.moveTo(lastX, lastY);
+            myContext.lineTo(currentX, currentY);
+            myContext.stroke();
+         } else if (isErasing) {
+            // Erase the line when erasing
+            myContext.clearRect(currentX - brushSize / 2, currentY - brushSize / 2, brushSize, brushSize);
+         }
+
+         lastX = currentX;
+         lastY = currentY;
+      }
+   });
+
+   // Stop drawing when mouse is released
+   myCanvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+      isErasing = false;
+   });
+
+   // Stop drawing when mouse leaves the canvas
+   myCanvas.addEventListener('mouseout', () => {
+      isDrawing = false;
+      isErasing = false;
+   });
+
+</script>
