@@ -203,8 +203,10 @@
                     setTimeout(() => {
                         if (target.classList.contains('bomb')) {
                             timeLeft -= 5;  // Decrease time by 5 seconds if it's a bomb
+                            score +=5
                         } else if (target.classList.contains('special')) {
                             score += 2;  // Increase score if it's a special target
+                            timeleft+=5
                         } else {
                             score++;  // Regular target, just increase score by 1
                             timeLeft += 1;
