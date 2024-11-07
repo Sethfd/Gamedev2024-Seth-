@@ -1,31 +1,82 @@
-<h2 align=center>t2a08-canvas by Fred</h2>
+<h2 align="center">t2a08-canvas by Fred</h2>
 Click the button below to display the image on the canvas. <br><br>
 
 <!-- Button to load and draw an image from URL -->
-<input type=button value="Draw Image from URL" onclick="drawImageFromURL()"><br><br>
+<input type="button" value="Draw Image from URL" onclick="drawImageFromURL()"><br><br>
 
+<!-- Canvas to draw the image -->
 <canvas id="myCoolTag" width="1000" height="600" style="border:1px solid #000000;"></canvas>
 
 <script>
-   // set up global variables
+   // Set up global variables for the canvas and its context
    let myCanvas = document.getElementById('myCoolTag');
    let myContext = myCanvas.getContext('2d');
+   let img = new Image();  // Create a new Image object
 
-   // Function to draw an image from a URL
+   // Function to draw and scale an image from a URL with animation
    function drawImageFromURL() {
-      const img = new Image();  // Create a new Image object
-      img.src = 'https://drct.pixilart.com/sizes/sr29481148c0aaws3_400.png';  // Set the image source
+      img.src = 'https://drct.pixilart.com/sizes/sr29481148c0aaws3_400.png';  // Set the image URL
+
+      // Display loading message
+      myContext.clearRect(0, 0, myCanvas.width, myCanvas.height); // Clear the canvas before drawing
+      myContext.fillStyle = 'black';
+      myContext.font = '24px Arial';
+      myContext.textAlign = 'center';
+      myContext.fillText('Loading image...', myCanvas.width / 2, myCanvas.height / 2); // Display loading text
 
       img.onload = function() {
-         // Clear the canvas before drawing the new image
+         // Clear the canvas before starting the animation
          myContext.clearRect(0, 0, myCanvas.width, myCanvas.height);
 
-         // Draw the image onto the canvas at position (100, 100)
-         myContext.drawImage(img, 100, 100);
+         // Calculate scaling factors to fit the image inside the canvas while maintaining aspect ratio
+         let scaleX = myCanvas.width / img.width;
+         let scaleY = myCanvas.height / img.height;
+         let scale = Math.min(scaleX, scaleY); // Use the smaller scaling factor to fit the image
+
+         // Calculate the new width and height of the image
+         let newWidth = img.width * scale;
+         let newHeight = img.height * scale;
+
+         // Calculate the position to center the image on the canvas
+         let xPos = (myCanvas.width - newWidth) / 2;
+         let yPos = (myCanvas.height - newHeight) / 2;
+
+         // Animation: gradually increase the alpha (transparency) to create a fade-in effect
+         let alpha = 0;  // Start with completely transparent image
+         let increment = 0.02;  // Amount to increase transparency on each frame
+
+         // Function to animate the image drawing process
+         function animateDrawing() {
+            myContext.clearRect(0, 0, myCanvas.width, myCanvas.height);  // Clear the canvas
+
+            // Fade-in effect: Increase alpha over time
+            alpha += increment;
+            if (alpha > 1) alpha = 1;  // Ensure alpha doesn't exceed 1
+
+            // Set the transparency (alpha) of the image using globalAlpha
+            myContext.globalAlpha = alpha;
+
+            // Draw the image with the current alpha (transparency)
+            myContext.drawImage(img, xPos, yPos, newWidth, newHeight);
+
+            // If alpha hasn't reached 1, request another animation frame
+            if (alpha < 1) {
+               requestAnimationFrame(animateDrawing);  // Continue the animation
+            } else {
+               myContext.globalAlpha = 1;  // Reset alpha to full opacity after the animation
+            }
+         }
+
+         // Start the animation
+         animateDrawing();
       };
 
+      // Handle image loading errors
       img.onerror = function() {
-         alert('Failed to load image.');
+         myContext.clearRect(0, 0, myCanvas.width, myCanvas.height);
+         myContext.fillStyle = 'red';
+         myContext.fillText('Failed to load image.', myCanvas.width / 2, myCanvas.height / 2);
       };
    }
 </script>
+
