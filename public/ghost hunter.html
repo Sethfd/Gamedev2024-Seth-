@@ -12,11 +12,32 @@
             font-family: 'Press Start 2P', cursive;
         }
 
+        #mainMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #startButton {
+            font-size: 20px;
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: 'Press Start 2P', cursive;
+            display: inline-block;
+            border-radius: 5px;
+        }
+
         #gameContainer {
             position: relative;
             width: 100vw;
             height: 100vh;
-            background-color: #f0f0f0; /* Solid background color */
+            background-color: #f0f0f0;
             display: none;
         }
 
@@ -24,14 +45,14 @@
             position: relative;
             width: 100%;
             height: 100%;
-            background-color: #ccc; /* Solid background color */
+            background-color: #ccc;
         }
 
         .crosshair {
             position: absolute;
             width: 100px;
             height: 100px;
-            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(45).png?raw=true'); /* Keep the crosshair image */
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(45).png?raw=true');
             background-size: cover;
             pointer-events: none;
             transform: translate(-50%, -50%);
@@ -57,13 +78,21 @@
             position: absolute;
             width: 80px;
             height: 80px;
-            background-color: red; /* Default color for targets */
+            background-size: cover;
             border-radius: 50%;
         }
 
         .special {
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(47).png?raw=true');
             box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.6);
             border: 3px solid gold;
+            transform: scale(1.2);
+        }
+
+        .bomb {
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(48).png?raw=true');
+            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.6);
+            border: 3px solid red;
             transform: scale(1.2);
         }
 
@@ -99,11 +128,9 @@
 </head>
 <body>
     <div id="mainMenu">
-        <div>
-            <h1>Target Clicking Game</h1>
-            <p>Click on the targets as fast as you can!</p>
-            <button id="startButton">Start Game</button>
-        </div>
+        <h1>Target Clicking Game</h1>
+        <p>Click on the targets as fast as you can!</p>
+        <button id="startButton">Start Game</button>
     </div>
 
     <div id="gameContainer">
@@ -154,12 +181,6 @@
             crosshair.style.top = e.clientY - rect.top + 'px';
         });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'p') {  // Press 'P' to pause the game
-                pauseGame();
-            }
-        });
-
         function startGame() {
             score = 0;
             timeLeft = 30;
@@ -175,28 +196,19 @@
             const target = document.createElement('div');
             target.classList.add('target');
             
-            const isSpecial = Math.random() < 0.05;  // Chance for special target
-            if (isSpecial) {
-                target.style.backgroundColor = "gold"; // Special targets are gold
-                target.classList.add('special');
+            const random = Math.random();
+
+            if (random < 0.10) {
+                target.classList.add('bomb');  // Bomb target
+            } else if (random < 0.25) {
+                target.classList.add('special');  // Special target (15% chance)
             } else {
-                target.style.backgroundColor = "red"; // Regular targets are red
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(44).png?raw=true')";
             }
-            
+
             target.style.left = Math.random() * (canvas.clientWidth - 80) + 'px';
             target.style.top = Math.random() * (canvas.clientHeight - 80) + 'px';
             canvas.appendChild(target);
-
-            const targetData = {
-                element: target,
-                x: parseFloat(target.style.left),
-                y: parseFloat(target.style.top),
-                dx: Math.random() < 0.5 ? 1 : -1,
-                dy: Math.random() < 0.5 ? 1 : -1,
-                speed: 2
-            };
-
-            animateTarget(targetData);
 
             target.addEventListener('pointerdown', () => {
                 const crosshairRect = crosshair.getBoundingClientRect();
@@ -209,37 +221,27 @@
                 ) {
                     target.classList.add('pop');
                     setTimeout(() => {
-                        score++;
-                        if (isSpecial) {
-                            score += 2;  // Bonus score for special target
+                        if (target.classList.contains('bomb')) {
+                            score -= 5;  // Decrease score if it's a bomb
+                            timeLeft -= 5;  // Decrease time by 5 seconds if it's a bomb
+                        } else if (target.classList.contains('special')) {
+                            score += 2;  // Increase score if it's a special target
+                        } else {
+                            score++;  // Regular target, just increase score by 1
                         }
+
+                        // Ensure time doesn't go negative
+                        if (timeLeft < 0) {
+                            timeLeft = 0;
+                        }
+
                         scoreDisplay.innerText = `Score: ${score}`;
+                        timerDisplay.innerText = `Time: ${timeLeft}`;
                         target.remove();
                         createTarget();
                     }, 300);
                 }
             });
-        }
-
-        function animateTarget(targetData) {
-            function update() {
-                targetData.x += targetData.dx * targetData.speed;
-                targetData.y += targetData.dy * targetData.speed;
-
-                if (targetData.x <= 0 || targetData.x >= canvas.clientWidth - 80) {
-                    targetData.dx = -targetData.dx; // Reverse direction on X-axis
-                }
-                if (targetData.y <= 0 || targetData.y >= canvas.clientHeight - 80) {
-                    targetData.dy = -targetData.dy; // Reverse direction on Y-axis
-                }
-
-                targetData.element.style.left = targetData.x + 'px';
-                targetData.element.style.top = targetData.y + 'px';
-
-                requestAnimationFrame(update); // Continue the animation
-            }
-
-            update(); // Start the animation loop
         }
 
         function startTimer() {
