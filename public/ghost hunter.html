@@ -37,6 +37,7 @@
             position: absolute;
             font-size: 24px;
             color: #333;
+            font-family: 'Press Start 2P', cursive;
         }
         #score {
             top: 10px;
@@ -54,7 +55,7 @@
             border-radius: 50%;
         }
         .bomb {
-            background-color: red;
+            background-size: cover;
         }
         .special {
             background-color: yellow;
@@ -161,7 +162,7 @@
             
             const targetType = Math.random();
             if (targetType < 0.1) {
-                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(48).png?raw=true')";
+                target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(49).png?raw=true')";
                 target.classList.add('bomb');
             } else if (targetType < 0.15) {  // 5% chance for special target
                 target.style.backgroundImage = "url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(47).png?raw=true')";
