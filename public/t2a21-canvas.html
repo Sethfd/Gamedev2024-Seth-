@@ -1,68 +1,31 @@
 <h2 align=center>t2a08-canvas by Fred</h2>
-You use loops and variables to make fast fancy drawings <br><br>
+Click the button below to display the image on the canvas. <br><br>
 
-<input type=button value=".lineTo(30,200)" onclick="{
-   myContext.beginPath();
-   myContext.lineWidth = 1;   
-   myContext.moveTo(20,10);
-   myContext.lineTo(30,200);
-   myContext.stroke();
-}">
-
-<input type=button value=".arc(95, 50, 40, 0, 2 * Math.PI)" onclick="{
-   myContext.beginPath();
-   myContext.lineWidth = 10;
-   myContext.strokeStyle = 'green';
-   myContext.arc(95, 50, 40, 0, 2 * Math.PI);
-   myContext.stroke();
-}">
-
-<input type=button value=".fillText('Hello World', 400, 100)" onclick="{
-   myContext.font = '20px Arial';
-   myContext.fillText('Hello World', 400, 100);
-   myContext.translate(400, 100);  
-   myContext.rotate(60 * Math.PI / 180); 
-   myContext.fillText('Hello World', 10, 10);
-   myContext.stroke();
-   myContext.resetTransform();  
-   //myContext.rotate(-60 * Math.PI / 180); 
-}">
-
-<input type=button value=".quadraticCurveTo(100,220,240,110)" onclick="{
-   myContext.beginPath();
-   myContext.moveTo(300,100);
-   myContext.quadraticCurveTo(100,220,240,110);
-   myContext.stroke();
-
-}">
-
-
-
-<input type=button value=".createLinearGradient(100, 300, 200, 400)" onclick="{
-   let myGradient = myContext.createLinearGradient(100, 300, 200, 400);
-   myGradient.addColorStop(0, 'red');
-   myGradient.addColorStop(0.5, 'blue');
-   myGradient.addColorStop(1, 'yellow');
-
-   myContext.fillStyle = myGradient;
-   myContext.fillRect(100, 300, 200, 400);
-
-   // reset fillstyle
-   myContext.fillStyle = 'black';
-}"><br><br>
-
-<input type=button value="clearRect(20, 20, 50, 50)" onclick="{
-   myContext.clearRect(20, 20, 50, 50);
-}">
-
-<input type=button value="Clear all" onclick="{
-   myContext.clearRect(0, 0, myCanvas.width, myCanvas.height);
-}"><br><br>
+<!-- Button to load and draw an image from URL -->
+<input type=button value="Draw Image from URL" onclick="drawImageFromURL()"><br><br>
 
 <canvas id="myCoolTag" width="1000" height="600" style="border:1px solid #000000;"></canvas>
 
 <script>
    // set up global variables
-   let myCanvas=document.getElementById('myCoolTag');
-   let myContext=myCanvas.getContext('2d');
+   let myCanvas = document.getElementById('myCoolTag');
+   let myContext = myCanvas.getContext('2d');
+
+   // Function to draw an image from a URL
+   function drawImageFromURL() {
+      const img = new Image();  // Create a new Image object
+      img.src = 'https://drct.pixilart.com/sizes/sr29481148c0aaws3_400.png';  // Set the image source
+
+      img.onload = function() {
+         // Clear the canvas before drawing the new image
+         myContext.clearRect(0, 0, myCanvas.width, myCanvas.height);
+
+         // Draw the image onto the canvas at position (100, 100)
+         myContext.drawImage(img, 100, 100);
+      };
+
+      img.onerror = function() {
+         alert('Failed to load image.');
+      };
+   }
 </script>
