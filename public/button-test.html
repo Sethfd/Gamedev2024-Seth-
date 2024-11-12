@@ -5,31 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clickable PNG Button with Animation</title>
     <style>
-        /* Image button styles */
-        #button {
+        /* Style for the image button */
+        #pngButton {
             cursor: pointer;
             width: 100px;  /* Adjust to fit your image size */
             height: 50px;  /* Adjust to fit your image size */
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Style for the HTML button */
+        #htmlButton {
+            display: block;
+            width: 100px;  /* Adjust width of button */
+            height: 40px;  /* Adjust height of button */
+            margin: 20px auto;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #htmlButton:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
 
-<!-- Button Image -->
-<img id="button" src="https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(50).png?raw=true" alt="Click Me" onclick="animateButton()">
+<!-- PNG Button (Image) -->
+<img id="pngButton" src="https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(50).png?raw=true" alt="Click Me" onclick="animateButton()">
+
+<!-- HTML Button below PNG Button -->
+<button id="htmlButton" onclick="animateHtmlButton()">Click Animation</button>
 
 <script>
-    // Set the frame sources for the animation
+    // Define the frame sources for the animation sequence
     const frames = [
         "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(50).png?raw=true", // Frame 1 (initial)
         "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/pixil-frame-0%20(51).png?raw=true", // Frame 2 (clicked animation)
         "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(54).png?raw=true"  // Frame 3 (clicked animation)
     ];
 
-    let currentFrame = 0; // Start from the first frame
+    let currentFrame = 0; // Start from the first frame for PNG Button
 
     function animateButton() {
-        const button = document.getElementById("button");
+        const button = document.getElementById("pngButton");
 
         // Change image to the next frame
         button.src = frames[currentFrame];
@@ -37,13 +60,35 @@
         // Move to the next frame
         currentFrame++;
 
-        // If we have reached the last frame, reset to the first frame after a delay
+        // Reset the animation if we've reached the end
         if (currentFrame === frames.length) {
-            setTimeout(() => {
-                currentFrame = 0;
-                button.src = frames[currentFrame]; // Reset to the first frame
-            }, 300); // Wait for 300ms before resetting
+            currentFrame = 0;
         }
+    }
+
+    // Animation for the HTML button
+    function animateHtmlButton() {
+        const button = document.getElementById("htmlButton");
+        const frameSequence = [
+            frames[0], // Frame 1
+            frames[1], // Frame 2
+            frames[2], // Frame 3
+            frames[1], // Frame 2
+            frames[0]  // Frame 1
+        ];
+
+        let currentIndex = 0;
+
+        // Function to change the frame in the sequence
+        const interval = setInterval(() => {
+            button.style.backgroundImage = `url(${frameSequence[currentIndex]})`;
+            currentIndex++;
+
+            // Once all frames are shown, stop the interval
+            if (currentIndex === frameSequence.length) {
+                clearInterval(interval);
+            }
+        }, 300); // Change image every 300ms (adjust timing for faster/slower animation)
     }
 </script>
 
