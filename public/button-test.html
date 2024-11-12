@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clickable PNG Button with Animation</title>
+    <style>
+        /* Image button styles */
+        #button {
+            cursor: pointer;
+            width: 100px;  /* Adjust to fit your image size */
+            height: 50px;  /* Adjust to fit your image size */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Button Image -->
+<img id="button" src="https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(50).png?raw=true" alt="Click Me" onclick="animateButton()">
+
+<script>
+    // Set the frame sources for the animation
+    const frames = [
+        "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(50).png?raw=true", // Frame 1 (initial)
+        "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/pixil-frame-0%20(51).png?raw=true", // Frame 2 (clicked animation)
+        "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/public/pixil-frame-0%20(54).png?raw=true"  // Frame 3 (clicked animation)
+    ];
+
+    let currentFrame = 0; // Start from the first frame
+
+    function animateButton() {
+        const button = document.getElementById("button");
+
+        // Change image to the next frame
+        button.src = frames[currentFrame];
+
+        // Move to the next frame
+        currentFrame++;
+
+        // If we have reached the last frame, reset to the first frame after a delay
+        if (currentFrame === frames.length) {
+            setTimeout(() => {
+                currentFrame = 0;
+                button.src = frames[currentFrame]; // Reset to the first frame
+            }, 300); // Wait for 300ms before resetting
+        }
+    }
+</script>
+
+</body>
+</html>
