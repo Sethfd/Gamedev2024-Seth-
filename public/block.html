@@ -37,7 +37,7 @@
 <body>
 
     <h1>Platformer Game with Sprite Animations</h1>
-    <canvas id="gameCanvas" width="1600" height="800"></canvas> <!-- Bigger Canvas -->
+    <canvas id="gameCanvas" width="1600" height="800"></canvas>
     <div class="controls">
         <p>Use <b>W</b> to Jump, <b>A</b> to Move Left, <b>D</b> to Move Right.</p>
     </div>
@@ -60,12 +60,12 @@
             "00000000110000000000000000000000000000000000",
             "00001111000000000000000000000000000000000000",
             "00001111000000000000000000000000000000000000",
-            "00000000011111111111111111111111111111110000",
+            "00000000011111111111111111111111111111110000",  // Lower platform
+            "00000000000000000000000000000000000000000000",  
             "00000000000000000000000000000000000000000000",
-            "00000000011111111111111111111111111111110000",
+            "00000000011111111111111111111111111111110000",  // Higher platform
             "00000000000000000000000000000000000000000000",
             "11111111111111111111111111111111111111111111",
-            "00000000000000000000000000000000000000000000",
             "00000000000000000000000000000000000000000000",
             "00000000000000000000000000000000000000000000",
             "00000000000000000000000000000000000000000000",
@@ -91,26 +91,35 @@
         };
 
         // Load the sprite sheets (right, left, jump right, jump left, fall right, fall left)
-        const spriteRight = new Image();
-        const spriteLeft = new Image();
-        const spriteJumpRight = new Image();
-        const spriteJumpLeft = new Image();
-        const spriteFallLeft = new Image();
-        const spriteFallRight = new Image();
+        const spriteImages = {
+            right: new Image(),
+            left: new Image(),
+            jumpRight: new Image(),
+            jumpLeft: new Image(),
+            fallLeft: new Image(),
+            fallRight: new Image()
+        };
 
-        spriteRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(55).png?raw=true';  // Walking right frame
-        spriteLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(58).png?raw=true';  // Walking left frame
-        spriteJumpRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(56).png?raw=true';  // Jumping right frame
-        spriteJumpLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(57).png?raw=true';  // Jumping left frame
-        spriteFallLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(59).png?raw=true';  // Falling left frame
-        spriteFallRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(60).png?raw=true';  // Falling right frame
+        spriteImages.right.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(55).png?raw=true';  // Walking right frame
+        spriteImages.left.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(58).png?raw=true';  // Walking left frame
+        spriteImages.jumpRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(56).png?raw=true';  // Jumping right frame
+        spriteImages.jumpLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(57).png?raw=true';  // Jumping left frame
+        spriteImages.fallLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(59).png?raw=true';  // Falling left frame
+        spriteImages.fallRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(60).png?raw=true';  // Falling right frame
 
         let gameInterval;
 
-        // Wait for the images to load before starting the game loop
-        spriteRight.onload = spriteLeft.onload = spriteJumpRight.onload = spriteJumpLeft.onload = spriteFallLeft.onload = spriteFallRight.onload = () => {
+        // Wait for all sprite images to load before starting the game loop
+        const imagesToLoad = Object.values(spriteImages).map(image => {
+            return new Promise(resolve => {
+                image.onload = resolve;
+            });
+        });
+
+        // Once all images are loaded, start the game loop
+        Promise.all(imagesToLoad).then(() => {
             gameInterval = setInterval(draw, 1000 / 60); // 60 frames per second
-        };
+        });
 
         // Camera position to scroll the level
         let camera = {
@@ -137,11 +146,11 @@
 
             if (!player.onGround) {
                 // Jumping or Falling
-                spriteFrame = player.dy < 0 ? (player.facingRight ? spriteJumpRight : spriteJumpLeft) :
-                    (player.facingRight ? spriteFallRight : spriteFallLeft);
+                spriteFrame = player.dy < 0 ? (player.facingRight ? spriteImages.jumpRight : spriteImages.jumpLeft) :
+                    (player.facingRight ? spriteImages.fallRight : spriteImages.fallLeft);
             } else {
                 // Walking
-                spriteFrame = player.facingRight ? spriteRight : spriteLeft;
+                spriteFrame = player.facingRight ? spriteImages.right : spriteImages.left;
             }
 
             // Draw the appropriate frame from the sprite sheet, offset by camera position
