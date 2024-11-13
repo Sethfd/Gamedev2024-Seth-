@@ -37,7 +37,7 @@
 <body>
 
     <h1>Platformer Game with Sprite Animations</h1>
-    <canvas id="gameCanvas" width="1600" height="800"></canvas>
+    <canvas id="gameCanvas" width="1600" height="1200"></canvas>
     <div class="controls">
         <p>Use <b>W</b> to Jump, <b>A</b> to Move Left, <b>D</b> to Move Right.</p>
     </div>
@@ -53,7 +53,7 @@
         const frameWidth = 40;  // Assuming each frame is 40x40 pixels
         const frameHeight = 40;
 
-        // Create a larger level (bigger grid with more platforms)
+        // Adjust the level for the increased height (add more platforms if necessary)
         const level = [
             "00000000000000000000000000000000000000000000",
             "00000000000000011000000000000000000000000000",
@@ -73,12 +73,15 @@
             "00000000000000000000000000000000000000000000",
             "00000000000000000000000000000000000000000000",
             "00000000000000000000000000000000000000000000",
-            "11111111111111111111111111111111111111111111"
+            "11111111111111111111111111111111111111111111",
+            "00000000000000000000000000000000000000000000",
+            "00000000000000000000000000000000000000000000",  // Add more rows for increased height
+            "00000000000000000000000000000000000000000000"
         ];
 
         let player = {
             x: 50,
-            y: canvas.height - 80,
+            y: canvas.height - 120,  // Adjust the player's starting position due to increased height
             width: 40,
             height: 40,
             dx: 0,
