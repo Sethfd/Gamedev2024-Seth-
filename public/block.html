@@ -67,8 +67,9 @@
             dx: 0,  // velocity on x-axis
             dy: 0,  // velocity on y-axis
             jumpPower: -12,
+            superJumpPower: -20, // Max power for super jump
+            superJumpCharge: 0,  // Charge time for super jump
             isJumping: false,
-            jumpCount: 0,  // Track the number of jumps
             facingRight: true,  // To track the direction the player is facing
         };
 
@@ -109,16 +110,18 @@
             up: false
         };
 
+        let spacebarPressed = false; // Flag to track whether the spacebar is being pressed
+
         document.addEventListener('keydown', function(e) {
             if (e.key === "d" || e.key === "D") keys.right = true;  // 'D' for right
             if (e.key === "a" || e.key === "A") keys.left = true;   // 'A' for left
-            if (e.key === "w" || e.key === "W") keys.up = true;     // 'W' for jump
+            if (e.key === "w" || e.key === "W" || e.key === " " || e.key === "Space") keys.up = true;     // 'W' or Space for jump
         });
 
         document.addEventListener('keyup', function(e) {
             if (e.key === "d" || e.key === "D") keys.right = false;
             if (e.key === "a" || e.key === "A") keys.left = false;
-            if (e.key === "w" || e.key === "W") keys.up = false;
+            if (e.key === "w" || e.key === "W" || e.key === " " || e.key === "Space") keys.up = false;
         });
 
         // Detect collision with platforms
@@ -135,7 +138,7 @@
                 ) {
                     player.dy = 0;
                     player.isJumping = false;
-                    player.jumpCount = 0; // Reset jump count when landing on platform
+                    player.superJumpCharge = 0; // Reset charge when landing on a platform
                     player.y = p.y - player.height; // Place the player on top of the platform
                 }
             }
@@ -153,18 +156,25 @@
                 player.dx *= friction; // Apply friction when no key is pressed
             }
 
-            // Jump logic
-            if (keys.up) {
-                if (!player.isJumping) {
-                    // First jump
-                    player.dy = player.jumpPower;
-                    player.isJumping = true;
-                    player.jumpCount = 1; // First jump
-                } else if (player.jumpCount === 1) {
-                    // Double jump
-                    player.dy = player.jumpPower;
-                    player.jumpCount = 2; // Second jump (double jump)
+            // Super jump logic
+            if (keys.up && !spacebarPressed && !player.isJumping) {
+                spacebarPressed = true;
+                player.superJumpCharge = 0; // Reset the charge time when the player starts pressing the spacebar
+            }
+
+            if (spacebarPressed) {
+                player.superJumpCharge += 0.02; // Increment the charge over time
+                if (player.superJumpCharge >= 1.5) {
+                    player.superJumpCharge = 1.5; // Limit the charge to 1.5 seconds
                 }
+            }
+
+            if (!keys.up && spacebarPressed) {
+                // Trigger super jump after holding spacebar
+                player.dy = player.superJumpPower * player.superJumpCharge / 1.5; // Scale jump power based on the charge time
+                spacebarPressed = false; // Reset the spacebar state
+                player.superJumpCharge = 0; // Reset the charge
+                player.isJumping = true;
             }
 
             // Apply gravity
@@ -182,7 +192,7 @@
                 player.y = canvas.height - player.height;
                 player.dy = 0;
                 player.isJumping = false;
-                player.jumpCount = 0; // Reset jump count when touching the ground
+                player.superJumpCharge = 0; // Reset charge when touching the ground
             }
 
             checkCollisions();
