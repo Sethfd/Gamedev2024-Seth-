@@ -83,9 +83,9 @@
 
         // Event listeners for key presses
         document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft") {
+            if (e.key === "a" || e.key === "A") {
                 leftPressed = true;
-            } else if (e.key === "ArrowRight") {
+            } else if (e.key === "d" || e.key === "D") {
                 rightPressed = true;
             } else if (e.key === " ") {
                 spacePressed = true;
@@ -93,9 +93,9 @@
         });
 
         document.addEventListener("keyup", (e) => {
-            if (e.key === "ArrowLeft") {
+            if (e.key === "a" || e.key === "A") {
                 leftPressed = false;
-            } else if (e.key === "ArrowRight") {
+            } else if (e.key === "d" || e.key === "D") {
                 rightPressed = false;
             } else if (e.key === " ") {
                 spacePressed = false;
