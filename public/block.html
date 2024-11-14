@@ -3,40 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer Game with Sprite Animations</title>
+    <title>Platformer Game - Single Platform</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #87CEEB;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        canvas {
-            border: 2px solid black;
-            background-color: #F0F8FF;
-        }
-
-        .controls {
-            margin-top: 20px;
-        }
-
-        .controls p {
-            font-size: 18px;
-        }
-
-        #gameOver {
-            display: none;
-            font-size: 30px;
-            color: red;
-            font-weight: bold;
-        }
+        body { font-family: Arial, sans-serif; background-color: #87CEEB; text-align: center; margin: 0; padding: 0; }
+        canvas { border: 2px solid black; background-color: #F0F8FF; }
+        .controls { margin-top: 20px; }
+        .controls p { font-size: 18px; }
+        #gameOver { display: none; font-size: 30px; color: red; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>Platformer Game with Sprite Animations</h1>
+    <h1>Platformer Game - Single Platform</h1>
     <canvas id="gameCanvas" width="1600" height="1200"></canvas>
     <div class="controls">
         <p>Use <b>W</b> to Jump, <b>A</b> to Move Left, <b>D</b> to Move Right.</p>
@@ -46,87 +24,43 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const cellSize = 40;
-        const gravity = 0.5;
-        const jumpStrength = 12;
-        const playerSpeed = 5;
-        const frameWidth = 40;
-        const frameHeight = 40;
+        const cellSize = 40, gravity = 0.5, jumpStrength = 12, playerSpeed = 5;
+        const frameWidth = 40, frameHeight = 40;
 
+        // Level: single platform
         const level = [
-            "00000000000000000000000000000000000000000000",
-            "00000000000000011000000000000000000000000000",
-            "00000000110000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000",
-            "00001111000000000000000000000000000000000000",
-            "00000000011111111111111111111111111111110000",
-            "00000000000000000000000000000000000000000000",  
-            "00000000000000000000000000000000000000000000",
-            "00000000011111111111111111111111111111110000",  
-            "00000000000000000000000000000000000000000000",
-            "11111111111111111111111111111111111111111111",
-            "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000011110",
-            "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000",
-            "11111111111111111111111111111111111111111111",
-            "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000", 
-            "00000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000",  // Empty row (top of screen)
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "00000000000000000000000000000000000000000000",  // Empty row
+            "01111111111111111111111111111111111111111110",  // Single platform row (start of platform)
+            "00000000000000000000000000000000000000000000",  // Ground row (bottom)
         ];
 
-        let player = {
-            x: 50,
-            y: canvas.height - 160,
-            width: 40,
-            height: 40,
-            dx: 0,
-            dy: 0,
-            onGround: false,
-            facingRight: true,
-            currentFrame: 0,
-            animationFrameSpeed: 10,
-            frameCounter: 0
-        };
-
-        const spriteImages = {
-            right: new Image(),
-            left: new Image(),
-            jumpRight: new Image(),
-            jumpLeft: new Image(),
-            fallLeft: new Image(),
-            fallRight: new Image()
-        };
-
-        spriteImages.right.src = 'https://example.com/sprites/walk-right.png';
-        spriteImages.left.src = 'https://example.com/sprites/walk-left.png';
-        spriteImages.jumpRight.src = 'https://example.com/sprites/jump-right.png';
-        spriteImages.jumpLeft.src = 'https://example.com/sprites/jump-left.png';
-        spriteImages.fallLeft.src = 'https://example.com/sprites/fall-left.png';
-        spriteImages.fallRight.src = 'https://example.com/sprites/fall-right.png';
-
-        let gameInterval;
-
-        const imagesToLoad = Object.values(spriteImages).map(image => {
-            return new Promise(resolve => {
-                image.onload = resolve;
-            });
-        });
-
-        Promise.all(imagesToLoad).then(() => {
-            gameInterval = setInterval(draw, 1000 / 60); 
-        });
+        let player = { x: 50, y: canvas.height - 160, width: 40, height: 40, dx: 0, dy: 0, onGround: false, facingRight: true };
+        const spriteImages = { right: 'https://example.com/sprites/walk-right.png', left: 'https://example.com/sprites/walk-left.png', jumpRight: 'https://example.com/sprites/jump-right.png', jumpLeft: 'https://example.com/sprites/jump-left.png', fallLeft: 'https://example.com/sprites/fall-left.png', fallRight: 'https://example.com/sprites/fall-right.png' };
 
         let camera = { x: 0, y: 0 };
+
+        const imagesToLoad = Object.values(spriteImages).map(src => new Image());
+        Promise.all(imagesToLoad.map(img => new Promise(resolve => img.onload = resolve)))
+            .then(() => setInterval(draw, 1000 / 60));
 
         function drawLevel() {
             for (let row = 0; row < level.length; row++) {
                 for (let col = 0; col < level[row].length; col++) {
                     if (level[row][col] === '1') {
-                        ctx.fillStyle = 'green';
+                        ctx.fillStyle = 'green';  // Draw the platform
                         ctx.fillRect(col * cellSize - camera.x, row * cellSize - camera.y, cellSize, cellSize);
                     }
                 }
@@ -134,36 +68,21 @@
         }
 
         function drawPlayer() {
-            let spriteFrame;
-
-            if (player.onGround) {
-                if (player.dx !== 0) {
-                    player.frameCounter++;
-                    if (player.frameCounter >= player.animationFrameSpeed) {
-                        player.frameCounter = 0;
-                        player.currentFrame = (player.currentFrame + 1) % 4; 
-                    }
-                    spriteFrame = player.facingRight ? spriteImages.right : spriteImages.left;
-                } else {
-                    spriteFrame = player.facingRight ? spriteImages.right : spriteImages.left;
-                }
-            } else {
-                spriteFrame = player.dy < 0 ? (player.facingRight ? spriteImages.jumpRight : spriteImages.jumpLeft) :
-                    (player.facingRight ? spriteImages.fallRight : spriteImages.fallLeft);
-            }
-
+            const spriteFrame = getSpriteFrame();
             ctx.drawImage(spriteFrame, 0, 0, frameWidth, frameHeight, player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
-        function applyGravity() {
-            if (!player.onGround) {
-                player.dy += gravity;
-                if (player.dy > 10) { 
-                    player.dy = 10;
-                }
+        function getSpriteFrame() {
+            if (player.onGround) {
+                return player.dx !== 0 ? (player.facingRight ? spriteImages.right : spriteImages.left) : (player.facingRight ? spriteImages.right : spriteImages.left);
             } else {
-                player.dy = 0;
+                return player.dy < 0 ? (player.facingRight ? spriteImages.jumpRight : spriteImages.jumpLeft) : (player.facingRight ? spriteImages.fallRight : spriteImages.fallLeft);
             }
+        }
+
+        function applyGravity() {
+            if (!player.onGround) player.dy = Math.min(player.dy + gravity, 10);
+            else player.dy = 0;
         }
 
         function checkCollision() {
@@ -171,41 +90,14 @@
             for (let row = 0; row < level.length; row++) {
                 for (let col = 0; col < level[row].length; col++) {
                     if (level[row][col] === '1') {
-                        const platformX = col * cellSize;
-                        const platformY = row * cellSize;
-                        const platformWidth = cellSize;
-                        const platformHeight = cellSize;
+                        const platX = col * cellSize;
+                        const platY = row * cellSize;
 
-                        if (player.x < platformX + platformWidth &&
-                            player.x + player.width > platformX &&
-                            player.y + player.height <= platformY + platformHeight &&
-                            player.y + player.height + player.dy >= platformY) {
+                        // Check if player collides with the platform
+                        if (player.x < platX + cellSize && player.x + player.width > platX &&
+                            player.y + player.height <= platY + cellSize && player.y + player.height + player.dy >= platY) {
                             player.onGround = true;
-                            player.y = platformY - player.height;
-                        }
-                    }
-                }
-            }
-        }
-
-        function checkHorizontalCollision() {
-            for (let row = 0; row < level.length; row++) {
-                for (let col = 0; col < level[row].length; col++) {
-                    if (level[row][col] === '1') {
-                        const platformX = col * cellSize;
-                        const platformY = row * cellSize;
-                        const platformWidth = cellSize;
-                        const platformHeight = cellSize;
-
-                        if (player.x < platformX + platformWidth &&
-                            player.x + player.width > platformX &&
-                            player.y + player.height > platformY &&
-                            player.y < platformY + platformHeight) {
-                            if (player.dx > 0) {
-                                player.x = platformX - player.width;
-                            } else if (player.dx < 0) {
-                                player.x = platformX + platformWidth;
-                            }
+                            player.y = platY - player.height;
                         }
                     }
                 }
@@ -215,63 +107,27 @@
         function update() {
             player.x += player.dx;
             player.y += player.dy;
-
             applyGravity();
             checkCollision();
-            checkHorizontalCollision();
 
             camera.x = player.x - canvas.width / 2;
             camera.y = player.y - canvas.height / 2;
 
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-            if (player.y + player.height > canvas.height) {
-                player.y = canvas.height - player.height;
-                gameOver();
-            }
+            if (player.y + player.height > canvas.height) gameOver();
         }
 
         function gameOver() {
             document.getElementById("gameOver").style.display = "block";
-            clearInterval(gameInterval); 
+            clearInterval(gameInterval);
         }
 
         function restartGame() {
-            player.x = 50;
-            player.y = canvas.height - 160;
-            player.dx = 0;
-            player.dy = 0;
-            player.onGround = false;
-            player.facingRight = true;
-            player.frameCounter = 0;
-            player.currentFrame = 0;
-
+            player = { x: 50, y: canvas.height - 160, dx: 0, dy: 0, onGround: false, facingRight: true };
             document.getElementById("gameOver").style.display = "none";
             gameInterval = setInterval(draw, 1000 / 60);
         }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'a' || e.key === 'A') {
-                player.dx = -playerSpeed;
-                player.facingRight = false;
-            } else if (e.key === 'd' || e.key === 'D') {
-                player.dx = playerSpeed;
-                player.facingRight = true;
-            } else if (e.key === 'w' || e.key === 'W') {
-                if (player.onGround) {
-                    player.dy = -jumpStrength;
-                    player.onGround = false;
-                }
-            } else if (e.key === 'r' || e.key === 'R') {
-                restartGame();
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D') {
-                player.dx = 0;
-            }
-        });
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -279,6 +135,19 @@
             update();
             drawPlayer();
         }
+
+        // Event listeners for user input
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'a') { player.dx = -playerSpeed; player.facingRight = false; }
+            else if (e.key === 'd') { player.dx = playerSpeed; player.facingRight = true; }
+            else if (e.key === 'w' && player.onGround) player.dy = -jumpStrength;
+            else if (e.key === 'r') restartGame();
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'a' || e.key === 'd') player.dx = 0;
+        });
+
     </script>
 
 </body>
