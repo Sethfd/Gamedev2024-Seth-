@@ -68,10 +68,11 @@
             dy: 0,  // velocity on y-axis
             jumpPower: -12,
             isJumping: false,
+            jumpCount: 0,  // Track the number of jumps
             facingRight: true,  // To track the direction the player is facing
         };
 
-        // Load the player frames (standing still, moving right, moving left, jumping right, jumping left, falling right, standing still jump, standing still fall)
+        // Load the player frames (standing still, moving right, moving left, jumping right, jumping left, falling right, standing still fall)
         const standingImage = new Image();
         standingImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(63).png?raw=true"; // Standing still frame
 
@@ -89,9 +90,6 @@
 
         const fallingRightImage = new Image();
         fallingRightImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(60).png?raw=true"; // Falling right frame
-
-        const standingJumpImage = new Image();
-        standingJumpImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(61).png?raw=true"; // Standing still jump frame
 
         const standingFallImage = new Image();
         standingFallImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(62).png?raw=true"; // Standing still fall frame
@@ -127,15 +125,18 @@
         function checkCollisions() {
             for (let i = 0; i < platforms.length; i++) {
                 let p = platforms[i];
+
+                // Check if player is falling and hits a platform
                 if (
                     player.x < p.x + p.width &&
                     player.x + player.width > p.x &&
-                    player.y + player.height <= p.y + 1 &&
+                    player.y + player.height <= p.y + 1 && // Only consider player as falling if not touching the ground
                     player.y + player.height + player.dy >= p.y
                 ) {
                     player.dy = 0;
                     player.isJumping = false;
-                    player.y = p.y - player.height;
+                    player.jumpCount = 0; // Reset jump count when landing on platform
+                    player.y = p.y - player.height; // Place the player on top of the platform
                 }
             }
         }
@@ -152,9 +153,18 @@
                 player.dx *= friction; // Apply friction when no key is pressed
             }
 
-            if (keys.up && !player.isJumping) {
-                player.dy = player.jumpPower;
-                player.isJumping = true;
+            // Jump logic
+            if (keys.up) {
+                if (!player.isJumping) {
+                    // First jump
+                    player.dy = player.jumpPower;
+                    player.isJumping = true;
+                    player.jumpCount = 1; // First jump
+                } else if (player.jumpCount === 1) {
+                    // Double jump
+                    player.dy = player.jumpPower;
+                    player.jumpCount = 2; // Second jump (double jump)
+                }
             }
 
             // Apply gravity
@@ -172,6 +182,7 @@
                 player.y = canvas.height - player.height;
                 player.dy = 0;
                 player.isJumping = false;
+                player.jumpCount = 0; // Reset jump count when touching the ground
             }
 
             checkCollisions();
@@ -197,8 +208,6 @@
                 ctx.drawImage(fallingRightImage, player.x, player.y, player.width, player.height);
             } else if (player.dy > 0 && !player.facingRight) {
                 ctx.drawImage(standingFallImage, player.x, player.y, player.width, player.height);
-            } else if (player.dy === 0 && !keys.right && !keys.left) {
-                ctx.drawImage(standingJumpImage, player.x, player.y, player.width, player.height);
             } else if (keys.right) {
                 ctx.drawImage(movingRightImage, player.x, player.y, player.width, player.height);
             } else if (keys.left) {
@@ -206,13 +215,14 @@
             } else {
                 ctx.drawImage(standingImage, player.x, player.y, player.width, player.height);
             }
+
+            requestAnimationFrame(draw); // Loop the game drawing
         }
 
-        // Main game loop
+        // Game loop
         function gameLoop() {
             updatePlayer();
             draw();
-            requestAnimationFrame(gameLoop);
         }
 
         // Start the game loop
