@@ -1,218 +1,274 @@
-// game.js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Game</title>
+    <style>
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-// Get canvas and context
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+        /* Body setup */
+        body {
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
 
-// Game settings
-const shipWidth = 64;  // Player ship width
-const shipHeight = 64; // Player ship height
-let shipX = canvas.width / 2 - shipWidth / 2;
-let shipY = canvas.height - shipHeight - 10;
-let shipSpeed = 5;
+        /* Game container */
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
 
-// Bullet settings
-let bullets = [];
-let bulletSpeed = 7;
+        /* Canvas styling */
+        canvas {
+            background-color: #1a1a1a; /* Space-like dark background */
+            border: 1px solid #fff; /* White border around the game area */
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
 
-// Asteroid settings
-const asteroidWidth = 64;
-const asteroidHeight = 64;
-let asteroids = [];
-let asteroidSpeed = 2;
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-// Player lives
-let lives = 3;
+        // Game settings
+        const shipWidth = 64;  // Player ship width
+        const shipHeight = 64; // Player ship height
+        let shipX = canvas.width / 2 - shipWidth / 2;
+        let shipY = canvas.height - shipHeight - 10;
+        let shipSpeed = 5;
 
-// Keyboard input tracking
-let leftPressed = false;
-let rightPressed = false;
-let spacePressed = false;
+        // Bullet settings
+        let bullets = [];
+        let bulletSpeed = 7;
 
-// Load player spaceship and asteroid images
-const shipImage = new Image();
-const asteroidImage = new Image();
-shipImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(64).png?raw=true";
-asteroidImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(65).png?raw=true";
+        // Asteroid settings
+        const asteroidWidth = 64;
+        const asteroidHeight = 64;
+        let asteroids = [];
+        let asteroidSpeed = 2;
 
-// Event listeners for key presses
-document.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowLeft") {
-    leftPressed = true;
-  } else if (e.key === "ArrowRight") {
-    rightPressed = true;
-  } else if (e.key === " ") {
-    spacePressed = true;
-  }
-});
+        // Player stats
+        let lives = 3;
+        let score = 0;
+        let isGameOver = false;
 
-document.addEventListener("keyup", (e) => {
-  if (e.key === "ArrowLeft") {
-    leftPressed = false;
-  } else if (e.key === "ArrowRight") {
-    rightPressed = false;
-  } else if (e.key === " ") {
-    spacePressed = false;
-  }
-});
+        // Keyboard input tracking
+        let leftPressed = false;
+        let rightPressed = false;
+        let spacePressed = false;
 
-// Bullet class
-class Bullet {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 5;
-    this.height = 10;
-  }
+        // Load player spaceship and asteroid images
+        const shipImage = new Image();
+        const asteroidImage = new Image();
+        shipImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(64).png?raw=true";
+        asteroidImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(65).png?raw=true";
 
-  move() {
-    this.y -= bulletSpeed;
-  }
+        // Event listeners for key presses
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") {
+                leftPressed = true;
+            } else if (e.key === "ArrowRight") {
+                rightPressed = true;
+            } else if (e.key === " ") {
+                spacePressed = true;
+            }
+        });
 
-  draw() {
-    ctx.fillStyle = "red";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-}
+        document.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowLeft") {
+                leftPressed = false;
+            } else if (e.key === "ArrowRight") {
+                rightPressed = false;
+            } else if (e.key === " ") {
+                spacePressed = false;
+            }
+        });
 
-// Asteroid class
-class Asteroid {
-  constructor() {
-    this.x = Math.random() * (canvas.width - asteroidWidth);
-    this.y = -asteroidHeight;  // Start above the canvas
-    this.width = asteroidWidth;
-    this.height = asteroidHeight;
-  }
+        // Bullet class
+        class Bullet {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 10;
+            }
 
-  move() {
-    this.y += asteroidSpeed;  // Move downward
-  }
+            move() {
+                this.y -= bulletSpeed;
+            }
 
-  draw() {
-    ctx.drawImage(asteroidImage, this.x, this.y, this.width, this.height);
-  }
+            draw() {
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
 
-  // Check if the asteroid is hit by a bullet
-  checkCollision(bullet) {
-    return bullet.x < this.x + this.width &&
-      bullet.x + bullet.width > this.x &&
-      bullet.y < this.y + this.height &&
-      bullet.y + bullet.height > this.y;
-  }
+        // Asteroid class
+        class Asteroid {
+            constructor() {
+                this.x = Math.random() * (canvas.width - asteroidWidth);
+                this.y = -asteroidHeight;  // Start above the canvas
+                this.width = asteroidWidth;
+                this.height = asteroidHeight;
+            }
 
-  // Check if the player collides with the asteroid
-  checkPlayerCollision(playerX, playerY, playerWidth, playerHeight) {
-    return playerX < this.x + this.width &&
-      playerX + playerWidth > this.x &&
-      playerY < this.y + this.height &&
-      playerY + playerHeight > this.y;
-  }
-}
+            move() {
+                this.y += asteroidSpeed;  // Move downward
+            }
 
-// Game loop
-function gameLoop() {
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+            draw() {
+                ctx.drawImage(asteroidImage, this.x, this.y, this.width, this.height);
+            }
 
-  // Move the spaceship
-  if (leftPressed && shipX > 0) {
-    shipX -= shipSpeed;
-  }
-  if (rightPressed && shipX + shipWidth < canvas.width) {
-    shipX += shipSpeed;
-  }
+            // Check if the asteroid is hit by a bullet
+            checkCollision(bullet) {
+                return bullet.x < this.x + this.width &&
+                    bullet.x + bullet.width > this.x &&
+                    bullet.y < this.y + this.height &&
+                    bullet.y + bullet.height > this.y;
+            }
 
-  // Shoot bullets
-  if (spacePressed) {
-    bullets.push(new Bullet(shipX + shipWidth / 2 - 2, shipY));
-    spacePressed = false; // Prevent continuous shooting
-  }
+            // Check if the player collides with the asteroid
+            checkPlayerCollision(playerX, playerY, playerWidth, playerHeight) {
+                return playerX < this.x + this.width &&
+                    playerX + playerWidth > this.x &&
+                    playerY < this.y + this.height &&
+                    playerY + playerHeight > this.y;
+            }
+        }
 
-  // Move and draw bullets
-  for (let i = 0; i < bullets.length; i++) {
-    bullets[i].move();
-    bullets[i].draw();
+        // Game loop
+        function gameLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Remove bullet if it goes off screen
-    if (bullets[i].y < 0) {
-      bullets.splice(i, 1);
-      i--;
-    }
-  }
+            // Check if game is over
+            if (isGameOver) {
+                displayGameOver();
+                return;
+            }
 
-  // Move and draw asteroids
-  for (let i = 0; i < asteroids.length; i++) {
-    asteroids[i].move();
-    asteroids[i].draw();
+            // Move the spaceship
+            if (leftPressed && shipX > 0) {
+                shipX -= shipSpeed;
+            }
+            if (rightPressed && shipX + shipWidth < canvas.width) {
+                shipX += shipSpeed;
+            }
 
-    // Check for collision with bullets
-    for (let j = 0; j < bullets.length; j++) {
-      if (asteroids[i].checkCollision(bullets[j])) {
-        asteroids.splice(i, 1); // Remove asteroid
-        bullets.splice(j, 1); // Remove bullet
-        i--;  // Adjust loop index after removal
-        j--;  // Adjust loop index after removal
-        break; // Stop checking for other bullets once one hits
-      }
-    }
+            // Shoot bullets
+            if (spacePressed) {
+                bullets.push(new Bullet(shipX + shipWidth / 2 - 2, shipY));
+                spacePressed = false; // Prevent continuous shooting
+            }
 
-    // Check for collision with player (lose a life if collision occurs)
-    if (asteroids[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
-      lives -= 1;  // Reduce life
-      asteroids.splice(i, 1);  // Remove asteroid
-      i--;  // Adjust loop index after removal
+            // Move and draw bullets
+            for (let i = 0; i < bullets.length; i++) {
+                bullets[i].move();
+                bullets[i].draw();
 
-      // If lives are 0, game over
-      if (lives <= 0) {
-        alert("Game Over!");
-        resetGame();
-        break; // Exit the loop when game over
-      }
-    }
+                // Remove bullet if it goes off screen
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                    i--;
+                }
+            }
 
-    // Remove asteroid if it goes off screen
-    if (asteroids[i].y > canvas.height) {
-      asteroids.splice(i, 1);
-      i--;
-    }
-  }
+            // Move and draw asteroids
+            for (let i = 0; i < asteroids.length; i++) {
+                asteroids[i].move();
+                asteroids[i].draw();
 
-  // Draw the spaceship with the image
-  ctx.drawImage(shipImage, shipX, shipY, shipWidth, shipHeight);
+                // Check for collision with bullets
+                for (let j = 0; j < bullets.length; j++) {
+                    if (asteroids[i].checkCollision(bullets[j])) {
+                        asteroids.splice(i, 1); // Remove asteroid
+                        bullets.splice(j, 1); // Remove bullet
+                        score += 10;  // Increase score
+                        i--;  // Adjust loop index after removal
+                        j--;  // Adjust loop index after removal
+                        break; // Stop checking for other bullets once one hits
+                    }
+                }
 
-  // Display lives
-  ctx.font = "20px Arial";
-  ctx.fillStyle = "white";
-  ctx.fillText("Lives: " + lives, 10, 30);
+                // Check for collision with player (lose a life if collision occurs)
+                if (asteroids[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
+                    lives -= 1;  // Reduce life
+                    asteroids.splice(i, 1);  // Remove asteroid
+                    i--;  // Adjust loop index after removal
 
-  // Request next frame
-  requestAnimationFrame(gameLoop);
-}
+                    // If lives are 0, game over
+                    if (lives <= 0) {
+                        isGameOver = true;
+                    }
+                }
 
-// Spawn asteroids at random intervals
-function spawnAsteroids() {
-  setInterval(() => {
-    if (lives > 0) {  // Only spawn asteroids if player has lives left
-      asteroids.push(new Asteroid());
-    }
-  }, 2000);  // Spawn an asteroid every 2 seconds
-}
+                // Remove asteroid if it goes off screen
+                if (asteroids[i].y > canvas.height) {
+                    asteroids.splice(i, 1);
+                    i--;
+                }
+            }
 
-// Reset the game when player loses all lives
-function resetGame() {
-  lives = 3;  // Reset lives
-  asteroids = [];  // Clear existing asteroids
-  bullets = [];    // Clear existing bullets
-  shipX = canvas.width / 2 - shipWidth / 2;  // Reset ship position
-  shipY = canvas.height - shipHeight - 10;  // Reset ship position
-  spawnAsteroids();  // Start spawning asteroids again
-  gameLoop();  // Restart the game loop
-}
+            // Draw the spaceship with the image
+            ctx.drawImage(shipImage, shipX, shipY, shipWidth, shipHeight);
 
-// Start the game once the images are loaded
-shipImage.onload = function() {
-  asteroidImage.onload = function() {
-    gameLoop();  // Start the game when both images are loaded
-    spawnAsteroids(); // Start spawning asteroids
-  };
-};
+            // Display score and lives
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("Lives: " + lives, 10, 30);
+            ctx.fillText("Score: " + score, canvas.width - 100, 30);
+
+            // Request next frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Spawn asteroids at random intervals
+        function spawnAsteroids() {
+            setInterval(() => {
+                if (!isGameOver) {  // Only spawn asteroids if the game is not over
+                    asteroids.push(new Asteroid());
+                }
+            }, 2000);  // Spawn an asteroid every 2 seconds
+        }
+
+        // Display game over screen
+        function displayGameOver() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2 - 20);
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, canvas.width / 2 - 40, canvas.height / 2 + 20);
+            ctx.fillText("Press F5 to restart", canvas.width / 2 - 80, canvas.height / 2 + 60);
+        }
+
+        // Start the game once the images are loaded
+        shipImage.onload = function() {
+            asteroidImage.onload = function() {
+                gameLoop();  // Start the game when both images are loaded
+                spawnAsteroids(); // Start spawning asteroids
+            };
+        };
+    </script>
+</body>
+</html>
