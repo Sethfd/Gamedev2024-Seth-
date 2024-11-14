@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platformer Game</title>
     <style>
-        /* Reset some default styling */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Center the game on the page */
         body {
             font-family: Arial, sans-serif;
-            background-color: #87CEEB; /* Sky blue background */
+            background-color: #87CEEB;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,7 +21,6 @@
             margin: 0;
         }
 
-        /* Container to center canvas within the page */
         #game-container {
             position: relative;
             display: flex;
@@ -31,15 +28,13 @@
             align-items: center;
         }
 
-        /* Style the canvas */
         #gameCanvas {
-            border: 2px solid #000; /* Black border around the canvas */
-            background-color: #fff; /* White background inside the canvas */
+            border: 2px solid #000;
+            background-color: #fff;
         }
     </style>
 </head>
 <body>
-    <!-- Game container -->
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
     </div>
