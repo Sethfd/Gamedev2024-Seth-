@@ -3,152 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer Game - Single Platform</title>
+    <title>Platformer Game</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #87CEEB; text-align: center; margin: 0; padding: 0; }
-        canvas { border: 2px solid black; background-color: #F0F8FF; }
-        .controls { margin-top: 20px; }
-        .controls p { font-size: 18px; }
-        #gameOver { display: none; font-size: 30px; color: red; font-weight: bold; }
+        /* Reset some default styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Center the game on the page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #87CEEB; /* Sky blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Container to center canvas within the page */
+        #game-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Style the canvas */
+        #gameCanvas {
+            border: 2px solid #000; /* Black border around the canvas */
+            background-color: #fff; /* White background inside the canvas */
+        }
     </style>
 </head>
 <body>
-
-    <h1>Platformer Game - Single Platform</h1>
-    <canvas id="gameCanvas" width="1600" height="1200"></canvas>
-    <div class="controls">
-        <p>Use <b>W</b> to Jump, <b>A</b> to Move Left, <b>D</b> to Move Right.</p>
+    <!-- Game container -->
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
     </div>
-    <div id="gameOver">Game Over! Press <b>R</b> to Restart.</div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const cellSize = 40, gravity = 0.5, jumpStrength = 12, playerSpeed = 5;
-        const frameWidth = 40, frameHeight = 40;
+        // Set up the canvas and context
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-        // Level: single platform
-        const level = [
-            "00000000000000000000000000000000000000000000",  // Empty row (top of screen)
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "00000000000000000000000000000000000000000000",  // Empty row
-            "01111111111111111111111111111111111111111110",  // Single platform row (start of platform)
-            "00000000000000000000000000000000000000000000",  // Ground row (bottom)
+        // Set the canvas size
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Game variables
+        let gravity = 0.5;
+        let friction = 0.9;
+
+        // Player object
+        let player = {
+            x: 100,
+            y: canvas.height - 150,  // Start near the bottom
+            width: 50,
+            height: 50,
+            speed: 5,
+            dx: 0,  // velocity on x-axis
+            dy: 0,  // velocity on y-axis
+            jumpPower: -12,
+            isJumping: false,
+            facingRight: true,  // To track the direction the player is facing
+        };
+
+        // Load the player frames (standing still, moving right, moving left, jumping right, jumping left, falling right, standing still jump, standing still fall)
+        const standingImage = new Image();
+        standingImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(63).png?raw=true"; // Standing still frame
+
+        const movingRightImage = new Image();
+        movingRightImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(55).png?raw=true"; // Moving right frame
+
+        const movingLeftImage = new Image();
+        movingLeftImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(58).png?raw=true"; // Moving left frame
+
+        const jumpingRightImage = new Image();
+        jumpingRightImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(56).png?raw=true"; // Jumping right frame
+
+        const jumpingLeftImage = new Image();
+        jumpingLeftImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(57).png?raw=true"; // Jumping left frame
+
+        const fallingRightImage = new Image();
+        fallingRightImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(60).png?raw=true"; // Falling right frame
+
+        const standingJumpImage = new Image();
+        standingJumpImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(61).png?raw=true"; // Standing still jump frame
+
+        const standingFallImage = new Image();
+        standingFallImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(62).png?raw=true"; // Standing still fall frame
+
+        // Platform object
+        let platforms = [
+            { x: 0, y: canvas.height - 50, width: canvas.width, height: 50 }, // ground
+            { x: 200, y: 400, width: 200, height: 20 },
+            { x: 500, y: 300, width: 200, height: 20 },
+            { x: 300, y: 150, width: 150, height: 20 }
         ];
 
-        let player = { x: 50, y: canvas.height - 160, width: 40, height: 40, dx: 0, dy: 0, onGround: false, facingRight: true };
-        const spriteImages = { right: 'https://example.com/sprites/walk-right.png', left: 'https://example.com/sprites/walk-left.png', jumpRight: 'https://example.com/sprites/jump-right.png', jumpLeft: 'https://example.com/sprites/jump-left.png', fallLeft: 'https://example.com/sprites/fall-left.png', fallRight: 'https://example.com/sprites/fall-right.png' };
+        // Handle keypresses
+        let keys = {
+            right: false,
+            left: false,
+            up: false
+        };
 
-        let camera = { x: 0, y: 0 };
+        document.addEventListener('keydown', function(e) {
+            if (e.key === "d" || e.key === "D") keys.right = true;  // 'D' for right
+            if (e.key === "a" || e.key === "A") keys.left = true;   // 'A' for left
+            if (e.key === "w" || e.key === "W") keys.up = true;     // 'W' for jump
+        });
 
-        const imagesToLoad = Object.values(spriteImages).map(src => new Image());
-        Promise.all(imagesToLoad.map(img => new Promise(resolve => img.onload = resolve)))
-            .then(() => setInterval(draw, 1000 / 60));
+        document.addEventListener('keyup', function(e) {
+            if (e.key === "d" || e.key === "D") keys.right = false;
+            if (e.key === "a" || e.key === "A") keys.left = false;
+            if (e.key === "w" || e.key === "W") keys.up = false;
+        });
 
-        function drawLevel() {
-            for (let row = 0; row < level.length; row++) {
-                for (let col = 0; col < level[row].length; col++) {
-                    if (level[row][col] === '1') {
-                        ctx.fillStyle = 'green';  // Draw the platform
-                        ctx.fillRect(col * cellSize - camera.x, row * cellSize - camera.y, cellSize, cellSize);
-                    }
+        // Detect collision with platforms
+        function checkCollisions() {
+            for (let i = 0; i < platforms.length; i++) {
+                let p = platforms[i];
+                if (
+                    player.x < p.x + p.width &&
+                    player.x + player.width > p.x &&
+                    player.y + player.height <= p.y + 1 &&
+                    player.y + player.height + player.dy >= p.y
+                ) {
+                    player.dy = 0;
+                    player.isJumping = false;
+                    player.y = p.y - player.height;
                 }
             }
         }
 
-        function drawPlayer() {
-            const spriteFrame = getSpriteFrame();
-            ctx.drawImage(spriteFrame, 0, 0, frameWidth, frameHeight, player.x - camera.x, player.y - camera.y, player.width, player.height);
-        }
-
-        function getSpriteFrame() {
-            if (player.onGround) {
-                return player.dx !== 0 ? (player.facingRight ? spriteImages.right : spriteImages.left) : (player.facingRight ? spriteImages.right : spriteImages.left);
+        // Update player position and handle movement
+        function updatePlayer() {
+            if (keys.right) {
+                player.dx = player.speed;
+                player.facingRight = true;  // Player is facing right
+            } else if (keys.left) {
+                player.dx = -player.speed;
+                player.facingRight = false; // Player is facing left
             } else {
-                return player.dy < 0 ? (player.facingRight ? spriteImages.jumpRight : spriteImages.jumpLeft) : (player.facingRight ? spriteImages.fallRight : spriteImages.fallLeft);
+                player.dx *= friction; // Apply friction when no key is pressed
             }
-        }
 
-        function applyGravity() {
-            if (!player.onGround) player.dy = Math.min(player.dy + gravity, 10);
-            else player.dy = 0;
-        }
-
-        function checkCollision() {
-            player.onGround = false;
-            for (let row = 0; row < level.length; row++) {
-                for (let col = 0; col < level[row].length; col++) {
-                    if (level[row][col] === '1') {
-                        const platX = col * cellSize;
-                        const platY = row * cellSize;
-
-                        // Check if player collides with the platform
-                        if (player.x < platX + cellSize && player.x + player.width > platX &&
-                            player.y + player.height <= platY + cellSize && player.y + player.height + player.dy >= platY) {
-                            player.onGround = true;
-                            player.y = platY - player.height;
-                        }
-                    }
-                }
+            if (keys.up && !player.isJumping) {
+                player.dy = player.jumpPower;
+                player.isJumping = true;
             }
-        }
 
-        function update() {
+            // Apply gravity
+            player.dy += gravity;
+
+            // Move the player
             player.x += player.dx;
             player.y += player.dy;
-            applyGravity();
-            checkCollision();
 
-            camera.x = player.x - canvas.width / 2;
-            camera.y = player.y - canvas.height / 2;
-
+            // Prevent player from going out of bounds
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-            if (player.y + player.height > canvas.height) gameOver();
+
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                player.dy = 0;
+                player.isJumping = false;
+            }
+
+            checkCollisions();
         }
 
-        function gameOver() {
-            document.getElementById("gameOver").style.display = "block";
-            clearInterval(gameInterval);
-        }
-
-        function restartGame() {
-            player = { x: 50, y: canvas.height - 160, dx: 0, dy: 0, onGround: false, facingRight: true };
-            document.getElementById("gameOver").style.display = "none";
-            gameInterval = setInterval(draw, 1000 / 60);
-        }
-
+        // Draw the game objects
         function draw() {
+            // Clear the canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawLevel();
-            update();
-            drawPlayer();
+
+            // Draw the platforms
+            platforms.forEach(platform => {
+                ctx.fillStyle = '#228B22'; // Green color for platforms
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+
+            // Draw the correct player image based on the player's state
+            if (player.isJumping && player.facingRight) {
+                ctx.drawImage(jumpingRightImage, player.x, player.y, player.width, player.height);
+            } else if (player.isJumping && !player.facingRight) {
+                ctx.drawImage(jumpingLeftImage, player.x, player.y, player.width, player.height);
+            } else if (player.dy > 0 && player.facingRight) {
+                ctx.drawImage(fallingRightImage, player.x, player.y, player.width, player.height);
+            } else if (player.dy > 0 && !player.facingRight) {
+                ctx.drawImage(standingFallImage, player.x, player.y, player.width, player.height);
+            } else if (player.dy === 0 && !keys.right && !keys.left) {
+                ctx.drawImage(standingJumpImage, player.x, player.y, player.width, player.height);
+            } else if (keys.right) {
+                ctx.drawImage(movingRightImage, player.x, player.y, player.width, player.height);
+            } else if (keys.left) {
+                ctx.drawImage(movingLeftImage, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.drawImage(standingImage, player.x, player.y, player.width, player.height);
+            }
         }
 
-        // Event listeners for user input
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'a') { player.dx = -playerSpeed; player.facingRight = false; }
-            else if (e.key === 'd') { player.dx = playerSpeed; player.facingRight = true; }
-            else if (e.key === 'w' && player.onGround) player.dy = -jumpStrength;
-            else if (e.key === 'r') restartGame();
-        });
+        // Main game loop
+        function gameLoop() {
+            updatePlayer();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
 
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'a' || e.key === 'd') player.dx = 0;
-        });
-
+        // Start the game loop
+        gameLoop();
     </script>
-
 </body>
 </html>
