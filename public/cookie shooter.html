@@ -128,14 +128,21 @@
                 this.y = -asteroidHeight;  // Start above the canvas
                 this.width = asteroidWidth;
                 this.height = asteroidHeight;
+                this.angle = 0;  // Initial rotation angle
+                this.rotationSpeed = Math.random() * 0.05 + 0.02;  // Random spin speed
             }
 
             move() {
                 this.y += asteroidSpeed;  // Move downward
+                this.angle += this.rotationSpeed;  // Rotate the asteroid
             }
 
             draw() {
-                ctx.drawImage(asteroidImage, this.x, this.y, this.width, this.height);
+                ctx.save(); // Save the current canvas state
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2); // Move the origin to the center of the asteroid
+                ctx.rotate(this.angle); // Rotate around the center
+                ctx.drawImage(asteroidImage, -this.width / 2, -this.height / 2, this.width, this.height); // Draw the asteroid centered at (0,0)
+                ctx.restore(); // Restore the original canvas state
             }
 
             // Check if the asteroid is hit by a bullet
