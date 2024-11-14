@@ -41,29 +41,28 @@
     <div class="controls">
         <p>Use <b>W</b> to Jump, <b>A</b> to Move Left, <b>D</b> to Move Right.</p>
     </div>
-    <div id="gameOver">Game Over! Press F5 to Restart.</div>
+    <div id="gameOver">Game Over! Press <b>R</b> to Restart.</div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const cellSize = 40; // Cell size for each platform block
+        const cellSize = 40;
         const gravity = 0.5;
         const jumpStrength = 12;
         const playerSpeed = 5;
-        const frameWidth = 40;  // Assuming each frame is 40x40 pixels
+        const frameWidth = 40;
         const frameHeight = 40;
 
-        // Adjust the level for the increased height (add more platforms if necessary)
         const level = [
             "00000000000000000000000000000000000000000000",
             "00000000000000011000000000000000000000000000",
             "00000000110000000000000000000000000000000000",
             "00000000000000000000000000000000000000000000",
             "00001111000000000000000000000000000000000000",
-            "00000000011111111111111111111111111111110000",  // Lower platform
+            "00000000011111111111111111111111111111110000",
             "00000000000000000000000000000000000000000000",  
             "00000000000000000000000000000000000000000000",
-            "00000000011111111111111111111111111111110000",  // Higher platform
+            "00000000011111111111111111111111111111110000",  
             "00000000000000000000000000000000000000000000",
             "11111111111111111111111111111111111111111111",
             "00000000000000000000000000000000000000000000",
@@ -75,13 +74,13 @@
             "00000000000000000000000000000000000000000000",
             "11111111111111111111111111111111111111111111",
             "00000000000000000000000000000000000000000000",
-            "00000000000000000000000000000000000000000000",  // Add more rows for increased height
+            "00000000000000000000000000000000000000000000", 
             "00000000000000000000000000000000000000000000"
         ];
 
         let player = {
             x: 50,
-            y: canvas.height - 160,  // Set the player starting position 160px from the bottom
+            y: canvas.height - 160,
             width: 40,
             height: 40,
             dx: 0,
@@ -89,11 +88,10 @@
             onGround: false,
             facingRight: true,
             currentFrame: 0,
-            animationFrameSpeed: 10, // Speed of the animation
+            animationFrameSpeed: 10,
             frameCounter: 0
         };
 
-        // Load the sprite sheets (right, left, jump right, jump left, fall right, fall left)
         const spriteImages = {
             right: new Image(),
             left: new Image(),
@@ -103,73 +101,71 @@
             fallRight: new Image()
         };
 
-        spriteImages.right.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(55).png?raw=true';  // Walking right frame
-        spriteImages.left.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(58).png?raw=true';  // Walking left frame
-        spriteImages.jumpRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(56).png?raw=true';  // Jumping right frame
-        spriteImages.jumpLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(57).png?raw=true';  // Jumping left frame
-        spriteImages.fallLeft.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(59).png?raw=true';  // Falling left frame
-        spriteImages.fallRight.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(60).png?raw=true';  // Falling right frame
+        spriteImages.right.src = 'https://example.com/sprites/walk-right.png';
+        spriteImages.left.src = 'https://example.com/sprites/walk-left.png';
+        spriteImages.jumpRight.src = 'https://example.com/sprites/jump-right.png';
+        spriteImages.jumpLeft.src = 'https://example.com/sprites/jump-left.png';
+        spriteImages.fallLeft.src = 'https://example.com/sprites/fall-left.png';
+        spriteImages.fallRight.src = 'https://example.com/sprites/fall-right.png';
 
         let gameInterval;
 
-        // Wait for all sprite images to load before starting the game loop
         const imagesToLoad = Object.values(spriteImages).map(image => {
             return new Promise(resolve => {
                 image.onload = resolve;
             });
         });
 
-        // Once all images are loaded, start the game loop
         Promise.all(imagesToLoad).then(() => {
-            gameInterval = setInterval(draw, 1000 / 60); // 60 frames per second
+            gameInterval = setInterval(draw, 1000 / 60); 
         });
 
-        // Camera position to scroll the level
-        let camera = {
-            x: 0,
-            y: 0
-        };
+        let camera = { x: 0, y: 0 };
 
-        // Function to draw the level
         function drawLevel() {
             for (let row = 0; row < level.length; row++) {
                 for (let col = 0; col < level[row].length; col++) {
                     if (level[row][col] === '1') {
-                        ctx.fillStyle = 'green'; // Platform color
-                        // Offset by camera position to make the world scrollable
+                        ctx.fillStyle = 'green';
                         ctx.fillRect(col * cellSize - camera.x, row * cellSize - camera.y, cellSize, cellSize);
                     }
                 }
             }
         }
 
-        // Function to draw the player with animation
         function drawPlayer() {
             let spriteFrame;
 
-            if (!player.onGround) {
-                // Jumping or Falling
+            if (player.onGround) {
+                if (player.dx !== 0) {
+                    player.frameCounter++;
+                    if (player.frameCounter >= player.animationFrameSpeed) {
+                        player.frameCounter = 0;
+                        player.currentFrame = (player.currentFrame + 1) % 4; 
+                    }
+                    spriteFrame = player.facingRight ? spriteImages.right : spriteImages.left;
+                } else {
+                    spriteFrame = player.facingRight ? spriteImages.right : spriteImages.left;
+                }
+            } else {
                 spriteFrame = player.dy < 0 ? (player.facingRight ? spriteImages.jumpRight : spriteImages.jumpLeft) :
                     (player.facingRight ? spriteImages.fallRight : spriteImages.fallLeft);
-            } else {
-                // Walking
-                spriteFrame = player.facingRight ? spriteImages.right : spriteImages.left;
             }
 
-            // Draw the appropriate frame from the sprite sheet, offset by camera position
             ctx.drawImage(spriteFrame, 0, 0, frameWidth, frameHeight, player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
-        // Function to apply gravity to the player
         function applyGravity() {
             if (!player.onGround) {
                 player.dy += gravity;
+                if (player.dy > 10) { 
+                    player.dy = 10;
+                }
             } else {
                 player.dy = 0;
             }
         }
 
-        // Function to check collision with platforms
         function checkCollision() {
             player.onGround = false;
             for (let row = 0; row < level.length; row++) {
@@ -192,19 +188,41 @@
             }
         }
 
-        // Function to update the player's position
+        function checkHorizontalCollision() {
+            for (let row = 0; row < level.length; row++) {
+                for (let col = 0; col < level[row].length; col++) {
+                    if (level[row][col] === '1') {
+                        const platformX = col * cellSize;
+                        const platformY = row * cellSize;
+                        const platformWidth = cellSize;
+                        const platformHeight = cellSize;
+
+                        if (player.x < platformX + platformWidth &&
+                            player.x + player.width > platformX &&
+                            player.y + player.height > platformY &&
+                            player.y < platformY + platformHeight) {
+                            if (player.dx > 0) {
+                                player.x = platformX - player.width;
+                            } else if (player.dx < 0) {
+                                player.x = platformX + platformWidth;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         function update() {
             player.x += player.dx;
             player.y += player.dy;
 
-            applyGravity();  // Apply gravity
-            checkCollision(); // Check collisions
+            applyGravity();
+            checkCollision();
+            checkHorizontalCollision();
 
-            // Update camera position to follow the player
-            camera.x = player.x - canvas.width / 2;  // Follow player horizontally
-            camera.y = player.y - canvas.height / 2; // Follow player vertically
+            camera.x = player.x - canvas.width / 2;
+            camera.y = player.y - canvas.height / 2;
 
-            // Prevent player from going out of bounds
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
             if (player.y + player.height > canvas.height) {
@@ -213,13 +231,25 @@
             }
         }
 
-        // Function to handle game over
         function gameOver() {
             document.getElementById("gameOver").style.display = "block";
-            clearInterval(gameInterval); // Stop the game loop
+            clearInterval(gameInterval); 
         }
 
-        // Event listeners for user input
+        function restartGame() {
+            player.x = 50;
+            player.y = canvas.height - 160;
+            player.dx = 0;
+            player.dy = 0;
+            player.onGround = false;
+            player.facingRight = true;
+            player.frameCounter = 0;
+            player.currentFrame = 0;
+
+            document.getElementById("gameOver").style.display = "none";
+            gameInterval = setInterval(draw, 1000 / 60);
+        }
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'a' || e.key === 'A') {
                 player.dx = -playerSpeed;
@@ -232,6 +262,8 @@
                     player.dy = -jumpStrength;
                     player.onGround = false;
                 }
+            } else if (e.key === 'r' || e.key === 'R') {
+                restartGame();
             }
         });
 
@@ -241,12 +273,11 @@
             }
         });
 
-        // Function to clear and redraw the game scene
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-            drawLevel();  // Draw the level
-            update();     // Update player's position and animations
-            drawPlayer(); // Draw the player with animations
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawLevel();
+            update();
+            drawPlayer();
         }
     </script>
 
