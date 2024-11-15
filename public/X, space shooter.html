@@ -3,362 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asteroid Shooter</title>
+    <title>Space Game</title>
     <style>
-        body {
+        * {
             margin: 0;
-            background: black;
-            color: white;
-            font-family: Arial, sans-serif;
+            padding: 0;
+            box-sizing: border-box;
         }
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border: 1px solid white;
-        }
-        #homeScreen {
+
+        body {
+            background-color: #000;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
         }
-        #startButton {
-            padding: 10px 20px;
-            font-size: 20px;
-            color: black;
-            background: white;
-            border: none;
-            cursor: pointer;
+
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
         }
-        #startButton:hover {
-            background: lightgray;
+
+        canvas {
+            background-color: #1a1a1a;
+            border: 1px solid #fff;
         }
     </style>
 </head>
 <body>
-<div id="homeScreen">
-    <h1>Asteroid Shooter</h1>
-    <button id="startButton">Start Game</button>
-</div>
-<canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
 
-const PLAYER_WIDTH = 50;
-const PLAYER_HEIGHT = 50;
-const BULLET_WIDTH = 4;
-const BULLET_HEIGHT = 10;
-const BULLET_SPEED = 5;
-const BOMB_RADIUS = 20;
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-const ASTEROID_TYPES = [
-    { size: 70, speed: 1, points: 1 },  // Large asteroid
-    { size: 50, speed: 2, points: 2 },  // Medium asteroid
-    { size: 30, speed: 3, points: 3 }   // Small asteroid
-];
+        // Game settings
+        const shipWidth = 64;
+        const shipHeight = 64;
+        let shipX = canvas.width / 2 - shipWidth / 2;
+        let shipY = canvas.height - shipHeight - 10;
+        let shipSpeed = 0; // Initial speed is 0
+        const maxShipSpeed = 5; // Maximum ship speed
+        const acceleration = 0.2; // Acceleration for smoother movement
 
-let player = {
-    x: canvas.width / 2 - PLAYER_WIDTH / 2,
-    y: canvas.height - PLAYER_HEIGHT - 10,
-    width: PLAYER_WIDTH,
-    height: PLAYER_HEIGHT,
-    dx: 0
-};
+        let bullets = [];
+        let bulletSpeed = 7;
 
-let bullets = [];
-let bombs = []; // Array to store bombs
-let asteroids = [];
-let score = 0;
-let lives = 5;
-let gameOver = false;
-let isPaused = false;
+        const asteroidWidth = 64;
+        const asteroidHeight = 64;
+        let asteroids = [];
+        let asteroidSpeed = 2;
 
-// Ability variables
-let abilityActive = false;
-let abilityCooldown = false;
-let bombCooldown = false; // New cooldown for bomb ability
+        let enemies = [];
+        let enemySpeed = 2;
 
-// Game loop
-function gameLoop() {
-    if (!gameOver && !isPaused) {
-        update();
-        draw();
-        requestAnimationFrame(gameLoop);
-    } else {
-        gameOver ? drawGameOver() : drawPause();
-    }
-}
+        let lives = 3;
+        let score = 0;
+        let isGameOver = false;
+        let isPaused = false;
+        let gameTime = 0; // Time in seconds to increase difficulty
 
-// Update game elements
-function update() {
-    // Move player
-    player.x += player.dx;
-    player.x = Math.max(0, Math.min(canvas.width - PLAYER_WIDTH, player.x));
+        let leftPressed = false;
+        let rightPressed = false;
+        let spacePressed = false;
+        let pPressed = false;
 
-    // Move bullets
-    bullets = bullets.filter(bullet => {
-        bullet.y -= BULLET_SPEED; // Straight up for now
-        return bullet.y >= 0; // Keep only bullets that are on-screen
-    });
+        // Load images
+        const shipImage = new Image();
+        const asteroidImage = new Image();
+        const enemyImage = new Image();
 
-    // Move bombs
-    bombs.forEach(bomb => {
-        bomb.y += bomb.speed;
-    });
-    bombs = bombs.filter(bomb => bomb.y < canvas.height); // Remove off-screen bombs
+        shipImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(64).png?raw=true";
+        asteroidImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(65).png?raw=true";
+        enemyImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(66).png?raw=true";
 
-    // Create new asteroids
-    if (Math.random() < 0.02) {
-        const type = ASTEROID_TYPES[Math.floor(Math.random() * ASTEROID_TYPES.length)];
-        asteroids.push({ 
-            x: Math.random() * (canvas.width - type.size), 
-            y: 0, 
-            size: type.size, 
-            speed: type.speed, 
-            points: type.points 
+        // Load sound effects
+        const shootSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
+        const explosionSound = new Audio('https://www.soundjay.com/button/beep-08b.wav');
+
+        // Bullet class
+        class Bullet {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 10;
+            }
+
+            move() {
+                this.y -= bulletSpeed;
+            }
+
+            draw() {
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        // Asteroid class
+        class Asteroid {
+            constructor() {
+                this.x = Math.random() * (canvas.width - asteroidWidth);
+                this.y = -asteroidHeight;
+                this.width = asteroidWidth;
+                this.height = asteroidHeight;
+            }
+
+            move() {
+                this.y += asteroidSpeed;
+            }
+
+            draw() {
+                ctx.drawImage(asteroidImage, this.x, this.y, this.width, this.height);
+            }
+
+            checkCollision(bullet) {
+                return bullet.x < this.x + this.width &&
+                    bullet.x + bullet.width > this.x &&
+                    bullet.y < this.y + this.height &&
+                    bullet.y + bullet.height > this.y;
+            }
+
+            checkPlayerCollision(playerX, playerY, playerWidth, playerHeight) {
+                return playerX < this.x + this.width &&
+                    playerX + playerWidth > this.x &&
+                    playerY < this.y + this.height &&
+                    playerY + playerHeight > this.y;
+            }
+        }
+
+        // Enemy class
+        class Enemy {
+            constructor() {
+                this.x = Math.random() * (canvas.width - shipWidth);
+                this.y = -shipHeight;
+                this.width = shipWidth;
+                this.height = shipHeight;
+                this.speed = enemySpeed;
+                this.bullets = [];
+            }
+
+            move() {
+                this.y += this.speed;
+            }
+
+            shoot() {
+                if (Math.random() < 0.01) {  // Random chance to shoot
+                    this.bullets.push(new Bullet(this.x + this.width / 2 - 2, this.y + this.height));
+                }
+            }
+
+            draw() {
+                ctx.drawImage(enemyImage, this.x, this.y, this.width, this.height);
+                // Draw enemy bullets
+                for (let i = 0; i < this.bullets.length; i++) {
+                    this.bullets[i].move();
+                    this.bullets[i].draw();
+                    if (this.bullets[i].y > canvas.height) {
+                        this.bullets.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            checkCollision(bullet) {
+                return bullet.x < this.x + this.width &&
+                    bullet.x + bullet.width > this.x &&
+                    bullet.y < this.y + this.height &&
+                    bullet.y + bullet.height > this.y;
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (isPaused) return; // Skip game logic when paused
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (isGameOver) {
+                displayGameOver();
+                return;
+            }
+
+            // Update game time for difficulty increase
+            gameTime++;
+            increaseDifficulty();
+
+            // Move the ship smoothly with acceleration
+            if (leftPressed && shipX > 0) shipSpeed = Math.max(-maxShipSpeed, shipSpeed - acceleration);
+            if (rightPressed && shipX + shipWidth < canvas.width) shipSpeed = Math.min(maxShipSpeed, shipSpeed + acceleration);
+            shipX += shipSpeed;
+
+            if (spacePressed) {
+                bullets.push(new Bullet(shipX + shipWidth / 2 - 2, shipY));
+                shootSound.play();
+                spacePressed = false;
+            }
+
+            // Move and draw bullets
+            for (let i = 0; i < bullets.length; i++) {
+                bullets[i].move();
+                bullets[i].draw();
+
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Move and draw asteroids
+            for (let i = 0; i < asteroids.length; i++) {
+                asteroids[i].move();
+                asteroids[i].draw();
+
+                for (let j = 0; j < bullets.length; j++) {
+                    if (asteroids[i].checkCollision(bullets[j])) {
+                        asteroids.splice(i, 1);
+                        bullets.splice(j, 1);
+                        score += 10;
+                        explosionSound.play();
+                        i--;
+                        j--;
+                        break;
+                    }
+                }
+
+                if (asteroids[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
+                    lives--;
+                    asteroids.splice(i, 1);
+                    i--;
+                    if (lives <= 0) isGameOver = true;
+                }
+
+                if (asteroids[i].y > canvas.height) {
+                    asteroids.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Move and draw enemies
+            for (let i = 0; i < enemies.length; i++) {
+                enemies[i].move();
+                enemies[i].shoot();
+                enemies[i].draw();
+
+                for (let j = 0; j < bullets.length; j++) {
+                    if (enemies[i].checkCollision(bullets[j])) {
+                        enemies.splice(i, 1);
+                        bullets.splice(j, 1);
+                        score += 20;
+                        explosionSound.play();
+                        i--;
+                        j--;
+                        break;
+                    }
+                }
+
+                if (enemies[i].y > canvas.height) {
+                    enemies.splice(i, 1);
+                    i--;
+                }
+            }
+
+            ctx.drawImage(shipImage, shipX, shipY, shipWidth, shipHeight);
+
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("Lives: " + lives, 10, 30);
+            ctx.fillText("Score: " + score, canvas.width - 100, 30);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Increase game difficulty over time
+        function increaseDifficulty() {
+            if (gameTime % 30 === 0) { // Every 30 seconds
+                asteroidSpeed += 0.5;
+                enemySpeed += 0.5;
+            }
+        }
+
+        // Spawn asteroids
+        function spawnAsteroids() {
+            setInterval(() => {
+                if (!isGameOver) {
+                    asteroids.push(new Asteroid());
+                }
+            }, 2000);
+        }
+
+        // Spawn enemies
+        function spawnEnemies() {
+            setInterval(() => {
+                if (!isGameOver) {
+                    enemies.push(new Enemy());
+                }
+            }, 4000);
+        }
+
+        // Toggle pause state
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+
+        // Display game over screen
+        function displayGameOver() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2 - 20);
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, canvas.width / 2 - 40, canvas.height / 2 + 20);
+            ctx.fillText("Press F5 to restart", canvas.width / 2 - 80, canvas.height / 2 + 60);
+        }
+
+        // Event listeners for keyboard input
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "a" || e.key === "A") leftPressed = true;
+            if (e.key === "d" || e.key === "D") rightPressed = true;
+            if (e.key === " ") spacePressed = true;
+            if (e.key === "p" || e.key === "P") {
+                togglePause();
+            }
         });
-    }
 
-    // Move asteroids
-    for (let i = asteroids.length - 1; i >= 0; i--) {
-        asteroids[i].y += asteroids[i].speed;
+        document.addEventListener("keyup", (e) => {
+            if (e.key === "a" || e.key === "A") leftPressed = false;
+            if (e.key === "d" || e.key === "D") rightPressed = false;
+            if (e.key === " ") spacePressed = false;
+        });
 
-        // Check if asteroid reached the bottom
-        if (asteroids[i].y > canvas.height) {
-            asteroids.splice(i, 1);
-            lives--;
-            if (lives <= 0) {
-                gameOver = true;
-            }
-            continue; // Skip collision check if asteroid is out of bounds
-        }
-
-        // Check collision with bullets
-        for (let j = bullets.length - 1; j >= 0; j--) {
-            if (bullets[j].x < asteroids[i].x + asteroids[i].size &&
-                bullets[j].x + BULLET_WIDTH > asteroids[i].x &&
-                bullets[j].y < asteroids[i].y + asteroids[i].size &&
-                bullets[j].y + BULLET_HEIGHT > asteroids[i].y) {
-                
-                bullets.splice(j, 1);
-                handleAsteroidDestruction(asteroids[i]);
-                asteroids.splice(i, 1); // Remove the destroyed asteroid
-                break;
-            }
-        }
-    }
-
-    // Bomb collision check
-    for (let i = bombs.length - 1; i >= 0; i--) {
-        for (let j = asteroids.length - 1; j >= 0; j--) {
-            if (bombs[i].x < asteroids[j].x + asteroids[j].size &&
-                bombs[i].x + BOMB_RADIUS > asteroids[j].x &&
-                bombs[i].y < asteroids[j].y + asteroids[j].size &&
-                bombs[i].y + BOMB_RADIUS > asteroids[j].y) {
-                // Remove both bomb and asteroid
-                bombs.splice(i, 1);
-                handleAsteroidDestruction(asteroids[j]);
-                asteroids.splice(j, 1);
-                break;
-            }
-        }
-    }
-}
-
-function handleAsteroidDestruction(asteroid) {
-    if (asteroid.size === 70) {
-        asteroids.push({ x: asteroid.x, y: asteroid.y, size: 50, speed: 2, points: 2 });
-        asteroids.push({ x: asteroid.x + 20, y: asteroid.y, size: 50, speed: 2, points: 2 });
-    } else if (asteroid.size === 50) {
-        asteroids.push({ x: asteroid.x, y: asteroid.y, size: 30, speed: 3, points: 3 });
-        asteroids.push({ x: asteroid.x + 10, y: asteroid.y, size: 30, speed: 3, points: 3 });
-    }
-    score += asteroid.points; // Add points based on asteroid type
-}
-
-// Draw everything
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw player (triangle shape)
-    ctx.fillStyle = 'gray';
-    ctx.beginPath();
-    ctx.moveTo(player.x + PLAYER_WIDTH / 2, player.y); // Top point of triangle
-    ctx.lineTo(player.x, player.y + PLAYER_HEIGHT); // Bottom left point
-    ctx.lineTo(player.x + PLAYER_WIDTH, player.y + PLAYER_HEIGHT); // Bottom right point
-    ctx.closePath();
-    ctx.fill();
-
-    // Draw bullets
-    ctx.fillStyle = 'lightblue';
-    bullets.forEach(bullet => {
-        ctx.fillRect(bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT);
-    });
-
-    // Draw bombs
-    ctx.fillStyle = 'red';
-    bombs.forEach(bomb => {
-        ctx.beginPath();
-        ctx.arc(bomb.x, bomb.y, BOMB_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    // Draw asteroids
-    ctx.fillStyle = 'brown';
-    asteroids.forEach(asteroid => {
-        ctx.fillRect(asteroid.x, asteroid.y, asteroid.size, asteroid.size);
-    });
-
-    // Draw score and lives
-    ctx.fillStyle = 'green';
-    ctx.font = '20px Arial';
-    ctx.fillText('Score: ' + score, 10, 20);
-    ctx.fillText('Lives: ' + lives, 10, 40);
-
-    // Draw ability status
-    if (abilityActive) {
-        ctx.fillStyle = 'yellow';
-        ctx.font = '20px Arial';
-        ctx.fillText('Ability Active!', canvas.width - 150, 20);
-    }
-    if (abilityCooldown) {
-        ctx.fillStyle = 'red';
-        ctx.font = '20px Arial';
-        ctx.fillText('Ability Cooldown!', canvas.width - 180, 40);
-    }
-    if (bombCooldown) {
-        ctx.fillStyle = 'red';
-        ctx.font = '20px Arial';
-        ctx.fillText('Bomb Cooldown!', canvas.width - 180, 60);
-    }
-}
-
-// Draw game over screen
-function drawGameOver() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'white';
-    ctx.font = '40px Arial';
-    ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2 - 20);
-    ctx.font = '20px Arial';
-    ctx.fillText('Final Score: ' + score, canvas.width / 2 - 70, canvas.height / 2 + 10);
-    ctx.fillText('Press R to Restart', canvas.width / 2 - 100, canvas.height / 2 + 40);
-}
-
-// Draw pause screen
-function drawPause() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'white';
-    ctx.font = '40px Arial';
-    ctx.fillText('Paused', canvas.width / 2 - 70, canvas.height / 2 - 20);
-    ctx.font = '20px Arial';
-    ctx.fillText('Press P to Resume', canvas.width / 2 - 100, canvas.height / 2 + 10);
-}
-
-// Handle keyboard input
-window.addEventListener('keydown', (e) => {
-    if (gameOver) {
-        if (e.key === 'r' || e.key === 'R') {
-            resetGame();
-        }
-    } else if (isPaused) {
-        if (e.key === 'p' || e.key === 'P') {
-            isPaused = false;
-            gameLoop(); // Resume the game loop
-        }
-    } else {
-        if (e.key === 'a') player.dx = -5; // Move left
-        else if (e.key === 'd') player.dx = 5; // Move right
-        else if (e.key === 'p' || e.key === 'P') {
-            isPaused = true; // Pause the game
-        } else if (e.key === ' ') {
-            activateAbility(); // Activate multi-shot ability
-        } else if (e.key === 'b' || e.key === 'B') {
-            shootBomb(); // Shoot a bomb
-        }
-    }
-});
-
-window.addEventListener('keyup', (e) => {
-    if (e.key === 'a' || e.key === 'd') player.dx = 0;
-});
-
-// Handle mouse input
-canvas.addEventListener('contextmenu', (e) => {
-    e.preventDefault(); // Prevent the context menu from appearing
-    if (!gameOver && !isPaused) {
-        if (abilityActive) {
-            shootBullets();
-        } else {
-            bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
-        }
-    }
-});
-
-// Ability functions
-function activateAbility() {
-    if (!abilityCooldown) {
-        abilityActive = true;
-        shootBullets(); // Immediately shoot bullets
-        setTimeout(() => {
-            abilityActive = false; // Deactivate ability after 30 seconds
-            abilityCooldown = true; // Start cooldown
-            setTimeout(() => {
-                abilityCooldown = false; // End cooldown after 45 seconds
-            }, 45000);
-        }, 30000);
-    }
-}
-
-// Shooting bullets in three directions
-function shootBullets() {
-    bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2, y: player.y });
-    bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2 - 10, y: player.y, direction: 1 }); // Left
-    bullets.push({ x: player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2 + 10, y: player.y, direction: -1 }); // Right
-}
-
-// Bomb shooting function
-function shootBomb() {
-    if (!bombCooldown) {
-        bombs.push({ x: player.x + PLAYER_WIDTH / 2, y: player.y, speed: 3 }); // Add bomb
-        bombCooldown = true; // Start cooldown
-        setTimeout(() => {
-            bombCooldown = false; // End cooldown after 60 seconds
-        }, 60000);
-    }
-}
-
-// Start the game
-document.getElementById('startButton').addEventListener('click', startGame);
-
-function startGame() {
-    document.getElementById('homeScreen').style.display = 'none';
-    canvas.style.display = 'block';
-    resetGame();
-}
-
-// Reset game
-function resetGame() {
-    player.x = canvas.width / 2 - PLAYER_WIDTH / 2;
-    player.y = canvas.height - PLAYER_HEIGHT - 10;
-    bullets = [];
-    bombs = []; // Reset bombs
-    asteroids = [];
-    score = 0;
-    lives = 5;
-    gameOver = false;
-    isPaused = false;
-    abilityActive = false;
-    abilityCooldown = false;
-    bombCooldown = false; // Reset bomb cooldown
-    gameLoop();
-}
-
-// Start the game loop initially
-// gameLoop(); // Commented out to prevent immediate game start
-</script>
+        // Start game when images are loaded
+        shipImage.onload = () => {
+            asteroidImage.onload = () => {
+                enemyImage.onload = () => {
+                    gameLoop();
+                    spawnAsteroids();
+                    spawnEnemies();
+                };
+            };
+        };
+    </script>
 </body>
 </html>
-
-
