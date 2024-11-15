@@ -19,7 +19,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: Arial, sans-serif;
+            font-family: 'Press Start 2P', cursive; /* Pixel font */
             color: white;
             overflow: hidden;
         }
@@ -36,11 +36,34 @@
             background-color: #1a1a1a; /* Space-like dark background */
             border: 1px solid #fff; /* White border around the game area */
         }
+
+        /* Pause button */
+        #pauseButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #fff;
+            cursor: pointer;
+        }
+
+        /* Hide pause button when game is paused */
+        #pauseButton.paused {
+            background-color: #555;
+        }
+
+        /* Import Google Pixel Font */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <button id="pauseButton">Pause</button>
     </div>
 
     <script>
@@ -69,6 +92,7 @@
         let lives = 3;
         let score = 0;
         let isGameOver = false;
+        let isPaused = false; // New variable to track the pause state
 
         // Keyboard input tracking
         let leftPressed = false;
@@ -171,6 +195,8 @@
 
         // Game loop
         function gameLoop() {
+            if (isPaused) return; // Pause the game if it's paused
+
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -224,9 +250,6 @@
                 if (asteroids[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
                     lives -= 1;  // Reduce life
                     asteroids.splice(i, 1);  // Remove asteroid
-                    i--;  // Adjust loop index after removal
-
-                    // If lives are 0, game over
                     if (lives <= 0) {
                         isGameOver = true;
                     }
@@ -242,7 +265,7 @@
             ctx.drawImage(shipImage, shipX, shipY, shipWidth, shipHeight);
 
             // Display score and lives
-            ctx.font = "20px Arial";
+            ctx.font = "20px 'Press Start 2P', cursive";
             ctx.fillStyle = "white";
             ctx.fillText("Lives: " + lives, 10, 30);
             ctx.fillText("Score: " + score, canvas.width - 100, 30);
@@ -254,7 +277,7 @@
         // Spawn asteroids at random intervals
         function spawnAsteroids() {
             setInterval(() => {
-                if (!isGameOver) {  // Only spawn asteroids if the game is not over
+                if (!isGameOver && !isPaused) {  // Only spawn asteroids if the game is not over or paused
                     asteroids.push(new Asteroid());
                 }
             }, 2000);  // Spawn an asteroid every 2 seconds
@@ -265,12 +288,21 @@
             ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
-            ctx.font = "30px Arial";
+            ctx.font = "30px 'Press Start 2P', cursive";
             ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2 - 20);
-            ctx.font = "20px Arial";
+            ctx.font = "20px 'Press Start 2P', cursive";
             ctx.fillText("Score: " + score, canvas.width / 2 - 40, canvas.height / 2 + 20);
             ctx.fillText("Press F5 to restart", canvas.width / 2 - 80, canvas.height / 2 + 60);
         }
+
+        // Toggle pause state
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById("pauseButton").classList.toggle("paused", isPaused);
+        }
+
+        // Pause button click event
+        document.getElementById("pauseButton").addEventListener("click", togglePause);
 
         // Start the game once the images are loaded
         shipImage.onload = function() {
