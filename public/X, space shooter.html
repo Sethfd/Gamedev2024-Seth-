@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Dodging Game</title>
+    <title>Space Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,7 +18,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: 'Press Start 2P', cursive;
+            font-family: 'Press Start 2P', cursive; /* Applying Press Start 2P font */
             color: white;
             overflow: hidden;
         }
@@ -29,12 +30,11 @@
         }
 
         canvas {
-            background-color: #1a1a1a;
+            background-image: url('https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(67).png?raw=true');
+            background-size: cover;
+            background-position: center;
             border: 1px solid #fff;
         }
-
-        /* Add pixelated font */
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     </style>
 </head>
 <body>
@@ -53,6 +53,9 @@
         let shipY = canvas.height - shipHeight - 10;
         let shipSpeed = 5;
 
+        let bullets = [];
+        let bulletSpeed = 7;
+
         const asteroidWidth = 64;
         const asteroidHeight = 64;
         let asteroids = [];
@@ -68,10 +71,8 @@
 
         let leftPressed = false;
         let rightPressed = false;
+        let spacePressed = false;
         let pPressed = false;
-
-        let timer = 60; // Game timer in seconds
-        let timerInterval;
 
         // Load images
         const shipImage = new Image();
@@ -82,8 +83,24 @@
         asteroidImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(65).png?raw=true";
         enemyImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(66).png?raw=true";
 
-        // Load sound effects
-        const explosionSound = new Audio('https://www.soundjay.com/button/beep-08b.wav');
+        // Bullet class
+        class Bullet {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 10;
+            }
+
+            move() {
+                this.y -= bulletSpeed;
+            }
+
+            draw() {
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
 
         // Asteroid class
         class Asteroid {
@@ -102,6 +119,13 @@
                 ctx.drawImage(asteroidImage, this.x, this.y, this.width, this.height);
             }
 
+            checkCollision(bullet) {
+                return bullet.x < this.x + this.width &&
+                    bullet.x + bullet.width > this.x &&
+                    bullet.y < this.y + this.height &&
+                    bullet.y + bullet.height > this.y;
+            }
+
             checkPlayerCollision(playerX, playerY, playerWidth, playerHeight) {
                 return playerX < this.x + this.width &&
                     playerX + playerWidth > this.x &&
@@ -117,21 +141,38 @@
                 this.y = -shipHeight;
                 this.width = shipWidth;
                 this.height = shipHeight;
+                this.speed = enemySpeed;
+                this.bullets = [];
             }
 
             move() {
-                this.y += enemySpeed;
+                this.y += this.speed;
+            }
+
+            shoot() {
+                if (Math.random() < 0.01) {  // Random chance to shoot
+                    this.bullets.push(new Bullet(this.x + this.width / 2 - 2, this.y + this.height));
+                }
             }
 
             draw() {
                 ctx.drawImage(enemyImage, this.x, this.y, this.width, this.height);
+                // Draw enemy bullets
+                for (let i = 0; i < this.bullets.length; i++) {
+                    this.bullets[i].move();
+                    this.bullets[i].draw();
+                    if (this.bullets[i].y > canvas.height) {
+                        this.bullets.splice(i, 1);
+                        i--;
+                    }
+                }
             }
 
-            checkPlayerCollision(playerX, playerY, playerWidth, playerHeight) {
-                return playerX < this.x + this.width &&
-                    playerX + playerWidth > this.x &&
-                    playerY < this.y + this.height &&
-                    playerY + playerHeight > this.y;
+            checkCollision(bullet) {
+                return bullet.x < this.x + this.width &&
+                    bullet.x + bullet.width > this.x &&
+                    bullet.y < this.y + this.height &&
+                    bullet.y + bullet.height > this.y;
             }
         }
 
@@ -146,21 +187,46 @@
                 return;
             }
 
-            // Move the ship
             if (leftPressed && shipX > 0) shipX -= shipSpeed;
             if (rightPressed && shipX + shipWidth < canvas.width) shipX += shipSpeed;
+
+            if (spacePressed) {
+                bullets.push(new Bullet(shipX + shipWidth / 2 - 2, shipY));
+                spacePressed = false;
+            }
+
+            // Move and draw bullets
+            for (let i = 0; i < bullets.length; i++) {
+                bullets[i].move();
+                bullets[i].draw();
+
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                    i--;
+                }
+            }
 
             // Move and draw asteroids
             for (let i = 0; i < asteroids.length; i++) {
                 asteroids[i].move();
                 asteroids[i].draw();
 
+                for (let j = 0; j < bullets.length; j++) {
+                    if (asteroids[i].checkCollision(bullets[j])) {
+                        asteroids.splice(i, 1);
+                        bullets.splice(j, 1);
+                        score += 10;
+                        i--;
+                        j--;
+                        break;
+                    }
+                }
+
                 if (asteroids[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
                     lives--;
                     asteroids.splice(i, 1);
                     i--;
                     if (lives <= 0) isGameOver = true;
-                    explosionSound.play();
                 }
 
                 if (asteroids[i].y > canvas.height) {
@@ -172,14 +238,18 @@
             // Move and draw enemies
             for (let i = 0; i < enemies.length; i++) {
                 enemies[i].move();
+                enemies[i].shoot();
                 enemies[i].draw();
 
-                if (enemies[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
-                    lives--;
-                    enemies.splice(i, 1);
-                    i--;
-                    if (lives <= 0) isGameOver = true;
-                    explosionSound.play();
+                for (let j = 0; j < bullets.length; j++) {
+                    if (enemies[i].checkCollision(bullets[j])) {
+                        enemies.splice(i, 1);
+                        bullets.splice(j, 1);
+                        score += 20;
+                        i--;
+                        j--;
+                        break;
+                    }
                 }
 
                 if (enemies[i].y > canvas.height) {
@@ -188,115 +258,22 @@
                 }
             }
 
+            // Draw the ship
             ctx.drawImage(shipImage, shipX, shipY, shipWidth, shipHeight);
 
-            // Draw score, lives, and timer
-            ctx.font = "20px 'Press Start 2P'";
+            // Apply pixel font style for score and lives
+            ctx.font = "20px 'Press Start 2P', cursive"; // Apply the 2P Pixel font
             ctx.fillStyle = "white";
-            ctx.fillText("LIVES: " + lives, 10, 30);
-            ctx.fillText("SCORE: " + score, canvas.width - 120, 30);
-            ctx.fillText("TIME: " + timer, canvas.width / 2 - 40, 30);
+            ctx.fillText("Lives: " + lives, 10, 30);
+            ctx.fillText("Score: " + score, canvas.width - 100, 30);
 
             requestAnimationFrame(gameLoop);
         }
 
-        // Decrease timer and check for game over condition
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                if (timer > 0) {
-                    timer--;
-                } else {
-                    clearInterval(timerInterval);
-                    if (lives > 0) {
-                        // Player survived the time limit
-                        displayVictory();
-                    } else {
-                        // Timer ended, but player lost all lives
-                        isGameOver = true;
-                    }
-                }
-            }, 1000);
-        }
-
-        // Display victory screen
-        function displayVictory() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
-            ctx.font = "40px 'Press Start 2P'";
-            ctx.fillText("YOU WIN!", canvas.width / 2 - 100, canvas.height / 2 - 20);
-            ctx.font = "30px 'Press Start 2P'";
-            ctx.fillText("SCORE: " + score, canvas.width / 2 - 60, canvas.height / 2 + 20);
-            ctx.fillText("Press F5 to restart", canvas.width / 2 - 90, canvas.height / 2 + 60);
-        }
-
-        // Increase difficulty over time
-        function increaseDifficulty() {
-            setInterval(() => {
-                asteroidSpeed += 0.1;
-                enemySpeed += 0.1;
-            }, 10000); // Increase every 10 seconds
-        }
-
-        // Spawn asteroids
-        function spawnAsteroids() {
-            setInterval(() => {
-                if (!isGameOver) {
-                    asteroids.push(new Asteroid());
-                }
-            }, 2000); // Spawn asteroids every 2 seconds
-        }
-
-        // Spawn enemies
-        function spawnEnemies() {
-            setInterval(() => {
-                if (!isGameOver) {
-                    enemies.push(new Enemy());
-                }
-            }, 3000); // Spawn enemies every 3 seconds
-        }
-
-        // Toggle pause state
-        function togglePause() {
-            isPaused = !isPaused;
-        }
-
-        // Display game over screen
+        // Display Game Over Screen with pixel font
         function displayGameOver() {
             ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
-            ctx.font = "30px 'Press Start 2P'";
-            ctx.fillText("GAME OVER", canvas.width / 2 - 90, canvas.height / 2 - 20);
-            ctx.font = "20px 'Press Start 2P'";
-            ctx.fillText("SCORE: " + score, canvas.width / 2 - 40, canvas.height / 2 + 20);
-            ctx.fillText("Press F5 to restart", canvas.width / 2 - 80, canvas.height / 2 + 60);
-        }
-
-        // Event listeners for keyboard input
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "a" || e.key === "A") leftPressed = true;
-            if (e.key === "d" || e.key === "D") rightPressed = true;
-            if (e.key === "p" || e.key === "P") togglePause();
-        });
-
-        document.addEventListener("keyup", (e) => {
-            if (e.key === "a" || e.key === "A") leftPressed = false;
-            if (e.key === "d" || e.key === "D") rightPressed = false;
-        });
-
-        // Start game when images are loaded
-        shipImage.onload = () => {
-            asteroidImage.onload = () => {
-                enemyImage.onload = () => {
-                    gameLoop();
-                    spawnAsteroids();
-                    spawnEnemies();
-                    startTimer();
-                    increaseDifficulty();
-                };
-            };
-        };
-    </script>
-</body>
-</html>
+            ctx.font = "30px 'Press Start 2P', cursive"; // Apply the 2P Pixel font
+            ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2 -
