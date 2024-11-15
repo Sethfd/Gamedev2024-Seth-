@@ -78,8 +78,8 @@
         // Load player spaceship and asteroid images
         const shipImage = new Image();
         const asteroidImage = new Image();
-        shipImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(64).png?raw=true";
-        asteroidImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(65).png?raw=true";
+        shipImage.src = "https://raw.githubusercontent.com/Sethfd/Gamedev2024-Seth-/main/PNG,S/pixil-frame-0%20(64).png";
+        asteroidImage.src = "https://raw.githubusercontent.com/Sethfd/Gamedev2024-Seth-/main/PNG,S/pixil-frame-0%20(65).png";
 
         // Event listeners for key presses
         document.addEventListener("keydown", (e) => {
@@ -130,6 +130,13 @@
                 this.height = asteroidHeight;
                 this.angle = 0;  // Initial rotation angle
                 this.rotationSpeed = Math.random() * 0.05 + 0.02;  // Random spin speed
+
+                // Ensure asteroids don't overlap
+                for (let i = 0; i < asteroids.length; i++) {
+                    if (Math.abs(this.x - asteroids[i].x) < asteroidWidth) {
+                        this.x = Math.random() * (canvas.width - asteroidWidth);  // Regenerate position
+                    }
+                }
             }
 
             move() {
