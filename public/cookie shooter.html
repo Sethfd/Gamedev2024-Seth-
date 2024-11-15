@@ -33,37 +33,13 @@
 
         /* Canvas styling */
         canvas {
-            background-color: #1a1a1a; /* Space-like dark background */
-            border: 1px solid #fff; /* White border around the game area */
+            background-color: transparent;
         }
-
-        /* Pause button */
-        #pauseButton {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 16px;
-            background-color: #333;
-            color: #fff;
-            border: 1px solid #fff;
-            cursor: pointer;
-        }
-
-        /* Hide pause button when game is paused */
-        #pauseButton.paused {
-            background-color: #555;
-        }
-
-        /* Import Google Pixel Font */
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <button id="pauseButton">Pause</button>
     </div>
 
     <script>
@@ -72,8 +48,8 @@
         const ctx = canvas.getContext("2d");
 
         // Game settings
-        const shipWidth = 64;  // Player ship width
-        const shipHeight = 64; // Player ship height
+        const shipWidth = 64;
+        const shipHeight = 64;
         let shipX = canvas.width / 2 - shipWidth / 2;
         let shipY = canvas.height - shipHeight - 10;
         let shipSpeed = 5;
@@ -88,42 +64,44 @@
         let asteroids = [];
         let asteroidSpeed = 2;
 
+        // Enemy ship settings
+        const enemyWidth = 64;
+        const enemyHeight = 64;
+        let enemies = [];
+        let enemySpeed = 3;
+
         // Player stats
         let lives = 3;
         let score = 0;
         let isGameOver = false;
-        let isPaused = false; // New variable to track the pause state
+        let isPaused = false;
 
         // Keyboard input tracking
         let leftPressed = false;
         let rightPressed = false;
         let spacePressed = false;
 
-        // Load player spaceship and asteroid images
+        // Load images
         const shipImage = new Image();
         const asteroidImage = new Image();
-        shipImage.src = "https://raw.githubusercontent.com/Sethfd/Gamedev2024-Seth-/main/PNG,S/pixil-frame-0%20(64).png";
-        asteroidImage.src = "https://raw.githubusercontent.com/Sethfd/Gamedev2024-Seth-/main/PNG,S/pixil-frame-0%20(65).png";
+        const enemyImage = new Image();
 
-        // Event listeners for key presses
+        shipImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(64).png?raw=true";
+        asteroidImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(65).png?raw=true";
+        enemyImage.src = "https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(66).png?raw=true";
+
+        // Keyboard event listeners
         document.addEventListener("keydown", (e) => {
-            if (e.key === "a" || e.key === "A") {
-                leftPressed = true;
-            } else if (e.key === "d" || e.key === "D") {
-                rightPressed = true;
-            } else if (e.key === " ") {
-                spacePressed = true;
-            }
+            if (e.key === "a" || e.key === "A") leftPressed = true;
+            if (e.key === "d" || e.key === "D") rightPressed = true;
+            if (e.key === " ") spacePressed = true;
+            if (e.key === "p" || e.key === "P") togglePause(); // Pause on 'P' key
         });
 
         document.addEventListener("keyup", (e) => {
-            if (e.key === "a" || e.key === "A") {
-                leftPressed = false;
-            } else if (e.key === "d" || e.key === "D") {
-                rightPressed = false;
-            } else if (e.key === " ") {
-                spacePressed = false;
-            }
+            if (e.key === "a" || e.key === "A") leftPressed = false;
+            if (e.key === "d" || e.key === "D") rightPressed = false;
+            if (e.key === " ") spacePressed = false;
         });
 
         // Bullet class
@@ -143,62 +121,93 @@
                 ctx.fillStyle = "red";
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
+
+            checkCollisionWithAsteroid(asteroid) {
+                return this.x < asteroid.x + asteroid.width &&
+                    this.x + this.width > asteroid.x &&
+                    this.y < asteroid.y + asteroid.height &&
+                    this.y + this.height > asteroid.y;
+            }
+
+            checkCollisionWithEnemy(enemy) {
+                return this.x < enemy.x + enemy.width &&
+                    this.x + this.width > enemy.x &&
+                    this.y < enemy.y + enemy.height &&
+                    this.y + this.height > enemy.y;
+            }
         }
 
         // Asteroid class
         class Asteroid {
             constructor() {
                 this.x = Math.random() * (canvas.width - asteroidWidth);
-                this.y = -asteroidHeight;  // Start above the canvas
+                this.y = -asteroidHeight;
                 this.width = asteroidWidth;
                 this.height = asteroidHeight;
-                this.angle = 0;  // Initial rotation angle
-                this.rotationSpeed = Math.random() * 0.05 + 0.02;  // Random spin speed
-
-                // Ensure asteroids don't overlap
-                for (let i = 0; i < asteroids.length; i++) {
-                    if (Math.abs(this.x - asteroids[i].x) < asteroidWidth) {
-                        this.x = Math.random() * (canvas.width - asteroidWidth);  // Regenerate position
-                    }
-                }
             }
 
             move() {
-                this.y += asteroidSpeed;  // Move downward
-                this.angle += this.rotationSpeed;  // Rotate the asteroid
+                this.y += asteroidSpeed;
             }
 
             draw() {
-                ctx.save(); // Save the current canvas state
-                ctx.translate(this.x + this.width / 2, this.y + this.height / 2); // Move the origin to the center of the asteroid
-                ctx.rotate(this.angle); // Rotate around the center
-                ctx.drawImage(asteroidImage, -this.width / 2, -this.height / 2, this.width, this.height); // Draw the asteroid centered at (0,0)
-                ctx.restore(); // Restore the original canvas state
+                ctx.drawImage(asteroidImage, this.x, this.y, this.width, this.height);
+            }
+        }
+
+        // Enemy class
+        class Enemy {
+            constructor() {
+                this.x = canvas.width;
+                this.y = Math.random() * (canvas.height - enemyHeight);
+                this.width = enemyWidth;
+                this.height = enemyHeight;
+                this.speed = enemySpeed;
+                this.bullets = [];
             }
 
-            // Check if the asteroid is hit by a bullet
+            move() {
+                this.x -= this.speed;
+            }
+
+            shoot() {
+                if (Math.random() < 0.02) {
+                    this.bullets.push(new Bullet(this.x - 10, this.y + this.height / 2));
+                }
+
+                // Move enemy bullets
+                for (let bullet of this.bullets) {
+                    bullet.move();
+                }
+            }
+
+            draw() {
+                ctx.drawImage(enemyImage, this.x, this.y, this.width, this.height);
+
+                // Draw enemy bullets
+                for (let bullet of this.bullets) {
+                    bullet.draw();
+                }
+            }
+
             checkCollision(bullet) {
                 return bullet.x < this.x + this.width &&
                     bullet.x + bullet.width > this.x &&
                     bullet.y < this.y + this.height &&
                     bullet.y + bullet.height > this.y;
             }
-
-            // Check if the player collides with the asteroid
-            checkPlayerCollision(playerX, playerY, playerWidth, playerHeight) {
-                return playerX < this.x + this.width &&
-                    playerX + playerWidth > this.x &&
-                    playerY < this.y + this.height &&
-                    playerY + playerHeight > this.y;
-            }
         }
 
         // Game loop
         function gameLoop() {
-            if (isPaused) return; // Pause the game if it's paused
+            if (isPaused) return; // Skip the game loop if paused
 
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Move and draw background
+            ctx.fillStyle = "#1a1a1a"; // Dark space background color
+            ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw the background
 
             // Check if game is over
             if (isGameOver) {
@@ -221,35 +230,41 @@
             }
 
             // Move and draw bullets
-            for (let i = bullets.length - 1; i >= 0; i--) { // Reverse loop for bullets
+            for (let i = 0; i < bullets.length; i++) {
                 bullets[i].move();
                 bullets[i].draw();
 
                 // Remove bullet if it goes off screen
                 if (bullets[i].y < 0) {
                     bullets.splice(i, 1);
+                    i--; // Adjust loop index after removal
                 }
             }
 
             // Move and draw asteroids
-            for (let i = asteroids.length - 1; i >= 0; i--) { // Reverse loop for asteroids
+            for (let i = 0; i < asteroids.length; i++) {
                 asteroids[i].move();
                 asteroids[i].draw();
 
                 // Check for collision with bullets
-                for (let j = bullets.length - 1; j >= 0; j--) { // Reverse loop for bullets
-                    if (asteroids[i].checkCollision(bullets[j])) {
+                for (let j = 0; j < bullets.length; j++) {
+                    if (bullets[j].checkCollisionWithAsteroid(asteroids[i])) {
                         asteroids.splice(i, 1); // Remove asteroid
                         bullets.splice(j, 1); // Remove bullet
                         score += 10;  // Increase score
-                        break; // Stop checking further bullets once one hits
+                        i--;  // Adjust loop index after removal
+                        j--;  // Adjust loop index after removal
+                        break; // Stop checking for other bullets once one hits
                     }
                 }
 
                 // Check for collision with player (lose a life if collision occurs)
-                if (asteroids[i].checkPlayerCollision(shipX, shipY, shipWidth, shipHeight)) {
+                if (bullets[i].checkCollisionWithPlayer(shipX, shipY)) {
                     lives -= 1;  // Reduce life
                     asteroids.splice(i, 1);  // Remove asteroid
+                    i--;  // Adjust loop index after removal
+
+                    // If lives are 0, game over
                     if (lives <= 0) {
                         isGameOver = true;
                     }
@@ -258,14 +273,28 @@
                 // Remove asteroid if it goes off screen
                 if (asteroids[i].y > canvas.height) {
                     asteroids.splice(i, 1);
+                    i--;  // Adjust loop index after removal
                 }
             }
 
-            // Draw the spaceship with the image
+            // Move and draw enemy ships
+            for (let i = 0; i < enemies.length; i++) {
+                enemies[i].move();
+                enemies[i].shoot();
+                enemies[i].draw();
+
+                // Check for collision with player
+                if (enemies[i].checkCollision(bullet)) {
+                    enemies.splice(i, 1);  // Remove enemy if hit
+                    score += 20;  // Increase score
+                }
+            }
+
+            // Draw the spaceship
             ctx.drawImage(shipImage, shipX, shipY, shipWidth, shipHeight);
 
             // Display score and lives
-            ctx.font = "20px 'Press Start 2P', cursive";
+            ctx.font = "20px Arial";
             ctx.fillStyle = "white";
             ctx.fillText("Lives: " + lives, 10, 30);
             ctx.fillText("Score: " + score, canvas.width - 100, 30);
@@ -277,10 +306,31 @@
         // Spawn asteroids at random intervals
         function spawnAsteroids() {
             setInterval(() => {
-                if (!isGameOver && !isPaused) {  // Only spawn asteroids if the game is not over or paused
+                if (!isGameOver) {
                     asteroids.push(new Asteroid());
                 }
             }, 2000);  // Spawn an asteroid every 2 seconds
+        }
+
+        // Spawn enemy ships at random intervals
+        function spawnEnemies() {
+            setInterval(() => {
+                if (!isGameOver) {
+                    enemies.push(new Enemy());
+                }
+            }, 4000);  // Spawn an enemy every 4 seconds
+        }
+
+        // Toggle pause state
+        function togglePause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("Paused", canvas.width / 2 - 60, canvas.height / 2 - 20);
+            }
         }
 
         // Display game over screen
@@ -288,27 +338,21 @@
             ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
-            ctx.font = "30px 'Press Start 2P', cursive";
+            ctx.font = "30px Arial";
             ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2 - 20);
-            ctx.font = "20px 'Press Start 2P', cursive";
+            ctx.font = "20px Arial";
             ctx.fillText("Score: " + score, canvas.width / 2 - 40, canvas.height / 2 + 20);
             ctx.fillText("Press F5 to restart", canvas.width / 2 - 80, canvas.height / 2 + 60);
         }
 
-        // Toggle pause state
-        function togglePause() {
-            isPaused = !isPaused;
-            document.getElementById("pauseButton").classList.toggle("paused", isPaused);
-        }
-
-        // Pause button click event
-        document.getElementById("pauseButton").addEventListener("click", togglePause);
-
         // Start the game once the images are loaded
         shipImage.onload = function() {
             asteroidImage.onload = function() {
-                gameLoop();  // Start the game when both images are loaded
-                spawnAsteroids(); // Start spawning asteroids
+                enemyImage.onload = function() {
+                    gameLoop(); // Start the game when all images are loaded
+                    spawnAsteroids(); // Start spawning asteroids
+                    spawnEnemies(); // Start spawning enemies
+                };
             };
         };
     </script>
