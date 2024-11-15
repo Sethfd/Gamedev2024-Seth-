@@ -195,31 +195,28 @@
             }
 
             // Move and draw bullets
-            for (let i = 0; i < bullets.length; i++) {
+            for (let i = bullets.length - 1; i >= 0; i--) { // Reverse loop for bullets
                 bullets[i].move();
                 bullets[i].draw();
 
                 // Remove bullet if it goes off screen
                 if (bullets[i].y < 0) {
                     bullets.splice(i, 1);
-                    i--;
                 }
             }
 
             // Move and draw asteroids
-            for (let i = 0; i < asteroids.length; i++) {
+            for (let i = asteroids.length - 1; i >= 0; i--) { // Reverse loop for asteroids
                 asteroids[i].move();
                 asteroids[i].draw();
 
                 // Check for collision with bullets
-                for (let j = 0; j < bullets.length; j++) {
+                for (let j = bullets.length - 1; j >= 0; j--) { // Reverse loop for bullets
                     if (asteroids[i].checkCollision(bullets[j])) {
                         asteroids.splice(i, 1); // Remove asteroid
                         bullets.splice(j, 1); // Remove bullet
                         score += 10;  // Increase score
-                        i--;  // Adjust loop index after removal
-                        j--;  // Adjust loop index after removal
-                        break; // Stop checking for other bullets once one hits
+                        break; // Stop checking further bullets once one hits
                     }
                 }
 
@@ -238,7 +235,6 @@
                 // Remove asteroid if it goes off screen
                 if (asteroids[i].y > canvas.height) {
                     asteroids.splice(i, 1);
-                    i--;
                 }
             }
 
