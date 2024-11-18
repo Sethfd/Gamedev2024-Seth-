@@ -19,14 +19,14 @@
 
         #game-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             position: relative;
         }
 
         canvas {
             border: 2px solid black;
-            display: none;
+            display: block;
         }
 
         #ui {
@@ -46,12 +46,23 @@
             font-family: 'Press Start 2P', sans-serif;
         }
 
-        button {
-            padding: 10px 20px;
-            font-size: 24px;
+        #tower-selection {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #tower-selection button {
+            padding: 10px;
+            font-size: 20px;
+            margin-bottom: 10px;
             cursor: pointer;
-            margin-top: 20px;
             font-family: 'Press Start 2P', sans-serif;
+            background-color: #333;
+            color: white;
+            border: none;
         }
 
         #game-over-screen {
@@ -84,6 +95,13 @@
 </head>
 <body>
     <div id="game-container">
+        <!-- Tower selection buttons on the left -->
+        <div id="tower-selection">
+            <button id="normal-tower-btn">Normal Tower</button>
+            <button id="bomb-tower-btn">Bomb Tower</button>
+            <button id="gold-mine-btn">Gold Mine</button>
+        </div>
+
         <div id="title-screen">
             <h1>Press Start</h1>
             <button id="start-button">Start Game</button>
@@ -115,13 +133,8 @@
         let money = 100;
         let enemies = [];
         let towers = [];
-        let projectiles = [];
         let wave = 0;
-        let selectedTower = null;
-        let goldMine = null;
-        let goldMineLevel = 0;
-        let lastGoldMineUpdate = 0;
-        let lastDamageTime = 0;
+        let selectedTowerType = null;
 
         // Path for enemies to follow
         const path = [
@@ -144,6 +157,9 @@
         const gameOverScreen = document.getElementById("game-over-screen");
         const newGameButton = document.getElementById("new-game-button");
         const backToMenuButton = document.getElementById("back-to-menu-button");
+        const normalTowerBtn = document.getElementById("normal-tower-btn");
+        const bombTowerBtn = document.getElementById("bomb-tower-btn");
+        const goldMineBtn = document.getElementById("gold-mine-btn");
 
         // Function to initialize the game
         function initGame() {
@@ -158,7 +174,6 @@
             money = 100;
             enemies = [];
             towers = [];
-            projectiles = [];
 
             // Spawn initial enemies and start the game loop
             spawnEnemies();
@@ -190,16 +205,10 @@
                 enemy.draw();
             });
 
-            // Update and draw projectiles
-            projectiles.forEach((projectile) => {
-                projectile.update();
-                projectile.draw();
-            });
-
             // Update and draw towers
             towers.forEach((tower) => {
                 tower.draw();
-                tower.attack(); // Call attack for any type of tower
+                tower.attack(enemies); // Check for enemies within range
 
                 // Draw tower's range
                 ctx.beginPath();
@@ -208,12 +217,6 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
             });
-
-            // Update and draw Gold Mine
-            if (goldMine) {
-                goldMine.update(Date.now());
-                goldMine.draw();
-            }
 
             // Update health and money on UI
             document.getElementById("health").innerText = "Health: " + health;
@@ -282,7 +285,6 @@
             this.health = 1; // Default health
             this.damage = 1; // 1 damage per enemy
             this.pathIndex = 0;
-            this.lastDamageTime = Date.now();
 
             // Update enemy movement along the path
             this.update = function () {
@@ -317,17 +319,72 @@
         }
 
         // Tower class (base class for all towers)
-        function Tower(x, y, range) {
+        function Tower(x, y, range, damage) {
             this.x = x;
             this.y = y;
             this.range = range;  // Range of the tower
+            this.damage = damage;  // Damage dealt by the tower
+
+            // Attack method to check for enemies within range
+            this.attack = function(enemies) {
+                enemies.forEach((enemy) => {
+                    const dx = enemy.x - this.x;
+                    const dy = enemy.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= this.range) {
+                        // Deal damage to enemy if it's within range
+                        enemy.health -= this.damage;
+                        if (enemy.health <= 0) {
+                            enemies = enemies.filter((e) => e !== enemy);  // Remove dead enemy
+                        }
+                    }
+                });
+            };
+
+            // Draw the tower
+            this.draw = function() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "blue";
+                ctx.fill();
+            };
         }
 
-        // Function to add towers to the game
-        function addTower(x, y, range) {
-            const tower = new Tower(x, y, range);
-            towers.push(tower);
-        }
+        // Add event listeners for tower buttons
+        normalTowerBtn.addEventListener("click", () => { selectedTowerType = "normal"; });
+        bombTowerBtn.addEventListener("click", () => { selectedTowerType = "bomb"; });
+        goldMineBtn.addEventListener("click", () => { selectedTowerType = "goldMine"; });
+
+        // Add event listener for canvas click (to place towers)
+        canvas.addEventListener("click", (e) => {
+            if (!selectedTowerType) return;
+
+            const mouseX = e.offsetX;
+            const mouseY = e.offsetY;
+
+            if (selectedTowerType === "normal" && money >= 50) {
+                // Create a Normal Tower
+                const tower = new Tower(mouseX, mouseY, 100, 1);  // Example range = 100, damage = 1
+                towers.push(tower);
+                money -= 50;  // Cost of the normal tower
+            }
+
+            if (selectedTowerType === "bomb" && money >= 100) {
+                // Create a Bomb Tower
+                const tower = new Tower(mouseX, mouseY, 100, 2);  // Example range = 100, damage = 2
+                towers.push(tower);
+                money -= 100;  // Cost of the bomb tower
+            }
+
+            if (selectedTowerType === "goldMine" && money >= 150) {
+                // Create a Gold Mine Tower
+                const tower = new Tower(mouseX, mouseY, 0, 0);  // Just a placeholder, no range or damage
+                towers.push(tower);
+                money -= 150;  // Cost of the gold mine tower
+            }
+
+            selectedTowerType = null;  // Reset tower selection
+        });
 
         // Event listener for Start button
         startButton.addEventListener("click", () => {
@@ -344,7 +401,6 @@
         function startGame() {
             initGame();
         }
-
     </script>
 </body>
 </html>
