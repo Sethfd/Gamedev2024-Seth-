@@ -49,8 +49,10 @@
         <div id="ui">
             <button id="startButton">Start Game</button>
             <button id="towerTypeButton">Switch to Bomb Tower</button>
+            <button id="buyGoldMineButton">Buy Gold Mine</button>
             <p>Health: <span id="health">10</span></p>
             <p>Money: <span id="money">100</span></p>
+            <p>Gold Mine Level: <span id="goldMineLevel">0</span></p>
         </div>
     </div>
 
@@ -67,6 +69,9 @@
         let towers = [];
         let wave = 0;
         let isBombTowerSelected = false;  // Track tower type
+        let goldMine = null;  // Store Gold Mine instance
+        let goldMineLevel = 0; // Track the current level of Gold Mine
+        let lastGoldMineUpdate = 0; // Track last gold mine update time
 
         // Path for enemies to follow
         const path = [
@@ -120,6 +125,7 @@
                     enemy.health -= this.damage;
                     if (enemy.health <= 0) {
                         enemies = enemies.filter((e) => e !== enemy);
+                        money += 10; // Earn 10 gold for killing an enemy
                     }
                 }
             };
@@ -193,9 +199,51 @@
                         enemy.health -= this.damage;
                         if (enemy.health <= 0) {
                             enemies = enemies.filter((e) => e !== enemy);
+                            money += 10; // Earn 10 gold for killing an enemy
                         }
                     }
                 });
+            };
+        }
+
+        // Gold Mine object
+        function GoldMine(x, y) {
+            this.x = x;
+            this.y = y;
+            this.level = 1;
+            this.cost = 100;
+
+            // Earn gold every few seconds based on the level
+            this.update = function (elapsedTime) {
+                const timeSinceLastUpdate = elapsedTime - lastGoldMineUpdate;
+
+                if (timeSinceLastUpdate >= 1000) { // Update every second
+                    lastGoldMineUpdate = elapsedTime;
+                    if (this.level === 1) {
+                        money += 10;
+                    } else if (this.level === 2) {
+                        money += 20;
+                    } else if (this.level === 3) {
+                        money += 30;
+                    }
+                }
+            };
+
+            // Upgrade the Gold Mine
+            this.upgrade = function () {
+                if (money >= 200 && this.level < 3) {
+                    money -= 200;
+                    this.level++;
+                    document.getElementById("goldMineLevel").innerText = this.level;
+                }
+            };
+
+            // Draw the Gold Mine
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "yellow"; // Color for Gold Mine
+                ctx.fill();
             };
         }
 
@@ -209,6 +257,7 @@
             towers = [];
             document.getElementById("health").innerText = health;
             document.getElementById("money").innerText = money;
+            document.getElementById("goldMineLevel").innerText = goldMineLevel;
             spawnEnemies();
             gameLoop();
         }
@@ -241,6 +290,12 @@
                 tower.attack(); // Call attack for any type of tower
             });
 
+            // Update and draw Gold Mine
+            if (goldMine) {
+                goldMine.update(Date.now());
+                goldMine.draw();
+            }
+
             // Update health and money on UI
             document.getElementById("health").innerText = health;
             document.getElementById("money").innerText = money;
@@ -266,6 +321,10 @@
                     const tower = new Tower(e.offsetX, e.offsetY);
                     towers.push(tower);
                     money -= tower.cost;
+                } else if (money >= 100 && !goldMine) {
+                    // Buy Gold Mine if not already owned
+                    goldMine = new GoldMine(e.offsetX, e.offsetY);
+                    money -= goldMine.cost;
                 }
             }
         });
@@ -274,6 +333,13 @@
         document.getElementById("towerTypeButton").addEventListener("click", () => {
             isBombTowerSelected = !isBombTowerSelected;
             document.getElementById("towerTypeButton").innerText = isBombTowerSelected ? "Switch to Normal Tower" : "Switch to Bomb Tower";
+        });
+
+        // Buy Gold Mine (upgrading to level 2 or 3)
+        document.getElementById("buyGoldMineButton").addEventListener("click", () => {
+            if (goldMine) {
+                goldMine.upgrade();
+            }
         });
     </script>
 </body>
