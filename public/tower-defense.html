@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Tower Defense</title>
+    <style>
+        /* Basic Styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            border: 2px solid black;
+        }
+
+        #ui {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="ui">
+            <button id="startButton">Start Game</button>
+            <button id="towerTypeButton">Switch to Bomb Tower</button>
+            <p>Health: <span id="health">10</span></p>
+            <p>Money: <span id="money">100</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Set up the canvas and context
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Basic game variables
+        let gameRunning = false;
+        let health = 10;
+        let money = 100;
+        let enemies = [];
+        let towers = [];
+        let wave = 0;
+        let isBombTowerSelected = false;  // Track tower type
+
+        // Path for enemies to follow
+        const path = [
+            { x: 0, y: 300 },
+            { x: 200, y: 300 },
+            { x: 200, y: 500 },
+            { x: 600, y: 500 },
+            { x: 600, y: 300 },
+            { x: 800, y: 300 },
+        ];
+
+        // Start game function
+        document.getElementById("startButton").addEventListener("click", startGame);
+
+        // Bomb Tower object (AoE Tower)
+        function BombTower(x, y) {
+            this.x = x;
+            this.y = y;
+            this.range = 100;
+            this.damage = 1;
+            this.cost = 75;
+            this.blastRadius = 50; // Blast radius for hitting multiple enemies
+
+            // Draw Bomb Tower (different color for distinction)
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "orange"; // Bomb Tower color
+                ctx.fill();
+            };
+
+            // Attack logic: hits up to 3 enemies in the blast radius
+            this.attack = function () {
+                const targetsInRange = enemies.filter((enemy) => {
+                    const dx = enemy.x - this.x;
+                    const dy = enemy.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    return dist < this.range + this.blastRadius; // Include blast radius
+                });
+
+                // Sort targets by distance to BombTower (optional)
+                targetsInRange.sort((a, b) => {
+                    const distA = Math.sqrt((a.x - this.x) ** 2 + (a.y - this.y) ** 2);
+                    const distB = Math.sqrt((b.x - this.x) ** 2 + (b.y - this.y) ** 2);
+                    return distA - distB;
+                });
+
+                // Damage the first 3 enemies in range
+                for (let i = 0; i < Math.min(3, targetsInRange.length); i++) {
+                    const enemy = targetsInRange[i];
+                    enemy.health -= this.damage;
+                    if (enemy.health <= 0) {
+                        enemies = enemies.filter((e) => e !== enemy);
+                    }
+                }
+            };
+        }
+
+        // Enemy object
+        function Enemy(x, y) {
+            this.x = x;
+            this.y = y;
+            this.speed = 1;
+            this.health = 3;
+            this.pathIndex = 0;
+
+            // Move the enemy along the path
+            this.update = function () {
+                const target = path[this.pathIndex];
+                const dx = target.x - this.x;
+                const dy = target.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < this.speed) {
+                    this.x = target.x;
+                    this.y = target.y;
+                    this.pathIndex++;
+                } else {
+                    this.x += (dx / dist) * this.speed;
+                    this.y += (dy / dist) * this.speed;
+                }
+
+                // If enemy reaches the end of the path, decrease health
+                if (this.pathIndex >= path.length) {
+                    health--;
+                    enemies = enemies.filter((e) => e !== this);
+                }
+            };
+
+            // Draw the enemy
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = "red";
+                ctx.fill();
+            };
+        }
+
+        // Normal Tower object
+        function Tower(x, y) {
+            this.x = x;
+            this.y = y;
+            this.range = 100;
+            this.damage = 1;
+            this.cost = 50;
+
+            // Draw the tower
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "blue";
+                ctx.fill();
+            };
+
+            // Attack logic for normal tower (single target)
+            this.attack = function () {
+                enemies.forEach((enemy) => {
+                    const dx = enemy.x - this.x;
+                    const dy = enemy.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.range) {
+                        // Attack the enemy (reduce health or destroy enemy)
+                        enemy.health -= this.damage;
+                        if (enemy.health <= 0) {
+                            enemies = enemies.filter((e) => e !== enemy);
+                        }
+                    }
+                });
+            };
+        }
+
+        // Start game function
+        function startGame() {
+            gameRunning = true;
+            wave = 1;
+            health = 10;
+            money = 100;
+            enemies = [];
+            towers = [];
+            document.getElementById("health").innerText = health;
+            document.getElementById("money").innerText = money;
+            spawnEnemies();
+            gameLoop();
+        }
+
+        // Spawn enemies for each wave
+        function spawnEnemies() {
+            let count = wave * 5; // Increase enemies per wave
+            for (let i = 0; i < count; i++) {
+                const enemy = new Enemy(path[0].x, path[0].y);
+                enemies.push(enemy);
+            }
+        }
+
+        // Main game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Clear canvas and redraw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw enemies
+            enemies.forEach((enemy) => {
+                enemy.update();
+                enemy.draw();
+            });
+
+            // Update and draw towers (including Bomb Towers)
+            towers.forEach((tower) => {
+                tower.draw();
+                tower.attack(); // Call attack for any type of tower
+            });
+
+            // Update health and money on UI
+            document.getElementById("health").innerText = health;
+            document.getElementById("money").innerText = money;
+
+            // Check for game over
+            if (health <= 0) {
+                alert("Game Over!");
+                gameRunning = false;
+            }
+
+            // Request next frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Add tower on click
+        canvas.addEventListener("click", (e) => {
+            if (gameRunning) {
+                if (isBombTowerSelected && money >= 75) {
+                    const bombTower = new BombTower(e.offsetX, e.offsetY);
+                    towers.push(bombTower);
+                    money -= bombTower.cost;
+                } else if (!isBombTowerSelected && money >= 50) {
+                    const tower = new Tower(e.offsetX, e.offsetY);
+                    towers.push(tower);
+                    money -= tower.cost;
+                }
+            }
+        });
+
+        // Toggle between Normal and Bomb Tower
+        document.getElementById("towerTypeButton").addEventListener("click", () => {
+            isBombTowerSelected = !isBombTowerSelected;
+            document.getElementById("towerTypeButton").innerText = isBombTowerSelected ? "Switch to Normal Tower" : "Switch to Bomb Tower";
+        });
+    </script>
+</body>
+</html>
