@@ -87,9 +87,33 @@
             font-family: 'Press Start 2P', sans-serif;
         }
 
-        /* Button hover effects */
-        button:hover {
-            background-color: #ddd;
+        /* Game Over screen styling */
+        #game-over-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        #game-over-screen h2 {
+            font-size: 36px;
+            margin: 20px 0;
+            font-family: 'Press Start 2P', sans-serif;
+        }
+
+        /* Game Over buttons */
+        #game-over-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #game-over-buttons button {
+            font-size: 24px;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', sans-serif;
         }
     </style>
 </head>
@@ -103,6 +127,15 @@
                 <button id="2p-mode">2 Players</button>
             </div>
         </div>
+
+        <div id="game-over-screen">
+            <h2>GAME OVER</h2>
+            <div id="game-over-buttons">
+                <button id="new-game-button">New Game</button>
+                <button id="back-to-menu-button">Back to Menu</button>
+            </div>
+        </div>
+
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="ui">
             <p id="health">Health: 10</p>
@@ -120,7 +153,7 @@
         let towers = [];
         let projectiles = [];
         let wave = 0;
-        let isBombTowerSelected = false;  // Track tower type
+        let selectedTower = null;  // Tracks the currently selected tower
         let goldMine = null;  // Store Gold Mine instance
         let goldMineLevel = 0; // Track the current level of Gold Mine
         let lastGoldMineUpdate = 0; // Track last gold mine update time
@@ -145,11 +178,15 @@
         const onePlayerButton = document.getElementById("1p-mode");
         const twoPlayerButton = document.getElementById("2p-mode");
         const titleScreen = document.getElementById("title-screen");
+        const gameOverScreen = document.getElementById("game-over-screen");
+        const newGameButton = document.getElementById("new-game-button");
+        const backToMenuButton = document.getElementById("back-to-menu-button");
 
         // Function to initialize the game
         function initGame() {
             // Hide title screen
             titleScreen.style.display = "none";
+            gameOverScreen.style.display = "none";  // Hide game over screen
             canvas.style.display = "block";  // Show game canvas
 
             // Start game setup
@@ -223,8 +260,7 @@
 
             // Check for game over
             if (health <= 0) {
-                alert("Game Over!");
-                gameRunning = false;
+                gameOver();
             }
 
             // If all enemies are defeated, show continue button
@@ -237,6 +273,24 @@
             // Request next frame
             requestAnimationFrame(gameLoop);
         }
+
+        // Function to handle Game Over
+        function gameOver() {
+            gameRunning = false;
+            canvas.style.display = "none";  // Hide game canvas
+            gameOverScreen.style.display = "block";  // Show game over screen
+        }
+
+        // Function to handle New Game button
+        newGameButton.addEventListener("click", () => {
+            initGame();  // Start a new game
+        });
+
+        // Function to handle Back to Menu button
+        backToMenuButton.addEventListener("click", () => {
+            gameOverScreen.style.display = "none";  // Hide game over screen
+            titleScreen.style.display = "block";  // Show title screen
+        });
 
         // Function to handle mode selection (1P or 2P)
         function selectMode(mode) {
@@ -260,24 +314,21 @@
         // Function to add towers on click
         canvas.addEventListener("click", (e) => {
             if (gameRunning) {
-                if (isBombTowerSelected && money >= 75) {
-                    const bombTower = new BombTower(e.offsetX, e.offsetY);
-                    towers.push(bombTower);
-                    money -= bombTower.cost;
-                } else if (!isBombTowerSelected && money >= 50) {
+                if (selectedTower === "normal" && money >= 50) {
                     const tower = new Tower(e.offsetX, e.offsetY);
                     towers.push(tower);
                     money -= tower.cost;
-                } else if (money >= 100 && !goldMine) {
+                } else if (selectedTower === "bomb" && money >= 75) {
+                    const bombTower = new BombTower(e.offsetX, e.offsetY);
+                    towers.push(bombTower);
+                    money -= bombTower.cost;
+                } else if (selectedTower === "goldMine" && money >= 100 && !goldMine) {
                     // Buy Gold Mine if not already owned
                     goldMine = new GoldMine(e.offsetX, e.offsetY);
                     money -= goldMine.cost;
                 }
             }
         });
-
-        // Function to handle "Continue" button click
-        continueButton.addEventListener("click", startNextWave);
 
         // Event listener for the Start button
         startButton.addEventListener("click", () => {
@@ -290,11 +341,81 @@
         // Event listener for the 2P mode button
         twoPlayerButton.addEventListener("click", () => selectMode("2p"));
 
+        // Event listener for keyboard input (1, 2, 3)
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "1") {
+                selectedTower = "normal";
+                console.log("Normal Tower selected");
+            } else if (e.key === "2") {
+                selectedTower = "bomb";
+                console.log("Bomb Tower selected");
+            } else if (e.key === "3") {
+                selectedTower = "goldMine";
+                console.log("Gold Mine selected");
+            }
+        });
+
         // ---- Add your Tower, Projectile, Enemy Classes below as usual ----
 
-        // You can reuse the existing classes for Tower, Projectile, Enemy, etc.
-        // They don't need to change much for this simple 2P mode.
-        
+        // Normal Tower class
+        function Tower(x, y) {
+            this.x = x;
+            this.y = y;
+            this.cost = 50;
+
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.rect(this.x - 15, this.y - 15, 30, 30);
+                ctx.fillStyle = "blue";
+                ctx.fill();
+            };
+
+            this.attack = function () {
+                // Implement the attack logic (e.g., firing projectiles)
+            };
+        }
+
+        // Bomb Tower class
+        function BombTower(x, y) {
+            this.x = x;
+            this.y = y;
+            this.cost = 75;
+
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.rect(this.x - 20, this.y - 20, 40, 40);
+                ctx.fillStyle = "red";
+                ctx.fill();
+            };
+
+            this.attack = function () {
+                // Implement the bomb attack logic
+            };
+        }
+
+        // Gold Mine class
+        function GoldMine(x, y) {
+            this.x = x;
+            this.y = y;
+            this.cost = 100;
+            this.goldRate = 10; // Gold per second
+
+            this.update = function (timestamp) {
+                // Generate gold based on time
+                if (timestamp - lastGoldMineUpdate >= 1000) {
+                    money += this.goldRate;
+                    lastGoldMineUpdate = timestamp;
+                }
+            };
+
+            this.draw = function () {
+                ctx.beginPath();
+                ctx.rect(this.x - 25, this.y - 25, 50, 50);
+                ctx.fillStyle = "gold";
+                ctx.fill();
+            };
+        }
+
         // Example class for enemy:
         function Enemy(x, y) {
             this.x = x;
