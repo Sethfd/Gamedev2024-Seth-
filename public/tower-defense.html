@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Basic Tower Defense</title>
-    <!-- Include Google Font: Press Start 2P (Pixel Font) -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <style>
-        /* Basic Styling */
         body {
             font-family: 'Press Start 2P', sans-serif;
             display: flex;
@@ -28,7 +26,7 @@
 
         canvas {
             border: 2px solid black;
-            display: none; /* Hide the game canvas initially */
+            display: none;
         }
 
         #ui {
@@ -56,45 +54,13 @@
             font-family: 'Press Start 2P', sans-serif;
         }
 
-        /* Title screen styling */
-        #title-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        #title-screen h1 {
-            font-size: 48px;
-            font-family: 'Press Start 2P', sans-serif;
-        }
-
-        #start-button, #mode-selection {
-            font-size: 24px;
-            margin-top: 20px;
-            font-family: 'Press Start 2P', sans-serif;
-        }
-
-        #continueButton {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none; /* Hidden by default */
-            font-family: 'Press Start 2P', sans-serif;
-        }
-
-        /* Game Over screen styling */
         #game-over-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         #game-over-screen h2 {
@@ -103,7 +69,6 @@
             font-family: 'Press Start 2P', sans-serif;
         }
 
-        /* Game Over buttons */
         #game-over-buttons {
             display: flex;
             justify-content: center;
@@ -141,7 +106,6 @@
             <p id="health">Health: 10</p>
             <p id="money">Money: 100</p>
         </div>
-        <button id="continueButton">Continue</button>
     </div>
 
     <script>
@@ -153,12 +117,11 @@
         let towers = [];
         let projectiles = [];
         let wave = 0;
-        let selectedTower = null;  // Tracks the currently selected tower
-        let goldMine = null;  // Store Gold Mine instance
-        let goldMineLevel = 0; // Track the current level of Gold Mine
-        let lastGoldMineUpdate = 0; // Track last gold mine update time
-        let continueButton = document.getElementById("continueButton");
-        let playerMode = "1p"; // Default to single player
+        let selectedTower = null;
+        let goldMine = null;
+        let goldMineLevel = 0;
+        let lastGoldMineUpdate = 0;
+        let lastDamageTime = 0;
 
         // Path for enemies to follow
         const path = [
@@ -184,7 +147,6 @@
 
         // Function to initialize the game
         function initGame() {
-            // Hide title screen
             titleScreen.style.display = "none";
             gameOverScreen.style.display = "none";  // Hide game over screen
             canvas.style.display = "block";  // Show game canvas
@@ -203,15 +165,7 @@
             gameLoop();
         }
 
-        // Function to start the next wave
-        function startNextWave() {
-            wave++;
-            continueButton.style.display = "none"; // Hide Continue button
-            spawnEnemies(); // Spawn enemies for the next wave
-            gameLoop(); // Start the next wave
-        }
-
-        // Spawn enemies for each wave
+        // Function to spawn enemies for each wave
         function spawnEnemies() {
             let count = wave * 5; // Increase enemies per wave
             for (let i = 0; i < count; i++) {
@@ -242,10 +196,17 @@
                 projectile.draw();
             });
 
-            // Update and draw towers (including Bomb Towers)
+            // Update and draw towers
             towers.forEach((tower) => {
                 tower.draw();
                 tower.attack(); // Call attack for any type of tower
+
+                // Draw tower's range
+                ctx.beginPath();
+                ctx.arc(tower.x, tower.y, tower.range, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
             });
 
             // Update and draw Gold Mine
@@ -263,15 +224,17 @@
                 gameOver();
             }
 
-            // If all enemies are defeated, show continue button
+            // If all enemies are defeated, automatically move to next wave
             if (enemies.length === 0) {
-                continueButton.style.display = "block"; // Show Continue button
+                setTimeout(() => {
+                    wave++;  // Increase wave number
+                    spawnEnemies();  // Spawn next wave of enemies
+                    gameLoop();  // Continue game loop with new wave
+                }, 1000);  // Wait 1 second before starting next wave
             } else {
-                continueButton.style.display = "none"; // Hide Continue button if enemies are still alive
+                // Request next frame
+                requestAnimationFrame(gameLoop);
             }
-
-            // Request next frame
-            requestAnimationFrame(gameLoop);
         }
 
         // Function to handle Game Over
@@ -299,7 +262,7 @@
             initGame();
         }
 
-        // Function to draw the path (used by game loop)
+        // Function to draw the path
         function drawPath() {
             ctx.beginPath();
             ctx.moveTo(path[0].x, path[0].y);
@@ -311,119 +274,17 @@
             ctx.stroke();
         }
 
-        // Function to add towers on click
-        canvas.addEventListener("click", (e) => {
-            if (gameRunning) {
-                if (selectedTower === "normal" && money >= 50) {
-                    const tower = new Tower(e.offsetX, e.offsetY);
-                    towers.push(tower);
-                    money -= tower.cost;
-                } else if (selectedTower === "bomb" && money >= 75) {
-                    const bombTower = new BombTower(e.offsetX, e.offsetY);
-                    towers.push(bombTower);
-                    money -= bombTower.cost;
-                } else if (selectedTower === "goldMine" && money >= 100 && !goldMine) {
-                    // Buy Gold Mine if not already owned
-                    goldMine = new GoldMine(e.offsetX, e.offsetY);
-                    money -= goldMine.cost;
-                }
-            }
-        });
-
-        // Event listener for the Start button
-        startButton.addEventListener("click", () => {
-            modeSelection.style.display = "block"; // Show mode selection after start
-        });
-
-        // Event listener for the 1P mode button
-        onePlayerButton.addEventListener("click", () => selectMode("1p"));
-
-        // Event listener for the 2P mode button
-        twoPlayerButton.addEventListener("click", () => selectMode("2p"));
-
-        // Event listener for keyboard input (1, 2, 3)
-        window.addEventListener("keydown", (e) => {
-            if (e.key === "1") {
-                selectedTower = "normal";
-                console.log("Normal Tower selected");
-            } else if (e.key === "2") {
-                selectedTower = "bomb";
-                console.log("Bomb Tower selected");
-            } else if (e.key === "3") {
-                selectedTower = "goldMine";
-                console.log("Gold Mine selected");
-            }
-        });
-
-        // ---- Add your Tower, Projectile, Enemy Classes below as usual ----
-
-        // Normal Tower class
-        function Tower(x, y) {
-            this.x = x;
-            this.y = y;
-            this.cost = 50;
-
-            this.draw = function () {
-                ctx.beginPath();
-                ctx.rect(this.x - 15, this.y - 15, 30, 30);
-                ctx.fillStyle = "blue";
-                ctx.fill();
-            };
-
-            this.attack = function () {
-                // Implement the attack logic (e.g., firing projectiles)
-            };
-        }
-
-        // Bomb Tower class
-        function BombTower(x, y) {
-            this.x = x;
-            this.y = y;
-            this.cost = 75;
-
-            this.draw = function () {
-                ctx.beginPath();
-                ctx.rect(this.x - 20, this.y - 20, 40, 40);
-                ctx.fillStyle = "red";
-                ctx.fill();
-            };
-
-            this.attack = function () {
-                // Implement the bomb attack logic
-            };
-        }
-
-        // Gold Mine class
-        function GoldMine(x, y) {
-            this.x = x;
-            this.y = y;
-            this.cost = 100;
-            this.goldRate = 10; // Gold per second
-
-            this.update = function (timestamp) {
-                // Generate gold based on time
-                if (timestamp - lastGoldMineUpdate >= 1000) {
-                    money += this.goldRate;
-                    lastGoldMineUpdate = timestamp;
-                }
-            };
-
-            this.draw = function () {
-                ctx.beginPath();
-                ctx.rect(this.x - 25, this.y - 25, 50, 50);
-                ctx.fillStyle = "gold";
-                ctx.fill();
-            };
-        }
-
-        // Example class for enemy:
+        // Enemy class
         function Enemy(x, y) {
             this.x = x;
             this.y = y;
             this.speed = 1;
-            this.health = 3;
+            this.health = 1; // Default health
+            this.damage = 1; // 1 damage per enemy
             this.pathIndex = 0;
+            this.lastDamageTime = Date.now();
 
+            // Update enemy movement along the path
             this.update = function () {
                 const target = path[this.pathIndex];
                 const dx = target.x - this.x;
@@ -439,18 +300,49 @@
                     this.y += (dy / dist) * this.speed;
                 }
 
+                // If enemy reaches the end of the path
                 if (this.pathIndex >= path.length) {
-                    health--;
-                    enemies = enemies.filter((e) => e !== this);
+                    health -= this.damage;  // Apply 1 damage
+                    enemies = enemies.filter((e) => e !== this); // Remove this enemy from the game
                 }
             };
 
+            // Draw enemy
             this.draw = function () {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
                 ctx.fillStyle = "red";
                 ctx.fill();
             };
+        }
+
+        // Tower class (base class for all towers)
+        function Tower(x, y, range) {
+            this.x = x;
+            this.y = y;
+            this.range = range;  // Range of the tower
+        }
+
+        // Function to add towers to the game
+        function addTower(x, y, range) {
+            const tower = new Tower(x, y, range);
+            towers.push(tower);
+        }
+
+        // Event listener for Start button
+        startButton.addEventListener("click", () => {
+            modeSelection.style.display = "block"; // Show mode selection after start
+        });
+
+        // Event listener for 1P mode button
+        onePlayerButton.addEventListener("click", () => selectMode("1p"));
+
+        // Event listener for 2P mode button
+        twoPlayerButton.addEventListener("click", () => selectMode("2p"));
+
+        // Start the game after choosing mode
+        function startGame() {
+            initGame();
         }
 
     </script>
