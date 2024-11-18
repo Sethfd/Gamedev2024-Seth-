@@ -224,13 +224,13 @@
                 gameOver();
             }
 
-            // If all enemies are defeated, automatically move to next wave
+            // If all enemies are defeated, automatically move to next wave after 15 seconds
             if (enemies.length === 0) {
                 setTimeout(() => {
                     wave++;  // Increase wave number
                     spawnEnemies();  // Spawn next wave of enemies
                     gameLoop();  // Continue game loop with new wave
-                }, 1000);  // Wait 1 second before starting next wave
+                }, 15000);  // Wait 15 seconds before starting next wave
             } else {
                 // Request next frame
                 requestAnimationFrame(gameLoop);
