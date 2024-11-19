@@ -95,9 +95,8 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- Tower selection buttons on the left -->
         <div id="tower-selection">
-            <button id="normal-tower-btn">Normal Tower</button>
+            <button id="archer-tower-btn">Archer Tower</button>
             <button id="bomb-tower-btn">Bomb Tower</button>
             <button id="gold-mine-btn">Gold Mine</button>
         </div>
@@ -129,12 +128,15 @@
     <script>
         // Game state variables
         let gameRunning = false;
-        let health = 10;
-        let money = 100;
+        let player1Health = 10;
+        let player1Money = 100;
+        let player2Health = 10;
+        let player2Money = 100;
         let enemies = [];
         let towers = [];
         let wave = 0;
         let selectedTowerType = null;
+        let currentPlayer = 1;  // 1 for Player 1, 2 for Player 2
 
         // Path for enemies to follow
         const path = [
@@ -157,7 +159,7 @@
         const gameOverScreen = document.getElementById("game-over-screen");
         const newGameButton = document.getElementById("new-game-button");
         const backToMenuButton = document.getElementById("back-to-menu-button");
-        const normalTowerBtn = document.getElementById("normal-tower-btn");
+        const archerTowerBtn = document.getElementById("archer-tower-btn");
         const bombTowerBtn = document.getElementById("bomb-tower-btn");
         const goldMineBtn = document.getElementById("gold-mine-btn");
 
@@ -170,8 +172,6 @@
             // Start game setup
             gameRunning = true;
             wave = 1;
-            health = 10;
-            money = 100;
             enemies = [];
             towers = [];
 
@@ -201,14 +201,16 @@
 
             // Update and draw enemies
             enemies.forEach((enemy) => {
-                enemy.update();
+                if (enemy.update()) {
+                    enemies = enemies.filter((e) => e !== enemy); // Remove defeated enemy
+                }
                 enemy.draw();
             });
 
             // Update and draw towers
             towers.forEach((tower) => {
                 tower.draw();
-                tower.attack(enemies); // Check for enemies within range
+                tower.attack(enemies);
 
                 // Draw tower's range
                 ctx.beginPath();
@@ -219,11 +221,11 @@
             });
 
             // Update health and money on UI
-            document.getElementById("health").innerText = "Health: " + health;
-            document.getElementById("money").innerText = "Money: " + money;
+            document.getElementById("health").innerText = "Health: " + (currentPlayer === 1 ? player1Health : player2Health);
+            document.getElementById("money").innerText = "Money: " + (currentPlayer === 1 ? player1Money : player2Money);
 
             // Check for game over
-            if (health <= 0) {
+            if ((currentPlayer === 1 && player1Health <= 0) || (currentPlayer === 2 && player2Health <= 0)) {
                 gameOver();
             }
 
@@ -258,36 +260,147 @@
             titleScreen.style.display = "block";  // Show title screen
         });
 
-        // Function to handle mode selection (1P or 2P)
-        function selectMode(mode) {
-            playerMode = mode;
-            modeSelection.style.display = "none"; // Hide mode selection
-            initGame();
+        // Function to handle mode selection
+        onePlayerButton.addEventListener("click", () => {
+            modeSelection.style.display = "none";
+            initGame();  // Start the game in 1P mode
+        });
+
+        twoPlayerButton.addEventListener("click", () => {
+            modeSelection.style.display = "none";
+            initGame();  // Start the game in 2P mode
+        });
+
+        // Handle Start Game button click
+        startButton.addEventListener("click", () => {
+            titleScreen.style.display = "none";  // Hide title screen
+            modeSelection.style.display = "block";  // Show mode selection screen
+        });
+
+        // Handle tower selection buttons
+        archerTowerBtn.addEventListener("click", () => {
+            selectedTowerType = "archer";  // Archer Tower
+        });
+
+        bombTowerBtn.addEventListener("click", () => {
+            selectedTowerType = "bomb";  // Bomb Tower
+        });
+
+        goldMineBtn.addEventListener("click", () => {
+            selectedTowerType = "goldMine";  // Gold Mine Tower
+        });
+
+        // Handle canvas click for tower placement
+        canvas.addEventListener("click", (event) => {
+            if (selectedTowerType) {
+                const x = event.offsetX;
+                const y = event.offsetY;
+                placeTower(x, y);
+            }
+        });
+
+        // Function to place a tower
+        function placeTower(x, y) {
+            if (selectedTowerType === "archer" && player1Money >= 50) {
+                towers.push(new Tower(x, y, "archer"));
+                player1Money -= 50;
+            } else if (selectedTowerType === "bomb" && player1Money >= 100) {
+                towers.push(new Tower(x, y, "bomb"));
+                player1Money -= 100;
+            } else if (selectedTowerType === "goldMine" && player1Money >= 200) {
+                towers.push(new GoldMine(x, y));
+                player1Money -= 200;
+            }
         }
 
-        // Function to draw the path
+        // Function to draw the path for enemies to follow
         function drawPath() {
             ctx.beginPath();
             ctx.moveTo(path[0].x, path[0].y);
-            for (let i = 1; i < path.length; i++) {
-                ctx.lineTo(path[i].x, path[i].y);
-            }
-            ctx.strokeStyle = "gray";
-            ctx.lineWidth = 3;
+            path.forEach((point) => {
+                ctx.lineTo(point.x, point.y);
+            });
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 5;
             ctx.stroke();
+        }
+
+        // Tower class
+        function Tower(x, y, type) {
+            this.x = x;
+            this.y = y;
+            this.range = 100;  // Default range
+            this.damage = type === "archer" ? 5 : type === "bomb" ? 10 : 0;  // Archer Tower has DPS of 5, Bomb Tower has DPS of 10
+            this.type = type;
+            this.attackSpeed = 1;  // Default attack speed
+            this.attackCooldown = 0;
+
+            // Draw the tower on the canvas
+            this.draw = function() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = this.type === "archer" ? "blue" : this.type === "bomb" ? "red" : "yellow";
+                ctx.fill();
+            };
+
+            // Attack nearby enemies
+            this.attack = function(enemies) {
+                if (this.attackCooldown > 0) {
+                    this.attackCooldown--;
+                    return;
+                }
+
+                enemies.forEach((enemy) => {
+                    const dx = enemy.x - this.x;
+                    const dy = enemy.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < this.range) {
+                        enemy.health -= this.damage;
+                        this.attackCooldown = this.attackSpeed;
+                        if (enemy.health <= 0) {
+                            enemy.dead = true;
+                        }
+                    }
+                });
+            };
+        }
+
+        // Gold Mine Tower class
+        function GoldMine(x, y) {
+            this.x = x;
+            this.y = y;
+
+            // Money generation logic
+            setInterval(() => {
+                if (currentPlayer === 1) player1Money += 10;  // Player 1 earns money
+                else if (currentPlayer === 2) player2Money += 10;  // Player 2 earns money
+            }, 3000);
+
+            // Draw the Gold Mine tower on the canvas
+            this.draw = function() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "gold";
+                ctx.fill();
+            };
         }
 
         // Enemy class
         function Enemy(x, y) {
             this.x = x;
             this.y = y;
-            this.speed = 1;
-            this.health = 1; // Default health
-            this.damage = 1; // 1 damage per enemy
             this.pathIndex = 0;
+            this.speed = 2;
+            this.health = 3;
+            this.dead = false;
 
-            // Update enemy movement along the path
-            this.update = function () {
+            // Update enemy's position along the path
+            this.update = function() {
+                if (this.pathIndex >= path.length) {
+                    if (currentPlayer === 1) player1Health -= 1;
+                    else if (currentPlayer === 2) player2Health -= 1;
+                    return true;  // Indicate that the enemy should be removed
+                }
                 const target = path[this.pathIndex];
                 const dx = target.x - this.x;
                 const dy = target.y - this.y;
@@ -301,106 +414,22 @@
                     this.x += (dx / dist) * this.speed;
                     this.y += (dy / dist) * this.speed;
                 }
-
-                // If enemy reaches the end of the path
-                if (this.pathIndex >= path.length) {
-                    health -= this.damage;  // Apply 1 damage
-                    enemies = enemies.filter((e) => e !== this); // Remove this enemy from the game
-                }
+                return false;  // Keep the enemy in the game
             };
 
-            // Draw enemy
-            this.draw = function () {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = "red";
-                ctx.fill();
-            };
-        }
-
-        // Tower class (base class for all towers)
-        function Tower(x, y, range, damage) {
-            this.x = x;
-            this.y = y;
-            this.range = range;  // Range of the tower
-            this.damage = damage;  // Damage dealt by the tower
-
-            // Attack method to check for enemies within range
-            this.attack = function(enemies) {
-                enemies.forEach((enemy) => {
-                    const dx = enemy.x - this.x;
-                    const dy = enemy.y - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance <= this.range) {
-                        // Deal damage to enemy if it's within range
-                        enemy.health -= this.damage;
-                        if (enemy.health <= 0) {
-                            enemies = enemies.filter((e) => e !== enemy);  // Remove dead enemy
-                        }
-                    }
-                });
-            };
-
-            // Draw the tower
+            // Draw the enemy on the canvas
             this.draw = function() {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
-                ctx.fillStyle = "blue";
+                ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = "green";
                 ctx.fill();
             };
         }
 
-        // Add event listeners for tower buttons
-        normalTowerBtn.addEventListener("click", () => { selectedTowerType = "normal"; });
-        bombTowerBtn.addEventListener("click", () => { selectedTowerType = "bomb"; });
-        goldMineBtn.addEventListener("click", () => { selectedTowerType = "goldMine"; });
-
-        // Add event listener for canvas click (to place towers)
-        canvas.addEventListener("click", (e) => {
-            if (!selectedTowerType) return;
-
-            const mouseX = e.offsetX;
-            const mouseY = e.offsetY;
-
-            if (selectedTowerType === "normal" && money >= 50) {
-                // Create a Normal Tower
-                const tower = new Tower(mouseX, mouseY, 100, 1);  // Example range = 100, damage = 1
-                towers.push(tower);
-                money -= 50;  // Cost of the normal tower
-            }
-
-            if (selectedTowerType === "bomb" && money >= 100) {
-                // Create a Bomb Tower
-                const tower = new Tower(mouseX, mouseY, 100, 2);  // Example range = 100, damage = 2
-                towers.push(tower);
-                money -= 100;  // Cost of the bomb tower
-            }
-
-            if (selectedTowerType === "goldMine" && money >= 150) {
-                // Create a Gold Mine Tower
-                const tower = new Tower(mouseX, mouseY, 0, 0);  // Just a placeholder, no range or damage
-                towers.push(tower);
-                money -= 150;  // Cost of the gold mine tower
-            }
-
-            selectedTowerType = null;  // Reset tower selection
-        });
-
-        // Event listener for Start button
+        // Start the game
         startButton.addEventListener("click", () => {
-            modeSelection.style.display = "block"; // Show mode selection after start
-        });
-
-        // Event listener for 1P mode button
-        onePlayerButton.addEventListener("click", () => selectMode("1p"));
-
-        // Event listener for 2P mode button
-        twoPlayerButton.addEventListener("click", () => selectMode("2p"));
-
-        // Start the game after choosing mode
-        function startGame() {
             initGame();
-        }
+        });
     </script>
 </body>
 </html>
