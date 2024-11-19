@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,95 +7,102 @@
     <title>Browser Object Explorer</title>
     <style>
         body {
-            background-color: #f0f9ff;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
+            color: #333;
         }
 
         h1 {
-            color: #333;
-            text-align: center;
+            color: #005f73;
             margin-top: 20px;
+            font-size: 2.5rem;
         }
 
         .container {
             width: 90%;
             max-width: 1000px;
-            padding: 30px;
-            margin: 30px auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
 
         .description {
-            font-size: 18px;
-            margin-bottom: 20px;
+            font-size: 1.2rem;
             color: #555;
+            margin-bottom: 30px;
         }
 
         .button-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .button-group button {
             padding: 15px;
-            font-size: 16px;
+            font-size: 1.1rem;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #0077b6;
             color: white;
             border: none;
             border-radius: 8px;
             transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .button-group button:hover {
-            background-color: #45a049;
+            background-color: #0096c7;
             transform: scale(1.05);
         }
 
         .output {
             margin-top: 20px;
             text-align: left;
-            background-color: #f9f9f9;
+            background-color: #f1f1f1;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             width: 100%;
             max-height: 300px;
             overflow-y: auto;
             border: 1px solid #ddd;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            font-family: 'Courier New', monospace;
         }
 
         .output textarea {
             width: 100%;
             height: 100%;
             border: none;
-            font-size: 14px;
-            background-color: #f9f9f9;
+            background-color: #f1f1f1;
             padding: 10px;
             resize: none;
-            font-family: monospace;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
         }
 
         .back-button {
-            font-size: 18px;
-            padding: 12px 20px;
+            font-size: 1.2rem;
+            padding: 12px 25px;
             background-color: #ff4d4d;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-top: 30px;
         }
 
         .back-button:hover {
@@ -106,18 +112,28 @@
         .image-container {
             position: relative;
             margin-top: 30px;
-            display: flex;
-            justify-content: center;
         }
 
         #myPic1 {
-            width: 80%;
+            width: 100%;
             max-width: 400px;
-            border-radius: 8px;
+            border-radius: 10px;
+        }
+
+        .results-header {
+            font-size: 1.2rem;
+            color: #0077b6;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .image-description {
+            font-size: 1rem;
+            color: #555;
+            margin-top: 20px;
         }
     </style>
 </head>
-
 <body>
 
     <h1>Browser Object Explorer</h1>
@@ -136,16 +152,17 @@
             <button onclick="myObjectData(window.parent)">Parent Window</button>
             <button onclick="myObjectData(document.getElementById('move1').style)">Image Style</button>
             <button onclick="myObjectData(document.getElementById('move1'))">Image Object</button>
-            <!-- Updated Button 15 -->
             <button onclick="showBrowserInfo()">Browser & Page Info</button>
         </div>
 
         <div class="output">
+            <div class="results-header">Results:</div>
             <textarea id="results" readonly></textarea>
         </div>
 
         <div class="image-container">
             <img id="myPic1" src="http://www.autos.ca/wp-content/uploads/2013/03/001-ferrari-laferrari.jpg" alt="Ferrari" />
+            <div class="image-description">Example image: Ferrari LaFerrari</div>
         </div>
 
         <button class="back-button" onclick="window.history.back()">Back</button>
@@ -227,5 +244,4 @@
     </script>
 
 </body>
-
 </html>
