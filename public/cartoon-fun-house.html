@@ -32,20 +32,9 @@
             rotationSpeed: 0.05,
             width: 64,
             height: 64,
-            texture: new Image() // Player texture
+            texture: new Image()
         };
         player.texture.src = 'path/to/your/player-image.png'; // Use actual path to your player PNG
-
-        const map = [
-            '1111111111111111',
-            '1000000000000011',
-            '1011111111111011',
-            '1010000000011011',
-            '1011111111011011',
-            '1010000000011011',
-            '1001111111011011',
-            '1111111111111111'
-        ];
 
         const FOV = Math.PI / 3; // Field of view
         const MAX_DEPTH = 10; // Maximum raycast depth
@@ -63,33 +52,21 @@
             openTexture: new Image() // Open door texture
         };
 
-        // Normal door texture (closed door)
         door.texture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(70).png?raw=true'; 
-
-        // Open door texture (when the door is unlocked)
         door.openTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(73).png?raw=true'; 
 
-        // Key Texture (from your provided URL)
         const keyTexture = new Image();
-        keyTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(72).png?raw=true'; // Direct GitHub URL for your key PNG
+        keyTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(72).png?raw=true'; 
 
-        // Wall Texture (from your provided URL)
         const wallTexture = new Image();
-        wallTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(69).png?raw=true'; // Wall texture URL
+        wallTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(69).png?raw=true'; 
 
-        // Floor Texture (same URL as wall texture)
-        const floorTexture = new Image();
-        floorTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(69).png?raw=true'; // Use same texture for the floor
-
-        // Flashlight Texture (from the provided URL)
         const flashlightTexture = new Image();
-        flashlightTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(74).png?raw=true'; // Path to your flashlight PNG
+        flashlightTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(74).png?raw=true'; 
 
-        // Gun Texture (from the provided URL)
         const gunTexture = new Image();
-        gunTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(68).png?raw=true'; // Path to your gun PNG
+        gunTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(68).png?raw=true'; 
 
-        // Enemy logic
         let enemies = [];
         let stunnedEnemies = [];
 
@@ -102,32 +79,37 @@
         let flashlightChargeStart = 0; // Time when flashlight charge starts
         let flashlightStunStart = 0; // Time when flashlight stun started
 
-        // Key and Door logic
-        let keys = [];
-        let collectedKeys = 0;
-        let door = {
-            x: 0,
-            y: 0,
-            width: 50,
-            height: 100,
-            isOpen: false,
-            texture: new Image(), // Door texture (closed)
-            openTexture: new Image() // Open door texture
-        };
+        // Random map generation variables
+        const mapWidth = 20; // Map width in tiles
+        const mapHeight = 15; // Map height in tiles
+        let map = [];
 
-        // Normal door texture (closed door)
-        door.texture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(70).png?raw=true'; 
+        // Random map generation function (YOLO-style)
+        function generateRandomMap() {
+            map = [];
+            for (let y = 0; y < mapHeight; y++) {
+                map[y] = [];
+                for (let x = 0; x < mapWidth; x++) {
+                    // Randomly choose whether the tile is a wall (1) or an open space (0)
+                    if (Math.random() < 0.2) {
+                        map[y][x] = 1; // Wall
+                    } else {
+                        map[y][x] = 0; // Empty space
+                    }
+                }
+            }
 
-        // Open door texture (when the door is unlocked)
-        door.openTexture.src = 'https://github.com/Sethfd/Gamedev2024-Seth-/blob/main/PNG,S/pixil-frame-0%20(73).png?raw=true'; 
+            // Make sure the player starts in an open space
+            map[Math.floor(player.y / 64)][Math.floor(player.x / 64)] = 0;
+        }
 
         // Random key and door placement
         function placeKeysAndDoor() {
             keys = [];
             for (let i = 0; i < 5; i++) {
                 let key = {
-                    x: Math.floor(Math.random() * canvas.width),
-                    y: Math.floor(Math.random() * canvas.height),
+                    x: Math.floor(Math.random() * mapWidth) * 64,
+                    y: Math.floor(Math.random() * mapHeight) * 64,
                     width: 20,
                     height: 20,
                     texture: keyTexture
@@ -135,8 +117,8 @@
                 keys.push(key);
             }
 
-            door.x = Math.floor(Math.random() * canvas.width);
-            door.y = Math.floor(Math.random() * canvas.height);
+            door.x = Math.floor(Math.random() * mapWidth) * 64;
+            door.y = Math.floor(Math.random() * mapHeight) * 64;
             door.isOpen = false;
         }
 
@@ -167,41 +149,70 @@
             }
         }
 
-        // Stun enemies using flashlight
-        function stunEnemies() {
-            enemies.forEach((enemy) => {
-                if (flashlightActive && !stunnedEnemies.includes(enemy)) {
-                    stunnedEnemies.push(enemy);
-                    setTimeout(() => {
-                        const index = stunnedEnemies.indexOf(enemy);
-                        if (index > -1) stunnedEnemies.splice(index, 1);
-                    }, flashlightStunTime);
+        // Player movement controls
+        let keysInput = {
+            w: false,
+            a: false,
+            s: false,
+            d: false,
+            f: false
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w') keysInput.w = true;
+            if (e.key === 'a') keysInput.a = true;
+            if (e.key === 's') keysInput.s = true;
+            if (e.key === 'd') keysInput.d = true;
+            if (e.key === 'f') keysInput.f = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'w') keysInput.w = false;
+            if (e.key === 'a') keysInput.a = false;
+            if (e.key === 's') keysInput.s = false;
+            if (e.key === 'd') keysInput.d = false;
+            if (e.key === 'f') keysInput.f = false;
+        });
+
+        function movePlayer() {
+            if (keysInput.w) {
+                player.x += Math.cos(player.angle) * player.speed;
+                player.y += Math.sin(player.angle) * player.speed;
+            }
+            if (keysInput.s) {
+                player.x -= Math.cos(player.angle) * player.speed;
+                player.y -= Math.sin(player.angle) * player.speed;
+            }
+            if (keysInput.a) {
+                player.angle -= player.rotationSpeed;
+            }
+            if (keysInput.d) {
+                player.angle += player.rotationSpeed;
+            }
+        }
+
+        // Check if player collects a key
+        function collectKeys() {
+            keys.forEach((key, index) => {
+                if (
+                    player.x < key.x + key.width &&
+                    player.x + player.width > key.x &&
+                    player.y < key.y + key.height &&
+                    player.y + player.height > key.y
+                ) {
+                    keys.splice(index, 1); // Remove collected key
+                    collectedKeys++;
+                    console.log(`Collected key! Total: ${collectedKeys}`);
                 }
             });
         }
 
-        // Enemy AI (basic)
-        function spawnEnemy() {
-            let enemy = {
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                width: 30,
-                height: 30,
-                speed: 1,
-                isStunned: false
-            };
-            enemies.push(enemy);
-        }
-
-        // Update enemies based on stun status
-        function updateEnemies() {
-            enemies.forEach(enemy => {
-                if (!stunnedEnemies.includes(enemy)) {
-                    // Move normally if not stunned
-                    enemy.x += Math.cos(Math.random() * Math.PI * 2) * enemy.speed;
-                    enemy.y += Math.sin(Math.random() * Math.PI * 2) * enemy.speed;
-                }
-            });
+        // Check if player can open the door
+        function checkDoor() {
+            if (collectedKeys >= 1 && !door.isOpen) {
+                door.isOpen = true;
+                console.log("Door opened!");
+            }
         }
 
         // Raycasting function
@@ -214,7 +225,7 @@
                 x += cos;
                 y += sin;
                 // Check collision with walls in the map
-                if (map[Math.floor(y / 64)] && map[Math.floor(y / 64)][Math.floor(x / 64)] === '1') {
+                if (map[Math.floor(y / 64)] && map[Math.floor(y / 64)][Math.floor(x / 64)] === 1) {
                     return depth;
                 }
             }
@@ -246,14 +257,17 @@
         // Game loop
         function gameLoop() {
             context.clearRect(0, 0, canvas.width, canvas.height);
+            movePlayer();
             drawWorld();
             handleFlashlight();
-            updateEnemies();
+            collectKeys();
+            checkDoor();
             drawEntities();
-            stunEnemies();
             requestAnimationFrame(gameLoop);
         }
 
+        // Start game
+        generateRandomMap();
         placeKeysAndDoor();
         gameLoop();
 
